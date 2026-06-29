@@ -1,11 +1,15 @@
 
-from fastapi import APIRouter, File, UploadFile, 
+from fastapi import APIRouter, File, UploadFile, Form
 
 from app.infra.validators.input_validator import InputValidator
 from app.infra.image_decoder import ImageDecoder
 from app.domain.processors.normalize_processor import NormalizeProcessor
 from app.domain.processors.blend_processor import BlendProcessor
 from app.infra.image_encoder import ImageEncoder
+
+from app.api.contracts.responses import BLEND_RESPONSES
+from app.api.contracts.health_response import HealthResponse
+from app.domain.health_status import HealthStatus
 
 router = APIRouter()
 
@@ -15,12 +19,18 @@ normalize_processor = NormalizeProcessor()
 blend_processor = BlendProcessor()
 image_encoder = ImageEncoder()
 
-@router.post("/blend")
+@router.post("/blend", 
+             tags=["Image Processing"],
+             summary="Blend Two Images",
+             description="Receives two uploaded images, normalizes them to a target size, blends them in memory and returns the generated image.",
+             response_description="Blended image in the chosen format",
+             responses=BLEND_RESPONSES
+             )
 async def blend(
-        implicit_image_a: UploadFile = File(...),
-        implicit_image_b: UploadFile = File(...),
-        width: int = Form(...),
-        height: int = Form(...)
+        implicit_image_a: UploadFile = File(..., description="First image to blend"),
+        implicit_image_b: UploadFile = File(..., description="Second image to blend"),
+        width: int = Form(...,title="Outuput width",description="Target width in pixels", example=1024), 
+        height: int = Form(...,title="Outuput height",description="Target height in pixels", example=1024)
         ):
 
     await input_validator.validate(implicit_image_a)
@@ -39,7 +49,7 @@ async def blend(
             image2,
             target_size
             )
-
+ 
     blended = blend_processor.blend(
             image1,
             image2
@@ -48,4 +58,13 @@ async def blend(
     return await image_encoder.encode(
             blended,
             "PNG"
+            )
+
+@router.get("/health",
+                tags=["Health checker"],
+            )
+def health() -> HealthResponse:
+
+    return HealthResponse (
+            status=HealthStatus.Up
             )

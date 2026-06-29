@@ -13,5 +13,4 @@ class InputValidator:
         if image.content_type not in SUPPORTED_IMAGE_TYPES:
             raise HTTPException(
                 status_code=415,
-                detail="Unsupported image format."
-            )
+                detail="Unsupported image format.")
