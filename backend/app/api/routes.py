@@ -1,13 +1,11 @@
 
-from fastapi import APIRouter, File, UploadFile, Form
-from fastapi.responses import StreamingResponse
-from io import BytesIO
-from PIL import Image
+from fastapi import APIRouter, File, UploadFile, 
 
-from app.validators.input_validator import InputValidator
-from app.decoder.image_decoder import ImageDecoder
-from app.processors.normalize_processor import NormalizeProcessor
-from app.processors.blend_processor import BlendProcessor
+from app.infra.validators.input_validator import InputValidator
+from app.infra.image_decoder import ImageDecoder
+from app.domain.processors.normalize_processor import NormalizeProcessor
+from app.domain.processors.blend_processor import BlendProcessor
+from app.infra.image_encoder import ImageEncoder
 
 router = APIRouter()
 
@@ -15,6 +13,7 @@ input_validator = InputValidator()
 image_decoder = ImageDecoder()
 normalize_processor = NormalizeProcessor()
 blend_processor = BlendProcessor()
+image_encoder = ImageEncoder()
 
 @router.post("/blend")
 async def blend(
@@ -46,13 +45,7 @@ async def blend(
             image2
             )
 
-    output = BytesIO()
-
-    blended.save(output, format="PNG")
-
-    output.seek(0)
-
-    return StreamingResponse (
-            output, 
-            media_type="image/png"
+    return await image_encoder.encode(
+            blended,
+            "PNG"
             )
