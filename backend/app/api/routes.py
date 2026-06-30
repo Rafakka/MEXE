@@ -7,7 +7,7 @@ from app.domain.processors.normalize_processor import NormalizeProcessor
 from app.domain.processors.blend_processor import BlendProcessor
 from app.infra.image_encoder import ImageEncoder
 
-from app.api.contracts.responses import BLEND_RESPONSES
+from app.api.contracts.responses import BLEND_RESPONSES, HEALTH_RESPONSES
 from app.api.contracts.health_response import HealthResponse
 from app.domain.health_status import HealthStatus
 
@@ -61,10 +61,13 @@ async def blend(
             )
 
 @router.get("/health",
-                tags=["Health checker"],
+                tags=["Health"],
+                summary="Check service health",
+                description="Return the current operational status of the service",
+                responses=HEALTH_RESPONSES
             )
 def health() -> HealthResponse:
 
     return HealthResponse (
-            status=HealthStatus.Up
+            status=HealthStatus.UP
             )
