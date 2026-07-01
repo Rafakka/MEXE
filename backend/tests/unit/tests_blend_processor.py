@@ -1,18 +1,13 @@
 
+import pytest
 
 from PIL import Image
 
-from app.domain.processors.blend_processor import BlendProcessor
-
-def test_return_pillow_image():
-
-    ## Arrange
-
-    image1 = Image.new("RGBA", (250,250), (255,0,0,255))
-
-    image2 = Image.new("RGBA",(250,250), (255,255,0,255))
-
-    blend_processor = BlendProcessor()
+def test_return_pillow_image(
+        image1, 
+        image2,
+        blend_processor
+        ):
     
     ## Act
 
@@ -23,15 +18,11 @@ def test_return_pillow_image():
     assert isinstance(blended, Image.Image)
     
 
-def test_return_mixed_image():
-
-    ## Arrange
-
-    image1 = Image.new("RGBA", (250,250), (255,0,0,255))
-
-    image2 = Image.new("RGBA",(250,250), (255,255,0,255))
-
-    blend_processor = BlendProcessor()
+def test_return_mixed_image(
+        image1,
+        image2, 
+        blend_processor
+        ):
     
     ## Act
 
@@ -45,14 +36,12 @@ def test_return_mixed_image():
 
     assert pixel != image2.getpixel((125,125))
 
-def test_keep_original_files():
+def test_keep_original_files(
+        image1,
+        image2,
+        blend_processor
+        ):
     
-    image1 = Image.new("RGBA", (250,250), (255,0,0,255))
-
-    image2 = Image.new("RGBA",(250,250), (255,255,0,255))
-
-    blend_processor = BlendProcessor()
-
     original_pixel1 = image1.getpixel((125,125))
 
     original_pixel2 = image2.getpixel((125,125))
@@ -63,13 +52,11 @@ def test_keep_original_files():
 
     assert image2.getpixel((125,125)) == original_pixel2
 
-def test_return_resolution():
-
-    image1 = Image.new("RGBA", (250,250), (255,0,0,255))
-
-    image2 = Image.new("RGBA",(250,250), (255,255,0,255))
-
-    blend_processor = BlendProcessor()
+def test_return_resolution(
+        image1,
+        image2,
+        blend_processor
+        ):
 
     blended = blend_processor.blend(image1,image2)
     
