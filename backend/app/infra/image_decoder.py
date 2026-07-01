@@ -6,6 +6,10 @@ from PIL import Image
 
 from io import BytesIO
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 class ImageDecoder:
 
     async def decode(
@@ -13,7 +17,19 @@ class ImageDecoder:
             image: UploadFile
             ) -> Image.Image:
 
-        return Image.open(
-                BytesIO(await image.read())
+        logger.info(f"Decoding image '%s' (%s)",
+                    image.filename,
+                    image.content_type
+                    )
 
-            )
+        decoded = Image.open(
+                BytesIO(await image.read())
+                )
+
+        logger.info(
+                "Image decoded succesfully (%sx%s)",
+                decoded.width,
+                decoded.height,
+                )
+
+        return decoded
