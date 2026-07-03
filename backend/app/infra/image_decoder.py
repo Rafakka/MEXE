@@ -27,7 +27,7 @@ class ImageDecoder:
                 )
 
         logger.info(
-                "Image decoded succesfully (%sx%s)",
+                "Image decoded succesfully (%dx%d)",
                 decoded.width,
                 decoded.height,
                 )

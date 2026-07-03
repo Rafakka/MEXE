@@ -56,8 +56,7 @@ async def blend(
             )
 
     return await image_encoder.encode(
-            blended,
-            "PNG"
+            blended
             )
 
 @router.get("/health",
