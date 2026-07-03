@@ -1,0 +1,9 @@
+
+
+
+def test_request_health_info(client):
+
+    response = client.get("/health")
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "UP"

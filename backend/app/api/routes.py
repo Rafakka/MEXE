@@ -29,8 +29,8 @@ image_encoder = ImageEncoder()
 async def blend(
         implicit_image_a: UploadFile = File(..., description="First image to blend"),
         implicit_image_b: UploadFile = File(..., description="Second image to blend"),
-        width: int = Form(...,title="Outuput width",description="Target width in pixels", example=1024), 
-        height: int = Form(...,title="Outuput height",description="Target height in pixels", example=1024)
+        width: int = Form(...,title="Outuput width",description="Target width in pixels", examples=[1024]), 
+        height: int = Form(...,title="Outuput height",description="Target height in pixels", examples=[1024])
         ):
 
     await input_validator.validate(implicit_image_a)
