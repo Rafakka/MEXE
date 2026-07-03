@@ -5,7 +5,7 @@ from app.core.settings import SUPPORTED_IMAGE_TYPES
 
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)    
 
 class InputValidator:
 
