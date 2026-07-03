@@ -1,0 +1,25 @@
+
+
+:root {
+
+  --background: #ffffff;
+
+  --surface: #f8f9fc;
+
+  --surface-glass: rgba(255,255,255,.65);
+
+  --primary: #6B5BFF;
+
+  --secondary: #86A8FF;
+
+  --accent: #C084FC;
+
+  --glow: #A855F7;
+
+  --text: #111827;
+
+  --text-muted: #6B7280;
+
+  --border: #E5E7EB;
+
+}
