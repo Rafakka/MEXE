@@ -1,0 +1,143 @@
+
+
+.core{
+
+    display:flex;
+
+    justify-content:center;
+    
+    align-items:center;
+
+    position:absolute;
+
+    width:160px;
+
+    height:160px;
+
+    top:50%;
+
+    left:50%;
+
+    transform:translate(-50%, -50%);
+
+    z-index:3;
+
+}
+
+.planet{
+
+    position:absolute;
+
+    inset:0;
+
+    border-radius:50%;
+    
+    border: 1px solid rgba(255,255,255,.65);
+
+    background:
+
+        radial-gradient(
+
+            circle at 28% 28%,
+
+            #ffffff 0%,
+
+            #f4f6ff 35%,
+
+            #dfe6ff 70%,
+
+            #c7d2fe 100%
+
+        );
+
+    }
+
+.halo{
+
+    position:absolute;
+
+    inset:-24px;
+
+    filter: blur(12px);
+
+    opacity:85;
+
+    border-radius:50%;
+
+    background:
+
+        radial-gradient(
+
+            circle,
+
+            rgba(168,85,247,.15),
+
+            transparent 70%
+
+        );
+
+}
+
+.glow{
+
+    position:absolute;
+
+    inset:-12px;
+
+    border-radius:50%;
+
+    box-shadow:
+
+        0 0 40px rgba(107,91,255,.16),
+        0 0 90px rgba(168,85,247,.08),
+        0 0 140px rgba(147,197,253,.05);
+        
+
+}
+
+.planet::before{
+
+    content:"";
+
+    position:absolute;
+
+    width:54px;
+
+    height:22px;
+
+    top:24px;
+
+    left:30px;
+
+    border-radius:50%;
+
+    background:rgba(255,255,255,.38);
+
+    filter:blur(10px);
+
+}
+
+.planet::after{
+
+    content:"";
+
+    position:absolute;
+
+    inset:0;
+
+    border-radius:50%;
+
+    box-shadow:
+
+        inset
+
+        0
+
+        -12px
+
+        18px
+
+        rgba(120,130,180,.12);
+
+}
+

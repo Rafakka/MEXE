@@ -1,11 +1,7 @@
 
-import Layout from "./components/Layout/Layout";
-import Planet from "./components/Planet/Planet";
+import Laboratory from "./components/Laboratory";
+
 
 export default function App() {
-  return (
-    <Layout>
-      <Planet />
-    </Layout>
-  );
+  return <Laboratory />;
 }
