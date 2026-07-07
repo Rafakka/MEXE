@@ -17,19 +17,6 @@ export default function Laboratory() {
   return (
     <Layout>
 
-    <button
-        onClick={()=> setLaboratoryState("processing")}
-    >
-    Process
-    </button>
-
-
-    <button
-        onClick={()=> setLaboratoryState("idle")}
-    >
-    Reset
-    </button>
-
       <section className={styles.laboratory}>
 
         <Scene>

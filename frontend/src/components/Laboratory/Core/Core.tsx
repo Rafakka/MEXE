@@ -4,13 +4,14 @@ import type {LaboratoryState} from "../../../features/laboratory/laboratoryState
 
 type CoreProps = {
         state: LaboratoryState;
+        onClick: () => void;
     };
 
-export default function Core( {state:_state}:CoreProps ) { return (
+export default function Core( {state, onClick}:CoreProps ) { return (
     <div className={styles.core}
          data-state={state}
+         onClick={onClick}
     >
-
       <div className={styles.halo} />
 
       <div className={styles.planet} />
@@ -18,5 +19,6 @@ export default function Core( {state:_state}:CoreProps ) { return (
       <div className={styles.glow} />
 
     </div>
+
   );
-} 
+}
