@@ -11,8 +11,8 @@ import styles from "./Laboratory.module.css";
 
 
 export default function Laboratory() {
-    
-    const[laboratoryState, setLaboratoryState ] = useState<LaboratoryState>("idle");    
+
+    const[laboratoryState, setLaboratoryState ] = useState<LaboratoryState>("idle");
 
   return (
     <Layout>
@@ -29,36 +29,36 @@ export default function Laboratory() {
     >
     Reset
     </button>
-    
+
       <section className={styles.laboratory}>
 
         <Scene>
 
-          <ReactionField 
-          state={laboratoryState} 
-          />
-
-          <Core 
-          state={laboratoryState} 
-          />
-
-          <SampleNode 
-          side="left" 
+          <ReactionField
           state={laboratoryState}
           />
- 
-          <SampleNode 
+
+          <Core
+          state={laboratoryState}
+          />
+
+          <SampleNode
+          side="left"
+          state={laboratoryState}
+          />
+
+          <SampleNode
           side="right"
           state={laboratoryState}
           />
 
-        <Scene/>
+        </Scene>
 
-        <ReactionPanel 
-        state={laboratoryState} 
+        <ReactionPanel
+        state={laboratoryState}
         />
 
-      </section>
+    </section>
 
     </Layout>
   );
