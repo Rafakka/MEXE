@@ -1,16 +1,26 @@
 
 import styles from "../Core/Core.module.css";
-import type {LaboratoryState} from "../../../features/laboratory/laboratoryState";
+import type {LaboratoryPhase} from "../../../features/laboratory/laboratoryPhase"
 
 type CoreProps = {
-        state: LaboratoryState;
+        phase: LaboratoryPhase;
         onClick: () => void;
     };
 
-export default function Core( {state, onClick}:CoreProps ) { return (
-    <div className={styles.core}
-         data-state={state}
-         onClick={onClick}
+export default function Core( {phase, onClick}:CoreProps ) { return (
+    
+    <div
+
+    className={`
+        ${styles.core}
+        ${phase === "activated" ? styles.activated : ""}
+        ${phase === "processing" ? styles.processing : ""}
+        ${phase === "result" ? styles.result : ""}
+        `}
+
+        data-phase={phase}
+
+        onClick={onClick}
     >
       <div className={styles.halo} />
 

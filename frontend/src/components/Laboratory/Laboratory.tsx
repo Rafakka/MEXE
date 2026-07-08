@@ -6,13 +6,24 @@ import SampleNode from "../Laboratory/SampleNode/SampleNode";
 import ReactionPanel from "../Laboratory/ReactionPanel/ReactionPanel";
 import ReactionField from "../Laboratory/ReactionField/ReactionField";
 import {useState} from "react";
-import type {LaboratoryState} from "../../features/laboratory/laboratoryState";
+import type {LaboratoryPhase} from "../../features/laboratory/laboratoryPhase";
+import type { SampleState} from "../../features/laboratory/sampleState";
 import styles from "./Laboratory.module.css";
 
 
 export default function Laboratory() {
 
-    const[laboratoryState, setLaboratoryState ] = useState<LaboratoryState>("idle");
+   const [phase, setPhase] =
+    useState<LaboratoryPhase>("idle");
+
+    const [samples, setSamples] =
+    useState<SampleState>({
+
+        firstLoaded: false,
+
+        secondLoaded: false
+ 
+    });
 
   return (
     <Layout>
@@ -22,27 +33,35 @@ export default function Laboratory() {
         <Scene>
 
           <ReactionField
-          state={laboratoryState}
-          />
+            phase={phase}
+            />
 
           <Core
-          state={laboratoryState}
+          phase={phase}
+
+          onClick={()=>{
+              if (phase == "idle") {
+                  setPhase("activated")
+              }
+          }}
           />
 
           <SampleNode
           side="left"
-          state={laboratoryState}
+          phase={phase}
+          samples={samples.firstLoaded}
           />
 
           <SampleNode
           side="right"
-          state={laboratoryState}
+          phase={phase}
+          samples={samples.secondLoaded}
           />
 
         </Scene>
 
         <ReactionPanel
-        state={laboratoryState}
+        phase={phase}
         />
 
     </section>
