@@ -3,11 +3,13 @@ import Layout from "../Laboratory/Layout/Layout";
 import Scene from "../Laboratory/Scene/Scene";
 import Core from "../Laboratory/Core/Core";
 import SampleNode from "../Laboratory/SampleNode/SampleNode";
+import SampleAnchor from "../Laboratory/SampleAnchor/SampleAnchor";
 import ReactionPanel from "../Laboratory/ReactionPanel/ReactionPanel";
 import ReactionField from "../Laboratory/ReactionField/ReactionField";
 import {useState} from "react";
 import type {LaboratoryPhase} from "../../features/laboratory/laboratoryPhase";
 import type { SampleState} from "../../features/laboratory/sampleState";
+
 import styles from "./Laboratory.module.css";
 
 
@@ -46,17 +48,26 @@ export default function Laboratory() {
           }}
           />
 
-          <SampleNode
-          side="left"
-          phase={phase}
-          samples={samples.firstLoaded}
-          />
+        <SampleAnchor
+            side="left"
+            visible={phase === "activated"}
+            >
+            <SampleNode
+            phase={phase}
+            samples={samples.firstLoaded}
+            />            
+        </SampleAnchor>
 
-          <SampleNode
-          side="right"
-          phase={phase}
-          samples={samples.secondLoaded}
-          />
+        <SampleAnchor
+            side="right"
+            visible={phase === "activated"}
+            >
+            <SampleNode
+            phase={phase}
+            samples={samples.secondLoaded}
+            />
+        </SampleAnchor>
+
 
         </Scene>
 

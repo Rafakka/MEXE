@@ -19,16 +19,16 @@
         );
 
     
-    --core-size:200px;
+    --core-size:220px;
 
-    --sample-size:30px;
+    --sample-size:40px;
 
     --sample-distance:280px;
 
     --reaction-size:640px;
  
-    --halo-offset:40px;
-    --glow-offset:24px;
+    --halo-offset:300px;
+    --glow-offset:200px;
 
     position: relative;
 

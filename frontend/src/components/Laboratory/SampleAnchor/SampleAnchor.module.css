@@ -1,0 +1,212 @@
+
+
+.anchor{
+
+    position:absolute;
+
+    top:50%;
+    left:50%;
+
+    transition:
+
+        transform .8s cubic-bezier(.22,.61,.36,1),
+
+        opacity .8s ease;
+
+}
+
+/* ---------- POSIÇÃO ---------- */
+
+.left{
+
+    transform:
+
+        translate(-50%, -50%)
+
+        translateX(calc(var(--sample-distance) * -1));
+
+    transition-delay:.20s;
+
+    animation:
+
+        driftLeft 8.6s ease-in-out infinite;
+
+}
+
+.right{
+
+    transform:
+
+        translate(-50%, -50%)
+
+        translateX(var(--sample-distance));
+
+    transition-delay:.35s;
+
+    animation:
+
+        driftRight 10.2s ease-in-out infinite;
+
+    animation-delay:
+        
+        -2.3s;
+}
+
+/* ---------- APARECIMENTO ---------- */
+
+.left.hidden{
+
+    opacity:0;
+
+    transform:
+
+        translate(-50%, -50%)
+
+        translateX(calc(var(--sample-distance) * -1 + 30px));
+
+}
+
+.left.visible{
+
+    opacity:1;
+
+    transform:
+
+        translate(-50%, -50%)
+
+        translateX(calc(var(--sample-distance) * -1));
+
+}
+
+.right.hidden{
+
+    opacity:0;
+
+    transform:
+
+        translate(-50%, -50%)
+
+        translateX(calc(var(--sample-distance) - 30px));
+
+}
+
+.right.visible{
+
+    opacity:1;
+
+    transform:
+
+        translate(-50%, -50%)
+
+        translateX(var(--sample-distance));
+
+}
+
+@keyframes driftLeft{
+
+    0%{
+
+        transform:
+            translate(-50%, -50%)
+            translateX(calc(var(--sample-distance) * -1))
+            translateY(0)
+            scale(1);
+
+    }
+
+    20%{
+
+        transform:
+            translate(-50%, -50%)
+            translateX(calc(var(--sample-distance) * -1 - 3px))
+            translateY(-5px)
+            scale(1.02);
+
+    }
+
+    45%{
+
+        transform:
+            translate(-50%, -50%)
+            translateX(calc(var(--sample-distance) * -1 + 2px))
+            translateY(4px)
+            scale(.985);
+
+    }
+
+    70%{
+
+        transform:
+            translate(-50%, -50%)
+            translateX(calc(var(--sample-distance) * -1 - 4px))
+            translateY(2px)
+            scale(1.015);
+
+    }
+
+    100%{
+
+        transform:
+            translate(-50%, -50%)
+            translateX(calc(var(--sample-distance) * -1))
+            translateY(0)
+            scale(1);
+
+    }
+
+}
+
+@keyframes driftRight{
+
+    0%{
+
+        transform:
+            translate(-50%, -50%)
+            translateX(var(--sample-distance))
+            translateY(0)
+            scale(1);
+
+    }
+
+    25%{
+
+        transform:
+            translate(-50%, -50%)
+            translateX(calc(var(--sample-distance) + 4px))
+            translateY(5px)
+            scale(.985);
+
+    }
+
+    55%{
+
+        transform:
+            translate(-50%, -50%)
+            translateX(calc(var(--sample-distance) - 3px))
+            translateY(-3px)
+            scale(1.02);
+
+    }
+
+    80%{
+
+        transform:
+            translate(-50%, -50%)
+            translateX(calc(var(--sample-distance) + 2px))
+            translateY(2px)
+            scale(.99);
+
+    }
+
+    100%{
+
+        transform:
+            translate(-50%, -50%)
+            translateX(var(--sample-distance))
+            translateY(0)
+            scale(1);
+
+    }
+
+}
+

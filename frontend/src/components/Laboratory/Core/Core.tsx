@@ -21,12 +21,9 @@ export default function Core( {phase, onClick}:CoreProps ) { return (
         data-phase={phase}
 
         onClick={onClick}
-    >
+    > <div className={styles.aura} />
       <div className={styles.halo} />
-
       <div className={styles.planet} />
-
-      <div className={styles.glow} />
 
     </div>
 

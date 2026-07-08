@@ -50,116 +50,6 @@
 
 }
 
-.left{
-    
-    top:50%;
-
-    left:50%;
-
-    filter:brightness(.98);
-
-    transform:
-        translate(-50%, -50%)
-        translateX(calc(var(--sample-distance) * -1));
-
-    box-shadow:
-
-        inset 0 2px 4px rgba(255,255,255,.90),
-
-        inset 0 -2px 6px rgba(120,130,145,.18),
-
-        0 0 0 1px rgba(40,45,55,.12),
-
-        0 2px 8px rgba(20,25,35,.10);
-
-    transition-delay: .20s;
-
-}
-
-.right{
-
-    top:50%;
-
-    left:50%;
-
-    filter:brightness(1.02);
-
-    transform:
-
-        translate(-50%, -50%)
-
-        translateX(var(--sample-distance));   
-
-    box-shadow:
-
-        inset 0 2px 4px rgba(255,255,255,.90),
-
-        inset 0 -2px 6px rgba(120,130,145,.18),
-
-        0 0 0 1px rgba(40,45,55,.12),
-
-        0 2px 8px rgba(20,25,35,.10);
-
-    transition-delay: .35s;
-
-}
-
-.left.hidden{
-
-    opacity:0;
- 
-    transform:
-
-        translate(-50%, -50%)
-
-        translateX(calc(var(--sample-distance) * -1 + 30px))
-        
-        scale(.92);
-
-}
-
-.left.visible{
-
-    opacity:1;
-
-    transform:
-
-        translate(-50%, -50%)
-
-        translateX(calc(var(--sample-distance) * -1))
-
-        scale(1);
-    
-}
-
-.right.hidden{
-
-    opacity:0;
-
-    transform:
-        
-        translate(-50%, -50%)
-
-        translateX(calc(var(--sample-distance)-30px))
-
-        scale(.92);
-
-}
-
-.right.visible{
-
-    opacity:1;
-
-    transform:
-
-        translate(-50%, -50%)
-
-        translateX(var(--sample-distance))
-
-        scale(1);
-
-}
-
 .pending{
 
     background:
@@ -168,11 +58,11 @@
 
         circle at 30% 30%,
 
-        #FDFDFD 0%,
+        #FFFFFF 0%,
 
-        #E7EBEF 55%,
+        #EEF2F5 55%,
 
-        #B8C0C8 100%
+        #C9D0D8 100%
 
     );
 
@@ -182,20 +72,13 @@
 
         inset 0 -2px 6px rgba(120,130,145,.18),
 
-        0 2px 8px rgba(80,90,100,.08);
+        0 4px 10px rgba(60,70,80,.10);
 
 }
 
 .pending:hover{
 
-    transform:scale(1.06);
-
-    box-shadow:
-
-        0 0 0 1px rgba(30,35,45,.20),
-
-        0 4px 12px rgba(20,25,35,.15);
-
+    transform:scale(1.08);
 }
 
 .pending::before{
@@ -208,20 +91,43 @@
 
     left:22%;
 
-    width:28%;
+    width:26%;
 
-    height:28%;
+    height:26%;
 
     border-radius:50%;
 
     background:
 
-        rgba(126,162,255,.15);
+        radial-gradient(
+        circle,
+        rgba(255,255,255,.95),
+        rgba(255,255,255,.55),
+        transparent
+
+        );
+
+    filter:blur(1px);
+
+}
+
+.pending::after{
+
+    content:"";
+
+    position:absolute;
+
+    inset:58% 18% 18% 58%;
+
+    border-radius:50%;
+
+    background:
+
+        rgba(180,190,200,.20);
 
     filter:blur(2px);
 
 }
-
 
 .node.pending::after{
 
@@ -292,12 +198,17 @@
 
 }
 
+.processing{
+
+    animation:none;
+}
+
 
 @keyframes sampleBreathing{
 
 0%{
 
-scale:1;
+scale:1.02;
 
 }
 
