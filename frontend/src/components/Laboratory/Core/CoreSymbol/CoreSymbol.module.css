@@ -1,0 +1,141 @@
+
+
+.symbol{
+
+    position:absolute;
+
+    width:130px;
+
+    height:130px;
+
+    left:50%;
+
+    top:50%;
+
+    transform:
+
+        translate(-50%, -50%)
+
+        scale(.94);
+
+    opacity:.08;
+
+    color: rgba(90,110,140,.55);
+
+    filter:
+
+        drop-shadow(0 1px 1px rgba(255,255,255,.10));
+
+    transition:
+
+        opacity .35s ease,
+
+        transform .35s ease,
+
+        color .35s ease,
+
+        filter .35s ease;
+
+}
+
+.hover{
+
+    opacity:.42;
+
+    transform:
+
+        translate(-50%, -50%)
+
+        scale(1);
+
+}
+
+.hover .ring{
+
+    stroke-dashoffset:0;
+
+}
+
+.ring{
+
+    transition:
+
+        stroke-dashoffset .45s ease,
+
+        opacity .35s ease;
+
+        stroke:currentColor;
+
+}
+
+
+.stem{
+
+    opacity:.12;
+
+    transition:
+
+        opacity .25s ease;
+
+    transition-delay:.18s;
+
+}
+
+.hover .stem{
+
+    opacity:.45;
+
+}
+
+.activated{
+
+    opacity:1;
+
+    color:#F472FF;
+
+    filter:
+
+    drop-shadow(
+
+    0 0 6px
+
+    rgba(244,114,255,.60)
+
+    )
+
+    drop-shadow(
+
+    0 0 16px
+
+    rgba(244,114,255,.45)
+
+    )
+
+    drop-shadow(
+
+    0 0 32px
+
+    rgba(180,120,255,.30)
+
+    );
+
+}
+
+.processing{
+
+
+}
+
+.result{
+
+}
+
+.activated .ring{
+
+    color:#D8B4FE;
+
+    opacity:1;
+
+}
+
+

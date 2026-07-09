@@ -3,9 +3,9 @@
 .core{
 
     cursor: pointer;
-    
+
     transition:
-            
+
             transform .35s ease,
 
             filter .35s ease;
@@ -13,7 +13,7 @@
     display:flex;
 
     justify-content:center;
-    
+
     align-items:center;
 
     position:absolute;
@@ -81,7 +81,7 @@
     height:100%;
 
     border-radius:50%;
-    
+
     border: 1px solid rgba(255,255,255,.65);
 
     background:
@@ -314,7 +314,7 @@
 
     0%{
 
-        opacity:.45;
+        opacity:1;
 
         transform:scale(.90);
 
@@ -324,7 +324,7 @@
 
     35%{
 
-        opacity:1;
+        opacity:1.10;
 
         transform:scale(1.22);
 
@@ -334,7 +334,7 @@
 
     65%{
 
-        opacity:.85;
+        opacity:1.35;
 
         transform:scale(1.10);
 
@@ -344,13 +344,17 @@
 
     100%{
 
-        opacity:.75;
+        opacity:1;
 
         transform:scale(1.05);
 
         filter:blur(55px);
 
     }
+
+    opacity:.72;
+
+    transform:scale(1.18);
 
 }
 
@@ -372,7 +376,7 @@
         cubic-bezier(.22,.61,.36,1)
 
         forwards;
-    
+
 
 }
 
@@ -491,14 +495,14 @@
         opacity:.92;
         transform:scale(1.18);
         filter:blur(58px)
-        
+
     }
 
     95%{
         opacity:.82;
         transform:scale(1.10);
         filter:blur(52px)
-        
+
     }
 
     100%{
@@ -537,6 +541,22 @@
 
         auraBreathing 4.2s ease-in-out .65s infinite;
 
+    background:
+
+        radial-gradient(
+
+        circle,
+
+            rgba(244,114,255,.90) 0%,
+
+            rgba(210,90,255,.60) 30%,
+
+            rgba(170,90,255,.25) 60%,
+
+            transparent 78%
+
+        );
+
 }
 
 .core.activated .halo{
@@ -549,7 +569,7 @@
 .activated .planet{
 
     animation:
-    
+
     breathing
 
     4s
@@ -559,4 +579,27 @@
     infinite;
 }
 
+.symbol{
 
+    opacity:.08;
+
+    transform:
+
+        translate(-50%, -50%)
+
+        scale(.94);
+
+
+}
+
+.hover{
+
+    opacity:.42;
+
+    transform:
+
+        translate(-50%, -50%)
+
+        scale(1);
+
+}
