@@ -1,0 +1,347 @@
+
+
+
+@keyframes breathing{
+
+    0%{
+
+        transform:scale(1);
+
+    }
+
+    50%{
+
+        transform:scale(1.012);
+
+    }
+
+    100%{
+
+        transform:scale(1);
+
+    }
+
+}
+
+
+@keyframes auraBreathing{
+
+    0%{
+
+        opacity:.70;
+
+        transform:scale(1.08);
+
+    }
+
+    50%{
+
+        opacity:.82;
+
+        transform:scale(1.14);
+
+    }
+
+    100%{
+
+        opacity:.70;
+
+        transform:scale(1.08);
+
+    }
+
+}
+
+
+@keyframes activateCore{
+
+    0%{
+
+        transform:
+            translate(-50%, -50%)
+            scale(1);
+
+    }
+
+    45%{
+
+        transform:
+            translate(-50%, -50%)
+            scale(1.08);
+
+    }
+
+    70%{
+
+        transform:
+            translate(-50%, -50%)
+            scale(1.04);
+
+    }
+
+    100%{
+
+        transform:
+            translate(-50%, -50%)
+            scale(1.05);
+
+    }
+
+}
+
+@keyframes auraRise{
+
+    0%{
+
+        opacity:0;
+
+        transform:scale(.70);
+
+        filter:blur(18px);
+
+    }
+
+    45%{
+
+        opacity:1;
+
+        transform:scale(1.38);
+
+        filter:blur(78px);
+
+    }
+
+    100%{
+
+        opacity:.82;
+
+        transform:scale(1.08);
+
+        filter:blur(55px);
+
+    }
+
+}
+
+@keyframes pulse{
+
+    0% {
+        transform:
+
+            translate(-50%, 50%)
+
+            scale(1);
+    }
+
+    40%{
+        transform:
+
+            translate(-50%,50%)
+
+            scale(.97);
+    }
+
+    100% {
+        transform:
+
+            translate(-50%, 50%)
+
+            scale(1.04);
+    }
+}
+
+
+@keyframes haloIgnition{
+
+    0%{
+
+        opacity:.25;
+
+        filter:blur(18px);
+
+    }
+
+    35%{
+
+        opacity:1;
+
+        filter:blur(36px);
+
+    }
+
+    100%{
+
+        opacity:.55;
+
+        filter:blur(22px);
+
+    }
+
+}
+
+
+@keyframes auraIgnition{
+
+    0%{
+
+        opacity:.45;
+
+        transform:scale(.92);
+
+        filter:blur(30px);
+
+        background:
+
+            radial-gradient(
+
+                circle,
+
+                rgba(210,225,255,.45),
+
+                rgba(185,205,255,.20),
+
+                transparent 80%
+
+            );
+
+    }
+
+    20%{
+
+        opacity:.65;
+
+        transform:scale(1.28);
+
+        filter:blur(65px);
+
+        background:
+
+            radial-gradient(
+
+                circle,
+
+                rgba(217,70,239,.75),
+
+                rgba(192,132,252,.45),
+
+                rgba(147,197,253,.15),
+
+                transparent 82%
+
+            );
+
+    }
+
+    45%{
+
+        opacity:1;
+
+        transform:scale(1.12);
+
+        filter:blur(48px);
+
+        background:
+
+            radial-gradient(
+
+                circle,
+
+                rgba(168,85,247,.55),
+
+                rgba(147,197,253,.22),
+
+                transparent 80%
+
+            );
+
+    }
+
+    70%{
+        opacity:1;
+        transform:scale(1.26);
+        filter:blur(64px)
+    }
+
+    85%{
+        opacity:.92;
+        transform:scale(1.18);
+        filter:blur(58px)
+
+    }
+
+    95%{
+        opacity:.82;
+        transform:scale(1.10);
+        filter:blur(52px)
+
+    }
+
+    100%{
+
+        opacity:.72;
+
+        transform:scale(1.05);
+
+        filter:blur(48px);
+
+        background:
+
+            radial-gradient(
+
+                circle,
+
+                rgba(210,225,255,.55),
+
+                rgba(185,205,255,.25),
+
+                rgba(155,180,255,.10),
+
+                transparent 80%
+
+            );
+
+    }
+
+}
+
+@keyframes auraOrbit {
+
+    from{
+
+        transform:
+
+            rotate(0deg)
+
+            scale(1.08);
+
+    }
+
+    to{
+
+        transform:
+
+            rotate(360deg)
+
+            scale(1.08);
+
+    }
+
+}
+
+
+@keyframes orbitRotation{
+
+    from{
+
+        transform:rotate(0deg);
+
+    }
+
+    to{
+
+        transform:rotate(360deg);
+
+    }
+
+}
+

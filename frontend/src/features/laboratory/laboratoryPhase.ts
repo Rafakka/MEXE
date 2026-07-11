@@ -1,6 +1,6 @@
 
 
-export type LaboratoryPhase = {
+export type LaboratoryPhase =
 
         | "idle"
 
@@ -9,6 +9,4 @@ export type LaboratoryPhase = {
         | "processing"
 
         | "result";
-
-}
 
