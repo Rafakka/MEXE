@@ -2,7 +2,19 @@
 
 .layout {
 
-    background:#EEF2F5;
+    background:
+
+    radial-gradient(
+
+    circle,
+
+    #F2F5FA 0%,
+
+    #E3EAF5 55%,
+
+    #D7E0ED 100%
+
+    );
 
     width:100%;
 

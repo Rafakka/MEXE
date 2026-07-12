@@ -198,19 +198,132 @@
 
     position:absolute;
 
-    top:0;
-
     left:50%;
+    top:50%;
 
-    width:8px;
+    width:var(--size);
 
-    height:8px;
-
-    background:red;
+    height:var(--size);
 
     border-radius:50%;
 
-    transform:translate(-50%,-50%);
+    background:var(--color);
+
+     box-shadow:
+
+        0 0 4px var(--color),
+        0 0 10px color-mix(in srgb, var(--color) 45%, transparent);
+
+    transform:
+
+        rotate(var(--angle))
+
+        translateY(calc(var(--orbit-radius) * -1));
+
+}
+
+
+.rotor{
+
+    position:absolute;
+
+    inset:0;
+
+}
+
+.outer{
+
+    --orbit-speed:70s;
+
+    radius:194;
+
+    animation:
+
+        orbitRotation
+
+        var(--orbit-speed)
+
+        linear
+
+        infinite;
+
+}
+
+.middle{
+
+    --orbit-speed:55s;
+
+    radius:182;
+
+    animation:
+
+        orbitRotation
+
+        var(--orbit-speed)
+
+        linear
+
+        infinite;
+
+}
+
+.inner{
+
+    --orbit-speed:40s;
+
+    radius:168;
+
+    animation:
+
+        orbitRotation
+
+        var(--orbit-speed)
+
+        linear
+
+        infinite;
+
+}
+
+
+.activated .outer{
+
+    --orbit-speed:50s;
+}
+
+.processing .outer{
+
+    --orbit-speed:10s;
+}
+
+.activated .middle{
+
+    --orbit-speed:40s;
+}
+
+.processing .outer{
+
+    --orbit-speed:10s;
+}
+
+.activated .inner{
+
+    --orbit-speed:30s;
+}
+
+.processing .inner{
+
+    --orbit-speed:10s;
+}
+
+
+.result .orbit{
+
+    opacity:0;
+
+    transition:
+
+        opacity .8s ease;
 }
 
 .auraCloud{
@@ -239,3 +352,453 @@
 
 }
 
+
+@keyframes breathing{
+
+    0%{
+
+        transform:scale(1);
+
+    }
+
+    50%{
+
+        transform:scale(1.012);
+
+    }
+
+    100%{
+
+        transform:scale(1);
+
+    }
+
+}
+
+
+@keyframes auraBreathing{
+
+    0%{
+
+        opacity:.70;
+
+        transform:scale(1.08);
+
+    }
+
+    50%{
+
+        opacity:.82;
+
+        transform:scale(1.14);
+
+    }
+
+    100%{
+
+        opacity:.70;
+
+        transform:scale(1.08);
+
+    }
+
+}
+
+
+@keyframes activateCore{
+
+    0%{
+
+        transform:
+            translate(-50%, -50%)
+            scale(1);
+
+    }
+
+    45%{
+
+        transform:
+            translate(-50%, -50%)
+            scale(1.08);
+
+    }
+
+    70%{
+
+        transform:
+            translate(-50%, -50%)
+            scale(1.04);
+
+    }
+
+    100%{
+
+        transform:
+            translate(-50%, -50%)
+            scale(1.05);
+
+    }
+
+}
+
+@keyframes auraRise{
+
+    0%{
+
+        opacity:0;
+
+        transform:scale(.70);
+
+        filter:blur(18px);
+
+    }
+
+    45%{
+
+        opacity:1;
+
+        transform:scale(1.38);
+
+        filter:blur(78px);
+
+    }
+
+    100%{
+
+        opacity:.82;
+
+        transform:scale(1.08);
+
+        filter:blur(55px);
+
+    }
+
+}
+
+@keyframes pulse{
+
+    0% {
+        transform:
+
+            translate(-50%, 50%)
+
+            scale(1);
+    }
+
+    40%{
+        transform:
+
+            translate(-50%,50%)
+
+            scale(.97);
+    }
+
+    100% {
+        transform:
+
+            translate(-50%, 50%)
+
+            scale(1.04);
+    }
+}
+
+
+@keyframes haloIgnition{
+
+    0%{
+
+        opacity:.25;
+
+        filter:blur(18px);
+
+    }
+
+    35%{
+
+        opacity:1;
+
+        filter:blur(36px);
+
+    }
+
+    100%{
+
+        opacity:.55;
+
+        filter:blur(22px);
+
+    }
+
+}
+
+
+@keyframes auraIgnition{
+
+    0%{
+
+        opacity:.45;
+
+        transform:scale(.92);
+
+        filter:blur(30px);
+
+        background:
+
+            radial-gradient(
+
+                circle,
+
+                rgba(210,225,255,.45),
+
+                rgba(185,205,255,.20),
+
+                transparent 80%
+
+            );
+
+    }
+
+    20%{
+
+        opacity:.65;
+
+        transform:scale(1.28);
+
+        filter:blur(65px);
+
+        background:
+
+            radial-gradient(
+
+                circle,
+
+                rgba(217,70,239,.75),
+
+                rgba(192,132,252,.45),
+
+                rgba(147,197,253,.15),
+
+                transparent 82%
+
+            );
+
+    }
+
+    45%{
+
+        opacity:1;
+
+        transform:scale(1.12);
+
+        filter:blur(48px);
+
+        background:
+
+            radial-gradient(
+
+                circle,
+
+                rgba(168,85,247,.55),
+
+                rgba(147,197,253,.22),
+
+                transparent 80%
+
+            );
+
+    }
+
+    70%{
+        opacity:1;
+        transform:scale(1.26);
+        filter:blur(64px)
+    }
+
+    85%{
+        opacity:.92;
+        transform:scale(1.18);
+        filter:blur(58px)
+
+    }
+
+    95%{
+        opacity:.82;
+        transform:scale(1.10);
+        filter:blur(52px)
+
+    }
+
+    100%{
+
+        opacity:.72;
+
+        transform:scale(1.05);
+
+        filter:blur(48px);
+
+        background:
+
+            radial-gradient(
+
+                circle,
+
+                rgba(210,225,255,.55),
+
+                rgba(185,205,255,.25),
+
+                rgba(155,180,255,.10),
+
+                transparent 80%
+
+            );
+
+    }
+
+}
+
+@keyframes auraOrbit {
+
+    from{
+
+        transform:
+
+            rotate(0deg)
+
+            scale(1.08);
+
+    }
+
+    to{
+
+        transform:
+
+            rotate(360deg)
+
+            scale(1.08);
+
+    }
+
+}
+
+
+@keyframes orbitRotation{
+
+    from{
+
+        transform:rotate(0deg);
+
+    }
+
+    50%{
+
+        transform:rotate(180deg) scale(1.4);
+
+    }
+
+    to{
+
+        transform:rotate(360deg);
+
+    }
+
+}
+
+@keyframes twinkleSoft{
+
+0%,100%{
+
+opacity:.75;
+
+}
+
+50%{
+
+opacity:.35;
+
+}
+
+}
+
+@keyframes twinkleStrong{
+
+0%,100%{
+
+opacity:1;
+
+}
+
+40%{
+
+opacity:.20;
+
+}
+
+75%{
+
+opacity:.65;
+
+}
+
+}
+
+@keyframes drift{
+
+0%,100%{
+
+filter:blur(0px);
+
+}
+
+50%{
+
+filter:blur(.8px);
+
+}
+
+}
+
+.twinkleSoft{
+
+animation:
+
+twinkleSoft
+
+var(--twinkle-speed)
+
+ease-in-out
+
+infinite;
+
+}
+
+.twinkleStrong{
+
+animation:
+
+twinkleStrong 12s ease-in-out infinite;
+
+}
+
+.drift{
+
+animation:
+
+drift 9s ease-in-out infinite;
+
+}
+
+@keyframes orbitReverse{
+
+from{
+
+transform:rotate(360deg);
+
+}
+
+to{
+
+transform:rotate(0deg);
+
+}
+
+}
