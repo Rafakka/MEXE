@@ -29,6 +29,22 @@
 
     z-index:3;
 
+     --outer-speed:70s;
+
+    --middle-speed:55s;
+
+    --inner-speed:40s;
+
+    --reverse-speed:95s;
+
+    --outer-radius:196px;
+
+    --middle-radius:183px;
+
+    --inner-radius:168px;
+
+    --reverse-radius:185px;
+
 }
 
 .planet{
@@ -133,7 +149,7 @@
 
     transform:
 
-        translate(-50%, -50%)
+        translate(-50%,-50%)
 
         scale(1.05);
 
@@ -147,9 +163,23 @@
 
         forwards;
 
+    --outer-speed:30s;
+
+    --middle-speed:50s;
+
+    --inner-speed:30s;
+
+    --reverse-speed:20s;
+
+    --outer-radius:208px;
+
+    --middle-radius:194px;
+
+    --inner-radius:178px;
+
+    --reverse-radius:195px;
 
 }
-
 
 .activated .planet{
 
@@ -188,3 +218,26 @@
         scale(1);
 
  }
+
+.processing{
+
+    --outer-speed:25s;
+
+    --middle-speed:18s;
+
+    --inner-speed:12s;
+
+    --reverse-speed:35s;
+
+    --outer-radius:214px;
+
+    --middle-radius:198px;
+
+    --inner-radius:182px;
+
+    --reverse-radius:202px;
+    
+
+}
+
+

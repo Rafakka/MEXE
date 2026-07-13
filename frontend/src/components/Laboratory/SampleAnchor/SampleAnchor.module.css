@@ -1,11 +1,16 @@
 
 
 .anchor{
-
+    
     position:absolute;
 
     top:50%;
     left:50%;
+
+    --sample-size:35px;
+
+    width:var(--sample-size);
+    height:var(--sample-size);
 
     transition:
 
@@ -27,10 +32,6 @@
 
     transition-delay:.20s;
 
-    animation:
-
-        driftLeft 8.6s ease-in-out infinite;
-
 }
 
 .right{
@@ -42,14 +43,6 @@
         translateX(var(--sample-distance));
 
     transition-delay:.35s;
-
-    animation:
-
-        driftRight 10.2s ease-in-out infinite;
-
-    animation-delay:
-        
-        -2.3s;
 }
 
 /* ---------- APARECIMENTO ---------- */
@@ -210,3 +203,18 @@
 
 }
 
+.floatingLeft{
+
+    animation:
+
+        driftLeft 8.6s ease-in-out infinite;
+
+}
+
+.floatingRight{
+
+    animation:
+
+        driftRight 10.2s ease-in-out infinite;
+
+}

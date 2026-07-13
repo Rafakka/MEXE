@@ -12,6 +12,9 @@ import type { SampleState} from "../../features/laboratory/sampleState";
 
 import styles from "./Laboratory.module.css";
 
+import sample01 from "../../../src/assets/mock/sample1.png";
+import sample02 from "../../../src/assets/mock/sample2.png";
+
 
 export default function Laboratory() {
 
@@ -51,20 +54,32 @@ export default function Laboratory() {
         <SampleAnchor
             side="left"
             visible={phase === "activated"}
+            floating={!samples.firstLoaded}
             >
             <SampleNode
             phase={phase}
-            samples={samples.firstLoaded}
+            loaded={samples.firstLoaded} 
+            onClick={()=>
+            setSamples({
+                ...samples,
+                firstLoaded:true
+            })}
             />            
         </SampleAnchor>
 
         <SampleAnchor
             side="right"
-            visible={phase === "activated"}
+            visible={phase === "activated"}  
+            floating={!samples.secondLoaded}
             >
             <SampleNode
             phase={phase}
-            samples={samples.secondLoaded}
+            loaded={samples.secondLoaded}
+            onClick={()=>
+            setSamples({
+                ...samples,
+                secondLoaded:true
+            })}
             />
         </SampleAnchor>
 

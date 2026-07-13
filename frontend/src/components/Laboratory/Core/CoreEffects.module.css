@@ -233,15 +233,15 @@
 
 .outer{
 
-    --orbit-speed:70s;
+    --orbit-radius:
 
-    radius:194;
+        var(--outer-radius);
 
     animation:
 
         orbitRotation
 
-        var(--orbit-speed)
+        var(--outer-speed)
 
         linear
 
@@ -251,15 +251,15 @@
 
 .middle{
 
-    --orbit-speed:55s;
+    --orbit-radius:
 
-    radius:182;
+        var(--middle-radius);
 
     animation:
 
         orbitRotation
 
-        var(--orbit-speed)
+        var(--middle-speed)
 
         linear
 
@@ -269,51 +269,21 @@
 
 .inner{
 
-    --orbit-speed:40s;
+    --orbit-radius:
 
-    radius:168;
+        var(--inner-radius);
+    
 
     animation:
 
         orbitRotation
 
-        var(--orbit-speed)
+        var(--inner-speed)
 
         linear
 
         infinite;
 
-}
-
-
-.activated .outer{
-
-    --orbit-speed:50s;
-}
-
-.processing .outer{
-
-    --orbit-speed:10s;
-}
-
-.activated .middle{
-
-    --orbit-speed:40s;
-}
-
-.processing .outer{
-
-    --orbit-speed:10s;
-}
-
-.activated .inner{
-
-    --orbit-speed:30s;
-}
-
-.processing .inner{
-
-    --orbit-speed:10s;
 }
 
 
@@ -324,6 +294,20 @@
     transition:
 
         opacity .8s ease;
+}
+
+.reverse{
+
+    animation:
+
+        orbitReverse
+
+        var(--reverse-speed)
+
+        linear
+
+        infinite;
+
 }
 
 .auraCloud{
@@ -683,25 +667,20 @@
 
 @keyframes orbitRotation{
 
-    from{
+from{
 
-        transform:rotate(0deg);
+transform:rotate(0deg);
 
-    }
+}
 
-    50%{
+to{
 
-        transform:rotate(180deg) scale(1.4);
-
-    }
-
-    to{
-
-        transform:rotate(360deg);
+transform:rotate(360deg);
 
     }
 
 }
+
 
 @keyframes twinkleSoft{
 
@@ -802,3 +781,5 @@ transform:rotate(0deg);
 }
 
 }
+
+
