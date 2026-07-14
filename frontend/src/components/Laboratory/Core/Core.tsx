@@ -3,19 +3,28 @@ import styles from "../Core/Core.module.css";
 import effects from  "./CoreEffects.module.css";
 import type {LaboratoryPhase} from "../../../features/laboratory/laboratoryPhase";
 import CoreSymbol from "../Core/CoreSymbol/CoreSymbol";
-import {useState, type CSSProperties } from "react";
+import {useEffect, useState, type CSSProperties } from "react";
 
 
 type CoreProps = {
         phase: LaboratoryPhase;
-        ready: boolean;
         onClick: () => void;
 
     };
 
-export default function Core( {phase, onClick, ready }:CoreProps ) {
+export default function Core( {phase, onClick }:CoreProps ) {
 
     const [hovered, setHovered] = useState(false);
+
+    useEffect(() => {
+
+    if (phase !== "idle") {
+
+        setHovered(false);
+
+    }
+
+    }, [phase]);
 
     const outerParticles = [
 
@@ -165,13 +174,22 @@ export default function Core( {phase, onClick, ready }:CoreProps ) {
 
     className={`
       ${styles.core}
-      ${phase === "activated" ? styles.activated : ""}
+      ${phase !== "idle" ? styles.activated : ""}
       ${phase === "synchronizing" ? styles.synchronizing: ""}
       ${phase === "result" ? styles.result : ""}
     `}
 
-    onMouseEnter={() => setHovered(true)}
-    onMouseLeave={() => setHovered(false)}
+    onMouseEnter={() => {
+        if (phase === "idle") {
+            setHovered(true);
+        }
+    }}
+
+    onMouseLeave={() => {
+        if (phase === "idle") {
+            setHovered(false);
+        }
+    }}
     onClick={onClick}
 
   >
@@ -179,8 +197,19 @@ export default function Core( {phase, onClick, ready }:CoreProps ) {
     <div
 
       className={`
+        ${phase === "idle" && hovered
+          ? styles.hover
+          : ""}
+      `}
+
+    />
+
+
+    <div
+
+      className={`
         ${effects.aura}
-        ${phase === "activated" || ready
+        ${phase === "activated"
           ? effects.auraActivated
           : ""}
       `}

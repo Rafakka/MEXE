@@ -62,7 +62,7 @@
 
     filter:blur(8px);
 
-    opacity:.7;
+    opacity:0;
 
 }
 
@@ -80,6 +80,91 @@
 
     filter:blur(8px);
 
-    opacity:.7;
+    opacity:0;
 
 }
+
+.processing{
+
+    color:#4ADE80;
+
+    animation:
+
+        transferEnergy
+
+        .8s
+
+        ease
+
+        forwards;
+}
+
+@keyframes transferEnergy{
+
+    0%{
+
+        opacity:.85;
+
+        transform:
+
+            translate(-50%,-50%)
+
+            scale(1);
+
+    }
+
+    100%{
+
+        opacity:.18;
+
+        transform:
+
+            translate(-50%,-50%)
+
+            scale(.88);
+
+    }
+
+}
+
+@keyframes axisReveal{
+
+    0%{
+
+        opacity:0;
+
+        transform:
+
+            translate(-50%,-50%)
+
+            scale(.75);
+
+    }
+
+    55%{
+
+        opacity:.65;
+
+        transform:
+
+            translate(-50%,-50%)
+
+            scale(.92);
+
+    }
+
+    100%{
+
+        opacity:1;
+
+        transform:
+
+            translate(-50%,-50%)
+
+            scale(1);
+
+    }
+
+}
+
+

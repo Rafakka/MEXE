@@ -12,6 +12,8 @@
     width:var(--sample-size);
     height:var(--sample-size);
 
+    z-index:1;
+
 }
 
 /* ---------- POSIÇÃO ---------- */
@@ -272,8 +274,9 @@
             translate(-50%,-50%)
 
             translateX(calc(var(--sample-distance) * -.45))
+            translateY(-70px)
 
-            scale(.98);
+            scale(1);
 
     }
 
@@ -284,10 +287,25 @@
             translate(-50%,-50%)
 
             translateX(calc(var(--sample-distance) * -.12))
+            translateY(-32px)
 
-            scale(.90);
+            scale(.98);
 
     }
+
+    92%{
+
+        transform:
+
+            translate(-50%,-50%)
+
+            translateX(calc(var(--sample-distance) * -.12))
+            translateY(-10px)
+
+            scale(.97);
+
+    }
+    
 
     100%{
 
@@ -295,11 +313,12 @@
 
             translate(-50%,-50%)
 
-            translateX(0)
+            translateX(18px)
+            translateY(0)
 
-            scale(.72);
+            scale(.95);
 
-        opacity:0;
+        opacity:1;
 
     }
 
@@ -329,6 +348,8 @@
 
             translateX(calc(var(--sample-distance) * .45))
 
+            translateY(55px)
+
             scale(.98);
 
     }
@@ -341,6 +362,8 @@
 
             translateX(calc(var(--sample-distance) * .12))
 
+            translateY(26px)
+
             scale(.90);
 
     }
@@ -351,11 +374,13 @@
 
             translate(-50%,-50%)
 
+            translateY(0)
+
             translateX(0)
 
             scale(.72);
 
-        opacity:0;
+        opacity:1;
 
     }
 

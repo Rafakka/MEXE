@@ -15,7 +15,7 @@ export default function CoreSymbol({
 
     phase,
 
-    hovered
+    hovered,
 
 }: CoreSymbolProps ) {
 
@@ -26,14 +26,16 @@ export default function CoreSymbol({
         className={`
         ${styles.symbol}
 
-        ${hovered ? styles.hover : ""}
+        ${phase === "idle" && hovered ? styles.hover : ""}
 
-        ${phase === "activated" ? styles.activated :"" }
+        ${phase !== "idle" ? styles.activated :"" }
 
-        ${phase === "processing" ? styles.processing:"" }
+        ${phase === "synchronizing" ? styles.synchronizing:"" }
+
+        ${phase === "processing" ? styles.ready:""}        
 
         ${phase === "result" ? styles.result:""}
-
+ 
         `}
 
         viewBox="0 0 100 100"
@@ -43,6 +45,28 @@ export default function CoreSymbol({
     <path
 
         className={styles.ring}
+
+        d="
+
+        M 34 20
+ 
+        A 32 32 0 1 0 66 20
+
+        "
+
+        fill="none"
+
+        stroke="currentColor"
+
+        strokeWidth="3"
+
+        strokeLinecap="round"
+
+    />
+
+ <path
+
+        className={styles.ringOutline}
 
         d="
 
@@ -59,6 +83,25 @@ export default function CoreSymbol({
         strokeWidth="3"
 
         strokeLinecap="round"
+
+    />
+
+        <line
+            className={styles.stemOutline}
+
+            x1="50"
+
+            y1="22"
+
+            x2="50"
+
+            y2="48"
+
+            stroke="currentColor"
+
+            strokeWidth="3.5"
+
+            strokeLinecap="round"
 
     />
 
@@ -80,6 +123,8 @@ export default function CoreSymbol({
             strokeLinecap="round"
 
         />
+
+        
 
 
         </svg>
