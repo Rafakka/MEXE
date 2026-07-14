@@ -12,12 +12,6 @@
     width:var(--sample-size);
     height:var(--sample-size);
 
-    transition:
-
-        transform .8s cubic-bezier(.22,.61,.36,1),
-
-        opacity .8s ease;
-
 }
 
 /* ---------- POSIÇÃO ---------- */
@@ -216,5 +210,153 @@
     animation:
 
         driftRight 10.2s ease-in-out infinite;
+
+}
+
+.processing{
+
+}
+
+.processing.left{
+
+    animation:
+
+        mergeLeft
+
+        2.8s
+
+        cubic-bezier(.22,.61,.36,1)
+
+        80ms
+
+        forwards;
+
+}
+
+.processing.right{
+
+    animation:
+
+        mergeRight
+
+        2.35s
+
+        cubic-bezier(.22,.61,.36,1)
+
+        80ms
+
+        forwards;
+
+}
+
+@keyframes mergeLeft{
+
+    0%{
+
+        transform:
+
+            translate(-50%,-50%)
+
+            translateX(calc(var(--sample-distance) * -1))
+
+            scale(1);
+
+        opacity:1;
+
+    }
+
+    55%{
+
+        transform:
+
+            translate(-50%,-50%)
+
+            translateX(calc(var(--sample-distance) * -.45))
+
+            scale(.98);
+
+    }
+
+    82%{
+
+        transform:
+
+            translate(-50%,-50%)
+
+            translateX(calc(var(--sample-distance) * -.12))
+
+            scale(.90);
+
+    }
+
+    100%{
+
+        transform:
+
+            translate(-50%,-50%)
+
+            translateX(0)
+
+            scale(.72);
+
+        opacity:0;
+
+    }
+
+}
+
+@keyframes mergeRight{
+
+    0%{
+
+        transform:
+
+            translate(-50%,-50%)
+
+            translateX(var(--sample-distance))
+
+            scale(1);
+
+        opacity:1;
+
+    }
+
+    55%{
+
+        transform:
+
+            translate(-50%,-50%)
+
+            translateX(calc(var(--sample-distance) * .45))
+
+            scale(.98);
+
+    }
+
+    82%{
+
+        transform:
+
+            translate(-50%,-50%)
+
+            translateX(calc(var(--sample-distance) * .12))
+
+            scale(.90);
+
+    }
+
+    100%{
+
+        transform:
+
+            translate(-50%,-50%)
+
+            translateX(0)
+
+            scale(.72);
+
+        opacity:0;
+
+    }
 
 }

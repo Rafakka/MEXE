@@ -6,6 +6,7 @@ type SampleAnchorProps = {
     side: "left" | "right";
     visible: boolean;
     floating:boolean;
+    processing:boolean;
     children: React.ReactNode;
 };
 
@@ -13,6 +14,7 @@ export default function SampleAnchor({
     side,
     visible,
     floating,
+    processing,
     children,
 }: SampleAnchorProps) {
     return (
@@ -21,12 +23,21 @@ export default function SampleAnchor({
                 ${styles.anchor}
                 ${side === "left" ? styles.left : styles.right}
                 ${visible ? styles.visible : styles.hidden}
-                ${
-                    floating
-                        ? side === "left"
+                ${ !processing && floating && side === "left"
                             ? styles.floatingLeft
-                            : styles.floatingRight
-                    : ""
+                       : "" 
+                }
+                ${
+                    !processing && floating && side === "right"
+                            ? styles.floatingRight
+                       : ""
+                }
+                ${
+                    processing
+
+                        ? styles.processing
+
+                        : ""
                 }
             `}
         >

@@ -48,6 +48,9 @@ export default function Laboratory() {
 
 }, [phase]);
 
+    const samplesVisible =
+        phase !== "idle";
+
   return (
     <Layout>
 
@@ -73,8 +76,9 @@ export default function Laboratory() {
 
         <SampleAnchor
             side="left"
-            visible={phase === "activated"}
-            floating={!samples.firstLoaded}
+            visible={samplesVisible}
+            processing={phase==="processing"}
+            floating={!samples.firstLoaded && phase !== "processing"}
             >
             <SampleNode
             phase={phase}
@@ -89,8 +93,9 @@ export default function Laboratory() {
 
         <SampleAnchor
             side="right"
-            visible={phase === "activated"}  
-            floating={!samples.secondLoaded}
+            visible={samplesVisible}
+            processing={phase==="processing"}
+            floating={!samples.secondLoaded && phase !== "processing"}
             >
             <SampleNode
             phase={phase}
