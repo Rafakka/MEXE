@@ -133,18 +133,6 @@
 
 }
 
-.processing{
-
-    animation:
-
-        pulse
-
-        .45s
-
-        ease;
-}
-
-
 .core.activated{
 
     transform:
@@ -194,6 +182,11 @@
     infinite;
 }
 
+.synchronizing{
+
+}
+
+
 .symbol{
 
     opacity:.08;
@@ -221,13 +214,13 @@
 
 .processing{
 
-    --outer-speed:25s;
+    --outer-speed:4;
 
-    --middle-speed:18s;
+    --middle-speed:3.2s;
 
-    --inner-speed:12s;
+    --inner-speed:2.4s;
 
-    --reverse-speed:35s;
+    --reverse-speed:5s;
 
     --outer-radius:214px;
 
@@ -236,7 +229,70 @@
     --inner-radius:182px;
 
     --reverse-radius:202px;
-    
+
+    animation:
+
+        pulse
+
+        .45s
+
+        ease;    
+
+}
+
+@keyframes syncPause{
+
+from{
+
+}
+
+to{
+
+    }
+}
+
+.core.synchronizing{
+
+}
+
+.processing .orbit{
+
+    animation:
+
+        orbitFade
+
+        .6s
+
+        ease
+
+        forwards;
+}
+
+@keyframes orbitFade{
+
+    0%{
+
+    opacity:1;
+
+    }
+
+    70%{
+
+    opacity:.6;
+
+    }
+
+    100%{
+
+    opacity:0;
+
+    transform:
+
+        translate(-50%, -50%)
+
+        scale(.75);
+
+    }
 
 }
 

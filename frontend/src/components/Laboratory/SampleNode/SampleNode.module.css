@@ -143,6 +143,14 @@
 
         0 0 12px rgba(74,222,128,.35);
 
+    animation:
+
+        sampleLock
+
+        .22s
+
+        cubic-bezier(.22,.61,.36,1);
+
 }
 
 .processing{
@@ -193,4 +201,30 @@ scale:1;
 
 }
 
+@keyframes sampleLock{
 
+    0%{
+
+        transform:scale(1);
+
+    }
+
+    35%{
+
+        transform:scale(.90);
+
+    }
+
+    60%{
+
+        transform:scale(1.04);
+
+    }
+
+    100%{
+
+        transform:scale(1);
+
+    }
+
+}

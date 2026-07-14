@@ -8,11 +8,12 @@ import {useState, type CSSProperties } from "react";
 
 type CoreProps = {
         phase: LaboratoryPhase;
+        ready: boolean;
         onClick: () => void;
 
     };
 
-export default function Core( {phase, onClick }:CoreProps ) {
+export default function Core( {phase, onClick, ready }:CoreProps ) {
 
     const [hovered, setHovered] = useState(false);
 
@@ -103,7 +104,16 @@ export default function Core( {phase, onClick }:CoreProps ) {
     rotorClass: string
 ) => (
 
-    <div className={`${effects.rotor} ${rotorClass}`}>
+    <div className={`
+        ${effects.rotor}
+        ${rotorClass}
+        ${
+            phase==="synchronizing"
+                ? effects.rotorPaused
+                : ""            
+            }
+        `}
+        >
 
         {particles.map((particle, index) => (
 
@@ -156,7 +166,7 @@ export default function Core( {phase, onClick }:CoreProps ) {
     className={`
       ${styles.core}
       ${phase === "activated" ? styles.activated : ""}
-      ${phase === "processing" ? styles.processing : ""}
+      ${phase === "synchronizing" ? styles.synchronizing: ""}
       ${phase === "result" ? styles.result : ""}
     `}
 
@@ -170,14 +180,31 @@ export default function Core( {phase, onClick }:CoreProps ) {
 
       className={`
         ${effects.aura}
-        ${phase === "activated"
+        ${phase === "activated" || ready
           ? effects.auraActivated
           : ""}
       `}
 
     />
 
-   <div className={effects.orbit}>
+  <div
+
+    className={`
+
+        ${effects.orbit}
+
+        ${
+
+            phase==="processing"
+
+                ? effects.orbitFade
+
+                : ""
+
+            }
+
+        `}
+    >
 
     {renderOrbitLayer(
 

@@ -6,15 +6,11 @@ import SampleNode from "../Laboratory/SampleNode/SampleNode";
 import SampleAnchor from "../Laboratory/SampleAnchor/SampleAnchor";
 import ReactionPanel from "../Laboratory/ReactionPanel/ReactionPanel";
 import ReactionField from "../Laboratory/ReactionField/ReactionField";
-import {useState} from "react";
+import {useState, useEffect} from "react";
 import type {LaboratoryPhase} from "../../features/laboratory/laboratoryPhase";
 import type { SampleState} from "../../features/laboratory/sampleState";
 
 import styles from "./Laboratory.module.css";
-
-import sample01 from "../../../src/assets/mock/sample1.png";
-import sample02 from "../../../src/assets/mock/sample2.png";
-
 
 export default function Laboratory() {
 
@@ -30,6 +26,28 @@ export default function Laboratory() {
  
     });
 
+    const bothLoaded =
+        samples.firstLoaded &&
+        samples.secondLoaded
+        useEffect(()=>{
+            if(bothLoaded && phase === "activated") {
+                setPhase("synchronizing");
+            }
+    }, [bothLoaded, phase]);
+        useEffect(() => {
+
+            if (phase !== "synchronizing") return;
+
+            const timer = setTimeout(() => {
+
+        setPhase("processing");
+
+        }, 500);
+
+    return () => clearTimeout(timer);
+
+}, [phase]);
+
   return (
     <Layout>
 
@@ -43,6 +61,8 @@ export default function Laboratory() {
 
           <Core
           phase={phase}
+
+          ready={bothLoaded}
 
           onClick={()=>{
               if (phase == "idle") {
@@ -82,8 +102,7 @@ export default function Laboratory() {
             })}
             />
         </SampleAnchor>
-
-
+        
         </Scene>
 
         <ReactionPanel

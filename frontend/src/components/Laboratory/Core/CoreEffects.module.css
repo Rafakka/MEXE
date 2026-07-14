@@ -71,25 +71,28 @@
 
     animation:
 
-        auraIgnition 5s cubic-bezier(.16,1,.3,1) forwards,
+        auraIgnition
 
-        auraBreathing 4.2s ease-in-out .65s infinite;
+        5s
 
-    background:
+        cubic-bezier(.16,1,.3,1)
 
-        radial-gradient(
+        forwards;
 
-        circle,
+}
 
-            rgba(244,114,255,.90) 0%,
 
-            rgba(210,90,255,.60) 30%,
+.auraReady{
 
-            rgba(170,90,255,.25) 60%,
+    animation:
 
-            transparent 78%
+        auraBreathing
 
-        );
+        4s
+
+        ease-in-out
+
+        infinite;
 
 }
 
@@ -194,6 +197,20 @@
         rotate(var(--angle));
 }
 
+.orbitFade{
+
+    animation:
+
+        orbitFade
+
+        1.6s
+
+        ease-out
+
+        forwards;
+
+}
+
 .orbitParticle{
 
     position:absolute;
@@ -216,18 +233,34 @@
 
     transform:
 
+        translate(-50%, -50%)
+
         rotate(var(--angle))
 
         translateY(calc(var(--orbit-radius) * -1));
-
+ 
 }
-
 
 .rotor{
 
     position:absolute;
 
     inset:0;
+
+
+    animation:
+
+        orbitRotation
+
+        var(--outer-speed)
+
+        linear
+
+        infinite;
+
+}
+
+.synchronizing{
 
 }
 
@@ -335,6 +368,13 @@
             transparent 35%);
 
 }
+
+.rotorPaused{
+
+    animation-play-state:paused;
+
+}
+
 
 
 @keyframes breathing{
@@ -782,4 +822,32 @@ transform:rotate(0deg);
 
 }
 
+@keyframes orbitFade{
 
+    0%{
+
+        opacity:1;
+
+    }
+
+    80%{
+
+        opacity:1;
+
+    }
+
+    92%{
+
+        opacity:.6;
+
+    }
+
+    100%{
+
+        opacity:0;
+
+        filter:blur(3px);
+
+    }
+
+}

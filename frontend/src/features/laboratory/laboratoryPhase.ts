@@ -6,6 +6,8 @@ export type LaboratoryPhase =
 
         | "activated"
 
+        | "synchronizing"
+
         | "processing"
 
         | "result";
