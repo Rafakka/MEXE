@@ -6,6 +6,14 @@
 
     inset:0;
 
+    opacity:0;
+
+    pointer-events:none;
+
+    position:absolute;
+
+    inset:0;
+
     display:flex;
 
     justify-content:center;
@@ -19,7 +27,13 @@
 
 .axisA{
 
+    opacity:0;
+
     position:absolute;
+
+    top:50%;
+
+    left:50%;
 
     width:360px;
 
@@ -29,12 +43,24 @@
 
     background: rgba(145,160,255,.55);
 
-    transform:rotate(40deg);
+    transform:
+
+        translate(-50%, -50%)
+
+       rotate(0deg)
+
+       scale(.75);
 }
 
 .axisB{
 
+    opacity:0;
+
     position:absolute;
+
+    top:50%;
+
+    left:50%;
 
     width:360px;
 
@@ -44,7 +70,13 @@
 
     background:rgba(145,160,255,.55);
 
-    transform:rotate(-40deg);  
+    transform:
+
+        translate(-50%, -50%)
+        
+        rotate(0deg)
+        
+        scale(.75);
 
 }
 
@@ -84,30 +116,20 @@
 
 }
 
-.processing{
-
-    color:#4ADE80;
-
-    animation:
-
-        transferEnergy
-
-        .8s
-
-        ease
-
-        forwards;
-}
 
 @keyframes transferEnergy{
 
     0%{
 
-        opacity:.85;
+        opacity:0;
 
         transform:
+            
+            rotate(0deg)
 
             translate(-50%,-50%)
+
+            rotate(deg)
 
             scale(1);
 
@@ -121,13 +143,15 @@
 
             translate(-50%,-50%)
 
+            rotate(45deg)
+
             scale(.88);
 
     }
 
 }
 
-@keyframes axisReveal{
+@keyframes axisRevealA{
 
     0%{
 
@@ -137,19 +161,9 @@
 
             translate(-50%,-50%)
 
+            rotate(0deg)
+
             scale(.75);
-
-    }
-
-    55%{
-
-        opacity:.65;
-
-        transform:
-
-            translate(-50%,-50%)
-
-            scale(.92);
 
     }
 
@@ -161,10 +175,74 @@
 
             translate(-50%,-50%)
 
+            rotate(45deg)
+
             scale(1);
 
     }
 
 }
 
+@keyframes axisRevealB{
 
+    0%{
+
+        opacity:0;
+
+        transform:
+
+            translate(-50%,-50%)
+
+            rotate(0deg)
+
+            scale(.75);
+
+    }
+
+    100%{
+
+        opacity:1;
+
+        transform:
+
+            translate(-50%,-50%)
+
+            rotate(-45deg)
+
+            scale(1);
+
+    }
+
+}
+
+@keyframes axisRevealB{
+
+    0%{
+
+        opacity:0;
+
+        transform:
+
+            translate(-50%,-50%)
+
+            rotate(0deg)
+
+            scale(.75);
+
+    }
+
+    100%{
+
+        opacity:1;
+
+        transform:
+
+            translate(-50%,-50%)
+
+            rotate(-45deg)
+
+            scale(1);
+
+    }
+
+}

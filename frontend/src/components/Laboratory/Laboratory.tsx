@@ -26,14 +26,16 @@ export default function Laboratory() {
  
     });
 
-    const bothLoaded =
+    const bothLoaded = 
         samples.firstLoaded &&
-        samples.secondLoaded
+        samples.secondLoaded;
+
         useEffect(()=>{
             if(bothLoaded && phase === "activated") {
                 setPhase("synchronizing");
             }
-    }, [bothLoaded, phase]);
+        }, [bothLoaded, phase]);
+
         useEffect(() => {
 
             if (phase !== "synchronizing") return;
@@ -44,6 +46,7 @@ export default function Laboratory() {
 
         }, 500);
 
+        
     return () => clearTimeout(timer);
 
 }, [phase]);
@@ -83,12 +86,17 @@ export default function Laboratory() {
             <SampleNode
             phase={phase}
             loaded={samples.firstLoaded} 
-            onClick={()=>
-            setSamples({
-                ...samples,
+            onClick={()=>{
+                setSamples(previous => ({
+
+                ...previous,
+
                 firstLoaded:true
-            })}
-            />            
+
+                    }));
+                }}
+            />  
+
         </SampleAnchor>
 
         <SampleAnchor
@@ -100,12 +108,19 @@ export default function Laboratory() {
             <SampleNode
             phase={phase}
             loaded={samples.secondLoaded}
-            onClick={()=>
-            setSamples({
-                ...samples,
+            onClick={()=>{
+                   setSamples(previous => ({
+
+                ...previous,
+
                 secondLoaded:true
-            })}
+
+                    }));
+
+                }}
+
             />
+
         </SampleAnchor>
         
         </Scene>
