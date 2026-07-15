@@ -6,8 +6,6 @@
 
     inset:0;
 
-    opacity:0;
-
     pointer-events:none;
 
     position:absolute;
@@ -22,26 +20,42 @@
 
     z-index:1;
 
-    
+    --reaction-intensity:1;
+
+    --rotor-speed:3s;
+
+    --trail-speed:3.2s;
+
+    --trail-height:4px;
+
+    --trail-width:calc(500px + var(--reaction-intensity) * 500px);
+
+    --trail-blur:calc(8px + var(--reaction-intensity) * 52px);
+
+    --trail-opacity:1;
+
+     --trail-offset:-18px;
+
 }
+
 
 .axisA{
 
-    opacity:0;
-
     position:absolute;
 
-    top:50%;
+    top:0;
 
-    left:50%;
+    left:0;
 
-    width:360px;
+    width:500px;
 
-    height:4px;
+    height:2px;
 
     border-radius:999px;
 
     background: rgba(145,160,255,.55);
+
+    opacity:0;
 
     transform:
 
@@ -50,25 +64,27 @@
        rotate(0deg)
 
        scale(.75);
+
+    overflow:visible;
 }
 
 .axisB{
 
-    opacity:0;
-
     position:absolute;
 
-    top:50%;
+    top:0;
 
-    left:50%;
+    left:0;
 
-    width:360px;
+    width:700px;
 
-    height:4px;
+    height:3px;
 
     border-radius:999px;
 
     background:rgba(145,160,255,.55);
+
+    opacity:0;
 
     transform:
 
@@ -78,49 +94,121 @@
         
         scale(.75);
 
+    overflow:visible;
+
 }
 
-.axisA::before{
+.processing .axisA { 
+    animation: axisAReveal .45s cubic-bezier(.22,.61,.36,1) 2.0s forwards;
 
-    content:"";
+}
+
+.processing .axisB {
+    animation: axisBReveal .45s cubic-bezier(.22,.61,.36,1) 2.2s forwards;
+    
+}
+
+@keyframes rotorSpinA{
+
+    from{
+
+        transform:
+
+            translate(-50%,-50%)
+
+            rotate(0deg);
+
+    }
+
+    to{
+
+        transform:
+
+            translate(-50%,-50%)
+
+            rotate(360deg);
+
+    }
+
+}
+
+@keyframes rotorSpinB{
+
+    from{
+
+        transform:
+
+            translate(-50%,-50%)
+
+            rotate(0deg);
+
+    }
+
+    to{
+
+        transform:
+
+            translate(-50%,-50%)
+
+            rotate(-360deg);
+
+    }
+
+}
+
+
+.rotorA,
+.rotorB,
+.trailRotorA,
+.trailRotorB{
 
     position:absolute;
 
-    inset:0;
+    left:50%;
 
-    border-radius:999px;
+    top:50%;
 
-    background:inherit;
+    width:0;
 
-    filter:blur(8px);
+    height:0;
 
-    opacity:0;
-
-}
-
-.axisB::before{
-
-    content:"";
-
-    position:absolute;
-
-    inset:0;
-
-    border-radius:999px;
-
-    background:inherit;
-
-    filter:blur(8px);
-
-    opacity:0;
+    transform:translate(-50%,-50%);
 
 }
 
+
+@keyframes haloGrow{
+
+    0%{
+
+        opacity:.10;
+
+        filter:blur(6px);
+
+    }
+
+    50%{
+
+        opacity:.35;
+
+        filter:blur(10px);
+
+    }
+
+    100%{
+
+        opacity:.70;
+
+        filter:blur(18px);
+
+    }
+
+}
 
 @keyframes transferEnergy{
 
     0%{
-
+ 
         opacity:0;
 
         transform:
@@ -128,8 +216,6 @@
             rotate(0deg)
 
             translate(-50%,-50%)
-
-            rotate(deg)
 
             scale(1);
 
@@ -151,7 +237,132 @@
 
 }
 
-@keyframes axisRevealA{
+@keyframes axisFade{
+
+    0%{
+
+        opacity:1;
+
+    }
+
+    100%{
+
+        opacity:.18;
+
+    }
+
+}
+
+
+@keyframes axisAReveal {
+    0%   { opacity: 0; transform: translate(-50%, -50%) rotate(0deg) scale(.75); }
+    55%  { opacity: .65; transform: translate(-50%, -50%) rotate(12deg) scale(.92); }
+    100% { opacity: 1; transform: translate(-50%, -50%) rotate(45deg) scale(1); }
+}
+
+@keyframes axisBReveal {
+    0%   { opacity: 0; transform: translate(-50%, -50%) rotate(0deg) scale(.75); }
+    55%  { opacity: .65; transform: translate(-50%, -50%) rotate(-12deg) scale(.92); }
+    100% { opacity: 1; transform: translate(-50%, -50%) rotate(-45deg) scale(1); }
+}
+
+.trailA{
+
+    position:absolute;
+
+    top:0;
+
+    left:0;
+
+    width:var(--trail-width);
+
+    height:var(--trail-height);
+
+    transform:
+
+        translate(-50%,-50%)
+
+        translateX(var(--trail-offset))
+
+        rotate(45deg);
+
+    border-radius:999px;
+
+    opacity:0;
+
+    background:
+
+        linear-gradient(
+
+            90deg,
+
+            transparent,
+
+            rgba(145,160,255,.12),
+
+            rgba(145,160,255,.45),
+
+            rgba(145,160,255,.12),
+
+            transparent
+
+        );
+
+    filter:
+
+        blur(var(--trail-blur));
+
+}
+
+.trailB{
+
+    position:absolute;
+
+    top:0;
+
+    left:0;
+
+    width:var(--trail-width);
+
+    height:var(--trail-height);
+
+    transform:
+
+        translate(-50%,-50%)
+
+        translateX(calc(var(--trail-offset) * -1))
+
+        rotate(-45deg);
+
+    border-radius:999px;
+
+    opacity:0;
+
+    background:
+
+        linear-gradient(
+
+            90deg,
+
+            transparent,
+
+            rgba(145,160,255,.12),
+
+            rgba(145,160,255,.45),
+
+            rgba(145,160,255,.12),
+
+            transparent
+
+        );
+
+    filter:
+
+        blur(var(--trail-blur));
+
+}
+
+@keyframes trailRevealA{
 
     0%{
 
@@ -169,11 +380,13 @@
 
     100%{
 
-        opacity:1;
+        opacity:var(--trail-opacity);
 
         transform:
 
             translate(-50%,-50%)
+
+            translateX(var(--trail-offset))
 
             rotate(45deg)
 
@@ -183,7 +396,7 @@
 
 }
 
-@keyframes axisRevealB{
+@keyframes trailRevealB{
 
     0%{
 
@@ -193,19 +406,23 @@
 
             translate(-50%,-50%)
 
+            translateX(calc(var(--trail-offset)* -1))
+
             rotate(0deg)
 
-            scale(.75);
+            scale(1);
 
     }
 
     100%{
 
-        opacity:1;
+        opacity:var(--trail-opacity);
 
         transform:
 
             translate(-50%,-50%)
+
+            translateX(calc(var(--trail-offset)* -1))
 
             rotate(-45deg)
 
@@ -215,34 +432,88 @@
 
 }
 
-@keyframes axisRevealB{
+.processing .rotorA{
 
-    0%{
+    animation:
+        rotorSpinA
+        var(--rotor-speed)
+        linear
+        3.5s
+        infinite;
 
-        opacity:0;
+}
 
-        transform:
+.processing .rotorB{
 
-            translate(-50%,-50%)
+    animation:
+        rotorSpinB
+        var(--rotor-speed)
+        linear
+        3.5s
+        infinite;
 
-            rotate(0deg)
+}
 
-            scale(.75);
+.processing .trailA{
 
-    }
+    animation:
 
-    100%{
+        trailRevealA
 
-        opacity:1;
+        .9s
 
-        transform:
+        ease
 
-            translate(-50%,-50%)
+        2s
 
-            rotate(-45deg)
+        forwards;
 
-            scale(1);
+}
 
-    }
+.processing .trailB{
+
+    animation:
+
+        trailRevealB
+
+        .9s
+
+        ease
+
+        2.2s
+
+        forwards;
+
+}
+
+.processing .trailRotorA{
+
+    animation:
+
+        rotorSpinA
+
+        calc(var(--rotor-speed) * 1.08)
+
+        linear
+
+        3.5s
+
+        infinite;
+
+}
+
+.processing .trailRotorB{
+
+    animation:
+
+        rotorSpinB
+
+        calc(var(--rotor-speed) * 1.08)
+
+        linear
+
+        3.5s
+
+        infinite;
 
 }
