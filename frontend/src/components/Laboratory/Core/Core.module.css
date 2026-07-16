@@ -209,13 +209,13 @@
 
                 circle,
 
-                rgba(210,225,255,.55),
+                rgba(255,90,90,.55),
 
-                rgba(185,205,255,.25),
+                rgba(217,70,239,.35),
 
-                rgba(155,180,255,.10),
+                rgba(168,85,247,.15),
 
-                transparent 80%
+                transparent 72%
 
             );
 
@@ -223,13 +223,26 @@
 
     }
 
+
     @keyframes haloIgnition{
 
     0%{
 
-        opacity:.25;
+        opacity:.20;
 
-        filter:blur(18px);
+        filter:blur(16px);
+
+        background:
+
+            radial-gradient(
+
+                circle,
+
+                rgba(168,85,247,.12),
+
+                transparent 72%
+
+            );
 
     }
 
@@ -237,20 +250,47 @@
 
         opacity:1;
 
-        filter:blur(36px);
+        filter:blur(40px);
+
+        background:
+
+            radial-gradient(
+
+                circle,
+
+                rgba(255,80,80,.75),
+
+                rgba(255,120,40,.35),
+
+                transparent 72%
+
+            );
 
     }
 
     100%{
 
-        opacity:.55;
+        opacity:.75;
 
-        filter:blur(22px);
+        filter:blur(24px);
+
+        background:
+
+            radial-gradient(
+
+                circle,
+
+                rgba(255,60,60,.45),
+
+                rgba(255,110,40,.18),
+
+                transparent 72%
+
+            );
+
+        }
 
     }
-
-    }
-
 
     @keyframes activateCore{
 
@@ -479,6 +519,34 @@
 
     }
 
+    @keyframes haloToGreen{
+
+    from{
+
+        background:
+
+            radial-gradient(
+                circle,
+                rgba(255,70,70,.45),
+                transparent 72%
+            );
+
+    }
+
+    to{
+
+        background:
+
+            radial-gradient(
+                circle,
+                rgba(74,222,128,.45),
+                transparent 72%
+            );
+
+        }
+
+    }
+
 
 
 /*--------------------
@@ -570,15 +638,6 @@
 
     }
 
-.core:hover:not(.activated) .planet{
-
-    filter:
-
-        drop-shadow(0 0 40px rgba(107,91,255,.18))
-
-        drop-shadow(0 0 90px rgba(168,85,247,.08));
-
-}
 
 .planet::before{
 
@@ -611,6 +670,12 @@
     inset:0;
 
     border-radius:50%;
+
+    transition:
+
+        transform .35s ease,
+
+        filter .35s ease;
 
     box-shadow:
 
@@ -662,7 +727,9 @@
 
         background .5s ease,
 
-        filter .5s ease;
+        filter .5s ease,
+
+        transform .5s ease;
 
     overflow:hidden;
 
@@ -880,17 +947,6 @@
 
 }
 
-.hover{
-
-    opacity:.42;
-
-    transform:
-
-        translate(-50%, -50%)
-
-        scale(1);
-
- }
 
  /*-------------------
  *
@@ -910,8 +966,54 @@
         drift 3s ease-in-out infinite;
 }
 
+.idle.hover{
 
-.idle .aura{
+    transform:
+
+        translate(-50%, -50%)
+
+        scale(1.06);
+}
+
+.idle.hover .aura{
+
+    opacity:1;
+
+    filter:blur(26px);
+
+    transform:scale(1.15);
+
+     background:
+
+        radial-gradient(
+
+            circle,
+
+            rgba(255,255,255,.75),
+
+            rgba(170,220,255,.42),
+
+            rgba(155,180,255,.16),
+
+            transparent 78%
+
+        );
+}
+
+.idle.hover .planet{
+
+    transform:scale(1.04);
+
+    filter:
+
+        brightness(1.08)
+
+        saturate(1.05)
+
+        drop-shadow(0 0 28px rgba(110,90,255,.35));
+
+
+
 
 }
 
@@ -920,13 +1022,36 @@
 
 }
 
+.idle.hover .halo{
+
+    background:
+
+        radial-gradient(
+
+            circle,
+
+            rgba(168,85,247,.55),
+
+            transparent 72%
+
+        );
+
+    filter:blur(26px);}
 
 .idle .orbit{
 
 }
 
 
-.idle .symbol{
+.idle.hover .symbol{
+
+    opacity:.55;
+
+    transform:
+
+        translate(-50%,-50%)
+
+        scale(1);
 
 }
 
@@ -1035,32 +1160,19 @@
 
 .synchronizing .halo {
 
-}
-
-.synchronizing .aura{
-
     animation:
 
-        auraBreathing
+        (haloToGreen
 
-        .20s
+        .8s
 
-        ease-in-out
+        ease
 
-        infinite;
+        forwards;
+    );
 
-    background:
+}
 
-        radial-gradient(
-
-        #4ADE80
-
-        rgba(74,222,128,.35)
-
-        transparent
-
-        )
-    }
 
 .synchronizing .orbit{
 
@@ -1117,14 +1229,6 @@
 
     --reverse-radius:202px;
 
-    animation:
-
-        pulse
-
-        .45s
-
-        ease;
-
 }
 
 .processing .planet{
@@ -1133,11 +1237,21 @@
 
 .processing .halo{
 
+    animation:
+
+    haloToGreen
+
+    2s
+
+    ease-in-out
+
+    infinite;
+
 }
+
 
 .processing .aura{
-
-}
+    }
 
 .processing .orbit{
 
