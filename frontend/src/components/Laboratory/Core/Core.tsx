@@ -1,6 +1,5 @@
 
 import styles from "../Core/Core.module.css";
-import effects from  "./CoreEffects.module.css";
 import type {LaboratoryPhase} from "../../../features/laboratory/laboratoryPhase";
 import CoreSymbol from "../Core/CoreSymbol/CoreSymbol";
 import {useEffect, useState, type CSSProperties } from "react";
@@ -114,15 +113,11 @@ export default function Core( {phase, onClick }:CoreProps ) {
 ) => (
 
     <div className={`
-        ${effects.rotor}
+        ${styles.rotor}
         ${rotorClass}
-        ${
-            phase==="synchronizing"
-                ? effects.rotorPaused
-                : ""            
-            }
-        `}
-        >
+
+
+        `}>
 
         {particles.map((particle, index) => (
 
@@ -131,17 +126,17 @@ export default function Core( {phase, onClick }:CoreProps ) {
                 key={index}
 
                 className={`
-                    ${effects.orbitParticle}
+                    ${styles.orbitParticle}
 
                     ${
                         particle.twinkle === "soft"
-                            ? effects.twinkleSoft
+                            ? styles.twinkleSoft
                             : ""
                     }
 
                     ${
                         particle.twinkle === "strong"
-                            ? effects.twinkleStrong
+                            ? styles.twinkleStrong
                             : ""
                     }
                 `}
@@ -149,8 +144,6 @@ export default function Core( {phase, onClick }:CoreProps ) {
                 style={{
 
                     "--angle": `${particle.angle}deg`,
-
-                    "--radius": `${particle.radius}px`,
 
                     "--size": `${particle.size}px`,
 
@@ -170,29 +163,29 @@ export default function Core( {phase, onClick }:CoreProps ) {
 
 ); return (
 
-  <div
+    <div
 
     className={`
-      ${styles.core}
-      ${phase !== "idle" ? styles.activated : ""}
-      ${phase === "synchronizing" ? styles.synchronizing: ""}
-      ${phase === "result" ? styles.result : ""}
+        ${styles.core}
+        ${styles[phase]}
+        ${
+            hovered
+                ? styles.hover
+                : ""
+        }
     `}
-
     onMouseEnter={() => {
         if (phase === "idle") {
             setHovered(true);
         }
     }}
-
     onMouseLeave={() => {
         if (phase === "idle") {
             setHovered(false);
         }
     }}
     onClick={onClick}
-
-  >
+    >
 
     <div
 
@@ -205,41 +198,15 @@ export default function Core( {phase, onClick }:CoreProps ) {
     />
 
 
-    <div
+    <div className={styles.aura} />
 
-      className={`
-        ${effects.aura}
-        ${phase === "activated"
-          ? effects.auraActivated
-          : ""}
-      `}
-
-    />
-
-  <div
-
-    className={`
-
-        ${effects.orbit}
-
-        ${
-
-            phase==="processing"
-
-                ? effects.orbitFade
-
-                : ""
-
-            }
-
-        `}
-    >
+    <div className={styles.orbit} >
 
     {renderOrbitLayer(
 
         outerParticles,
 
-        effects.outer
+        styles.outer
 
     )}
 
@@ -247,7 +214,7 @@ export default function Core( {phase, onClick }:CoreProps ) {
 
         middleParticles,
 
-        effects.middle
+        styles.middle
 
     )}
 
@@ -255,7 +222,7 @@ export default function Core( {phase, onClick }:CoreProps ) {
 
         innerParticles,
 
-        effects.inner
+        styles.inner
 
     )}
 
@@ -263,22 +230,13 @@ export default function Core( {phase, onClick }:CoreProps ) {
 
         reverseParticles,
 
-        effects.reverse
+        styles.reverse
 
     )}
 
     </div>
 
-    <div
-
-      className={`
-        ${effects.halo}
-        ${phase === "activated"
-          ? effects.haloActivated
-          : ""}
-      `}
-
-    />
+    <div className={styles.halo} />
 
     <div className={styles.planet} />
 

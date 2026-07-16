@@ -1,4 +1,495 @@
 
+
+/*------------------
+ *
+ *
+ * KEYFRAMES
+ *
+ *
+ * ----------------*/
+
+
+
+    @keyframes auraBreathing{
+
+    0%{
+
+        opacity:.70;
+
+        transform:scale(1.08);
+
+    }
+
+    50%{
+
+        opacity:.82;
+
+        transform:scale(1.14);
+
+    }
+
+    100%{
+
+        opacity:.70;
+
+        transform:scale(1.08);
+
+        }
+
+    }
+
+
+    @keyframes auraOrbit {
+
+    from{
+
+        transform:
+
+            rotate(0deg)
+
+            scale(1.08);
+
+        }
+
+    to{
+
+        transform:
+
+            rotate(360deg)
+
+            scale(1.08);
+
+        }
+
+    }
+
+
+    @keyframes auraRise{
+
+    0%{
+
+        opacity:0;
+
+        transform:scale(.70);
+
+        filter:blur(18px);
+
+    }
+
+    45%{
+
+        opacity:1;
+
+        transform:scale(1.38);
+
+        filter:blur(78px);
+
+    }
+
+    100%{
+
+        opacity:.82;
+
+        transform:scale(1.08);
+
+        filter:blur(55px);
+
+        }
+
+    }
+
+
+    @keyframes auraIgnition{
+
+    0%{
+
+        opacity:.45;
+
+        transform:scale(.92);
+
+        filter:blur(30px);
+
+        background:
+
+            radial-gradient(
+
+                circle,
+
+                rgba(210,225,255,.45),
+
+                rgba(185,205,255,.20),
+
+                transparent 80%
+
+            );
+
+        }
+
+    20%{
+
+        opacity:.65;
+
+        transform:scale(1.28);
+
+        filter:blur(65px);
+
+        background:
+
+            radial-gradient(
+
+                circle,
+
+                rgba(217,70,239,.75),
+
+                rgba(192,132,252,.45),
+
+                rgba(147,197,253,.15),
+
+                transparent 82%
+
+            );
+
+        }
+
+    45%{
+
+        opacity:1;
+
+        transform:scale(1.12);
+
+        filter:blur(48px);
+
+        background:
+
+            radial-gradient(
+
+                circle,
+
+                rgba(168,85,247,.55),
+
+                rgba(147,197,253,.22),
+
+                transparent 80%
+
+            );
+
+    }
+
+    70%{
+        opacity:1;
+        transform:scale(1.26);
+        filter:blur(64px)
+    }
+
+    85%{
+        opacity:.92;
+        transform:scale(1.18);
+        filter:blur(58px)
+
+    }
+
+    95%{
+        opacity:.82;
+        transform:scale(1.10);
+        filter:blur(52px)
+
+    }
+
+    100%{
+
+        opacity:.72;
+
+        transform:scale(1.05);
+
+        filter:blur(48px);
+
+        background:
+
+            radial-gradient(
+
+                circle,
+
+                rgba(210,225,255,.55),
+
+                rgba(185,205,255,.25),
+
+                rgba(155,180,255,.10),
+
+                transparent 80%
+
+            );
+
+        }
+
+    }
+
+    @keyframes haloIgnition{
+
+    0%{
+
+        opacity:.25;
+
+        filter:blur(18px);
+
+    }
+
+    35%{
+
+        opacity:1;
+
+        filter:blur(36px);
+
+    }
+
+    100%{
+
+        opacity:.55;
+
+        filter:blur(22px);
+
+    }
+
+    }
+
+
+    @keyframes activateCore{
+
+    0%{
+
+        transform:
+            translate(-50%, -50%)
+            scale(1);
+
+    }
+
+    45%{
+
+        transform:
+            translate(-50%, -50%)
+            scale(1.08);
+
+    }
+
+    70%{
+
+        transform:
+            translate(-50%, -50%)
+            scale(1.04);
+
+    }
+
+    100%{
+
+        transform:
+            translate(-50%, -50%)
+            scale(1.05);
+
+        }
+
+    }
+
+
+    @keyframes breathing{
+
+    0%{
+
+        transform:scale(1);
+
+    }
+
+    50%{
+
+        transform:scale(1.012);
+
+    }
+
+    100%{
+
+        transform:scale(1);
+
+        }
+
+    }
+
+
+    @keyframes drift{
+
+    0%,100%{
+
+    filter:blur(0px);
+
+    }
+
+    50%{
+
+    filter:blur(.8px);
+
+        }
+
+    }
+
+
+    @keyframes pulse{
+
+    0% {
+        transform:
+
+            translate(-50%, 50%)
+
+            scale(1);
+    }
+
+    40%{
+        transform:
+
+            translate(-50%,50%)
+
+            scale(.97);
+    }
+
+    100% {
+        transform:
+
+            translate(-50%, 50%)
+
+            scale(1.04);
+        }
+    }
+
+    @keyframes orbitRotation{
+
+        from{
+
+        transform:rotate(0deg);
+
+    }
+
+        to{
+
+    transform:rotate(360deg);
+
+        }
+
+    }
+
+    @keyframes orbitReverse{
+
+    from{
+
+    transform:rotate(360deg);
+
+    }
+
+    to{
+
+    transform:rotate(0deg);
+
+        }
+
+    }
+
+    @keyframes orbitFade{
+
+    0%{
+
+        opacity:1;
+
+    }
+
+    80%{
+
+        opacity:1;
+
+    }
+
+    92%{
+
+        opacity:.6;
+
+    }
+
+    100%{
+
+        opacity:0;
+
+        filter:blur(3px);
+
+        }
+
+    }
+
+    @keyframes particleFade{
+
+    0%{
+
+        opacity:1;
+
+        transform:
+            scale(1);
+
+    }
+
+    100%{
+
+        opacity:0;
+
+        transform:
+            scale(.4);
+
+        }
+
+    }
+
+    @keyframes twinkleSoft{
+
+    0%,100%{
+
+        opacity:.75;
+
+        }
+
+    50%{
+
+        opacity:.35;
+
+        }
+
+    }
+
+
+    @keyframes twinkleStrong{
+
+    0%,100%{
+
+        opacity:1;
+
+    }
+
+    40%{
+
+    opacity:.20;
+
+    }
+
+    75%{
+
+    opacity:.65;
+
+    }
+
+    }
+
+
+
+/*--------------------
+ *
+ *
+ * BASE OBJECTS
+ *
+ *
+ *------------------*/
+
+
 .core{
 
     cursor: pointer;
@@ -135,7 +626,317 @@
 
 }
 
-.core.activated{
+.aura{
+
+    position:absolute;
+
+    inset:-90px;
+
+    border-radius:50%;
+
+    pointer-events:none;
+
+    background:
+
+        radial-gradient(
+
+            circle,
+
+            rgba(210,225,255,.60) 0%,
+
+            rgba(185,205,255,.28) 35%,
+
+            rgba(155,180,255,.12) 60%,
+
+            transparent 80%
+
+        );
+
+    opacity:.55;
+
+    filter:blur(10px);
+
+    transition:
+
+        opacity .5s ease,
+
+        background .5s ease,
+
+        filter .5s ease;
+
+    overflow:hidden;
+
+}
+
+.halo{
+
+    position:absolute;
+
+    inset:-24px;
+
+    filter: blur(12px);
+
+    opacity:85%;
+
+    border-radius:50%;
+
+    background:
+
+        radial-gradient(
+
+            circle,
+
+            rgba(168,85,247,.15),
+
+            transparent 70%
+
+        );
+
+    }
+
+
+.aura::before{
+
+    content:"";
+
+    position:absolute;
+
+    inset:8%;
+
+    border-radius:50%;
+
+    pointer-events:none;
+
+    background:
+
+        conic-gradient(
+
+            transparent 0deg,
+
+            transparent 315deg,
+
+            rgba(255,255,255,.18) 330deg,
+
+            rgba(180,210,255,.30) 345deg,
+
+            transparent 360deg
+
+        );
+
+    animation:
+
+        auraOrbit 18s linear infinite;
+
+}
+
+.orbit{
+
+    --orbit-radius:180px;
+
+    position:absolute;
+
+    width:calc(var(--orbit-radius) * 2);
+    height:calc(var(--orbit-radius) * 2);
+
+    left:50%;
+    top:50%;
+
+    transform:translate(-50%,-50%);
+
+    pointer-events:none;
+
+    z-index:2;
+
+}
+
+
+.orbitRing{
+
+    position:absolute;
+
+    inset:0;
+
+    transform-origin:center center;
+
+    animation:
+
+        orbitRotation
+
+        3s
+
+        linear
+
+        infinite;
+
+}
+
+.orbitArm{
+
+    position:absolute;
+
+    left:50%;
+    top:50%;
+
+    width:2px;
+
+    height:180px;
+
+    background:lime;
+
+    transform-origin:50% 100%;
+
+    transform:
+        translate(-50%, -100%)
+        rotate(var(--angle));
+}
+
+.rotor{
+
+    position:absolute;
+
+    inset:0;
+
+
+    animation:
+
+        orbitRotation
+
+        var(--outer-speed)
+
+        linear
+
+        infinite;
+
+}
+
+.orbitParticle{
+
+    position:absolute;
+
+    left:50%;
+    top:50%;
+
+    width:var(--size);
+
+    height:var(--size);
+
+    border-radius:50%;
+
+    background:var(--color);
+
+     box-shadow:
+
+        0 0 4px var(--color),
+        0 0 10px color-mix(in srgb, var(--color) 45%, transparent);
+
+    transform:
+
+        translate(-50%, -50%)
+
+        rotate(var(--angle))
+
+        translateY(calc(var(--orbit-radius) * -1));
+
+}
+
+
+.auraCloud{
+
+    position:absolute;
+
+    inset:-110px;
+
+    border-radius:50%;
+
+    opacity:.18;
+
+    background:
+
+        radial-gradient(circle at 25% 40%,
+            rgba(255,255,255,.12),
+            transparent 32%),
+
+        radial-gradient(circle at 70% 28%,
+            rgba(170,190,255,.10),
+            transparent 38%),
+
+        radial-gradient(circle at 62% 76%,
+            rgba(220,230,255,.08),
+            transparent 35%);
+
+}
+
+
+.symbol{
+
+    opacity:.10;
+
+    transform:
+
+        translate(-50%, -50%)
+
+        scale(.94);
+
+
+}
+
+.hover{
+
+    opacity:.42;
+
+    transform:
+
+        translate(-50%, -50%)
+
+        scale(1);
+
+ }
+
+ /*-------------------
+ *
+ * IDLE
+ *
+ * -----------------*/
+
+.idle {
+
+}
+
+
+.idle .planet {
+
+    animation:
+        breathing 7s ease-in-out infinite,
+        drift 3s ease-in-out infinite;
+}
+
+
+.idle .aura{
+
+}
+
+
+.idle .halo{
+
+}
+
+
+.idle .orbit{
+
+}
+
+
+.idle .symbol{
+
+}
+
+/*-------------------
+ *
+ * ACTIVATED
+ *
+ *-------------------*/
+
+.activated {
 
     transform:
 
@@ -175,44 +976,128 @@
 
     animation:
 
-    breathing
+        breathing
 
-    4s
+        4s
 
-    ease-in-out
+        ease-in-out
 
-    infinite;
-}
-
-.synchronizing{
+        infinite;
 
 }
 
+.activated .halo{
 
-.symbol{
+    animation:
 
-    opacity:.10;
+        haloIgnition .7s ease forwards;
+}
 
-    transform:
 
-        translate(-50%, -50%)
 
-        scale(.94);
+.activated .aura{
 
+    animation:
+
+        auraIgnition .7s ease forwards,
+
+        auraRise 1.8s ease-out .4s forwards;
+}
+
+
+.activated .orbit{
 
 }
 
-.hover{
+.activated .rotor{
 
-    opacity:.42;
+}
 
-    transform:
+.activated .symbol {
 
-        translate(-50%, -50%)
+}
 
-        scale(1);
+/*------------------
+ *
+ *
+ * synchronizing
+ *
+ *
+ * ----------------*/
 
- }
+.synchronizing {
+
+}
+
+.synchronizing .planet {
+
+}
+
+.synchronizing .halo {
+
+}
+
+.synchronizing .aura{
+
+    animation:
+
+        auraBreathing
+
+        .20s
+
+        ease-in-out
+
+        infinite;
+
+    background:
+
+        radial-gradient(
+
+        #4ADE80
+
+        rgba(74,222,128,.35)
+
+        transparent
+
+        )
+    }
+
+.synchronizing .orbit{
+
+}
+
+.synchronizing .orbitParticle{
+
+    animation:
+
+        orbitFade
+
+        1.2s
+
+        ease
+
+        forwards;
+}
+
+.synchronizing .rotor{
+
+}
+
+.synchronizing .symbol{
+
+     transition:
+
+        opacity 2.4s ease;
+
+    opacity:.25;
+
+}
+
+/*--------------------------
+ *
+ * PROCESSING
+ *
+ * ------------------------*/
 
 .processing{
 
@@ -238,22 +1123,19 @@
 
         .45s
 
-        ease;    
+        ease;
 
 }
 
-@keyframes syncPause{
-
-from{
+.processing .planet{
 
 }
 
-to{
+.processing .halo{
 
-    }
 }
 
-.core.synchronizing{
+.processing .aura{
 
 }
 
@@ -263,38 +1145,165 @@ to{
 
         orbitFade
 
-        .6s
+        1.6s
 
-        ease
+        ease-out
 
         forwards;
+
 }
 
-@keyframes orbitFade{
+.processing .rotor{
 
-    0%{
+}
 
-    opacity:1;
+.processing .symbol{
 
-    }
+}
 
-    70%{
+/*----------------
+ *
+ * RESULT
+ *
+ * --------------*/
 
-    opacity:.6;
+.result{
 
-    }
+}
 
-    100%{
+.result .planet{
 
-    opacity:0;
+}
 
-    transform:
+.result .halo{
 
-        translate(-50%, -50%)
+}
 
-        scale(.75);
+.result .aura{
 
-    }
+}
+
+.result .orbit{
+
+}
+
+.result .rotor{
+
+}
+
+.result .symbol{
+
+}
+
+/*---------------
+ *
+ * HELPERS
+ *
+ *
+ * -----------*/
+
+/*----------
+ *
+ * particle layers
+ *
+ * ---------*/
+
+.outer{
+
+    --orbit-radius:
+
+        var(--outer-radius);
+
+    animation:
+
+        orbitRotation
+
+        var(--outer-speed)
+
+        linear
+
+        infinite;
+
+}
+
+.middle{
+
+    --orbit-radius:
+
+        var(--middle-radius);
+
+    animation:
+
+        orbitRotation
+
+        var(--middle-speed)
+
+        linear
+
+        infinite;
+
+}
+
+
+.inner{
+
+    --orbit-radius:
+
+        var(--inner-radius);
+
+
+    animation:
+
+        orbitRotation
+
+        var(--inner-speed)
+
+        linear
+
+        infinite;
+
+}
+
+.reverse{
+
+    animation:
+
+        orbitReverse
+
+        var(--reverse-speed)
+
+        linear
+
+        infinite;
+
+}
+
+
+/*-------------
+ *
+ * particle helpers
+ *
+ * --------------*/
+
+.twinkleSoft{
+
+    animation:
+
+    twinkleSoft
+
+    var(--twinkle-speed)
+
+    ease-in-out
+
+    infinite;
+
+}
+
+.twinkleStrong{
+
+    animation:
+
+    twinkleStrong 12s ease-in-out infinite;
 
 }
 
