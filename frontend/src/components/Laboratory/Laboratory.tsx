@@ -8,56 +8,159 @@ import ReactionPanel from "../Laboratory/ReactionPanel/ReactionPanel";
 import ReactionField from "../Laboratory/ReactionField/ReactionField";
 import {useState, useEffect} from "react";
 import type {LaboratoryPhase} from "../../features/laboratory/laboratoryPhase";
+import type {OperationPhase} from "../../features/laboratory/operationPhase";
 import type { SampleState} from "../../features/laboratory/sampleState";
+import {mergeImages} from "../../services/merge/mergeImages";
+import type {MergeResult} from "../../services/merge/types";
 
 import styles from "./Laboratory.module.css";
 
+const STARTUP_DURATION = 2600;
+const SYNCHRONIZING_DURATION = 2200;
+
 export default function Laboratory() {
 
-   const [phase, setPhase] =
-    useState<LaboratoryPhase>("idle");
+    const [phase, setPhase] =
+        useState<LaboratoryPhase>("idle");
+
+    const [operationPhase, setOperationPhase ] =
+        useState<OperationPhase>("idle");
+
+    const [startupFinished, setStartupFinished] =
+        useState(false);
 
     const [samples, setSamples] =
-    useState<SampleState>({
+        useState<SampleState>({
 
-        firstLoaded: false,
+            firstLoaded: false,
+            secondLoaded: false
+        });
 
-        secondLoaded: false
- 
-    });
+    const [mergeResult, setMergeResult] =
+    useState<MergeResult | null>(null);
 
-    const bothLoaded = 
-        samples.firstLoaded &&
-        samples.secondLoaded;
+    const isReadyToProcess =
+        samples.firstLoaded && samples.secondLoaded;
 
-        useEffect(()=>{
-            if(bothLoaded && phase === "activated") {
-                setPhase("synchronizing");
+    useEffect(() => {
+        if (phase !== "activated") return;
+
+        const timer = setTimeout(() => {
+
+        setStartupFinished(true);
+
+        }, STARTUP_DURATION);
+
+        return () => clearTimeout(timer);
+
+        }, [phase]);
+
+    useEffect(() => {
+
+        if (
+
+            phase !== "activated" ||
+
+            !startupFinished ||
+
+            !isReadyToProcess
+
+        ) return;
+
+        setPhase("synchronizing");
+
+        }, [
+
+            phase,
+
+            startupFinished,
+
+            isReadyToProcess,
+
+        ]);
+
+    useEffect(() => {
+
+        if (phase !== "synchronizing") return;
+
+        const timer = setTimeout(() => {
+
+            setPhase("processing");
+
+            setOperationPhase("pending");
+
+        }, SYNCHRONIZING_DURATION);
+
+        return () => clearTimeout(timer);
+
+    }, [phase]);
+
+
+    useEffect(() => {
+
+        if (phase === "idle") {
+
+        setStartupFinished(false);
+
+        setOperationPhase("idle");
+
+        setMergeResult(null);
+
+        }},
+
+        [phase]);
+
+    useEffect(() => {
+
+        if (operationPhase !== "pending") return;
+
+        async function executeMerge(){
+
+            try {
+
+                setOperationPhase("running");
+        /*
+            await mergeImages(...)
+        */
+                const result = await mergeImages();
+
+                console.log(result);
+
+                setMergeResult(result);
+
+                setOperationPhase("completed");
+
+            } catch {
+
+                setOperationPhase("failed");
             }
-        }, [bothLoaded, phase]);
 
-        useEffect(() => {
+        }
 
-            if (phase !== "synchronizing") return;
+        executeMerge();
 
-            const timer = setTimeout(() => {
+        }, [operationPhase]);
 
-        setPhase("processing");
 
-        }, 500);
+    useEffect(() => {
 
-        
-    return () => clearTimeout(timer);
+        if(operationPhase !== "completed") return;
 
-}, [phase]);
+        setPhase("result");
 
-    const samplesVisible =
-        phase !== "idle";
+        },
 
-  return (
-    <Layout>
+        [operationPhase]);
 
-      <section className={styles.laboratory}>
+    const samplesVisible = phase !== "idle";
+
+    const isProcessing = phase === "processing";
+
+        return (
+
+        <Layout>
+
+            <section className={styles.laboratory}>
 
         <Scene>
 
@@ -67,8 +170,7 @@ export default function Laboratory() {
 
           <Core
           phase={phase}
-
-          ready={bothLoaded}
+          ready={isReadyToProcess}
 
           onClick={()=>{
               if (phase == "idle") {
@@ -80,12 +182,12 @@ export default function Laboratory() {
         <SampleAnchor
             side="left"
             visible={samplesVisible}
-            processing={phase==="processing"}
-            floating={!samples.firstLoaded && phase !== "processing"}
+            processing={isProcessing}
+            floating={!samples.firstLoaded && !isProcessing}
             >
             <SampleNode
             phase={phase}
-            loaded={samples.firstLoaded} 
+            loaded={samples.firstLoaded}
             onClick={()=>{
                 setSamples(previous => ({
 
@@ -95,15 +197,15 @@ export default function Laboratory() {
 
                     }));
                 }}
-            />  
+            />
 
         </SampleAnchor>
 
         <SampleAnchor
             side="right"
             visible={samplesVisible}
-            processing={phase==="processing"}
-            floating={!samples.secondLoaded && phase !== "processing"}
+            processing={isProcessing}
+            floating={!samples.secondLoaded && !isProcessing}
             >
             <SampleNode
             phase={phase}
@@ -122,11 +224,12 @@ export default function Laboratory() {
             />
 
         </SampleAnchor>
-        
+
         </Scene>
 
         <ReactionPanel
         phase={phase}
+        result={mergeResult}
         />
 
     </section>

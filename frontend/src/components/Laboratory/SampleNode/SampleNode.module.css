@@ -1,5 +1,89 @@
 
 
+/*---------------
+ *
+ * animations
+ *
+ * ---------------*/
+
+
+@keyframes sampleBreathing{
+
+0%{
+
+scale:1.02;
+
+}
+
+50%{
+
+scale:1.03;
+
+}
+
+100%{
+
+scale:1;
+
+}
+
+}
+
+@keyframes sampleWaiting{
+
+    0%,100%{
+
+        box-shadow:
+
+            0 0 4px rgba(168,85,247,.15);
+
+    }
+
+    50%{
+
+        box-shadow:
+
+            0 0 14px rgba(168,85,247,.55);
+
+    }
+
+}
+
+@keyframes sampleLock{
+
+    0%{
+
+        transform:scale(1);
+
+    }
+
+    35%{
+
+        transform:scale(.90);
+
+    }
+
+    60%{
+
+        transform:scale(1.04);
+
+    }
+
+    100%{
+
+        transform:scale(1);
+
+    }
+
+}
+
+/*---------------
+ *
+ * base
+ *
+ * ---------------*/
+
+
 .node{
 
     position:absolute;
@@ -120,6 +204,12 @@
 
 }
 
+/*---------------
+ *
+ * activated
+ *
+ * ---------------*/
+
 
 .loaded{
 
@@ -153,78 +243,33 @@
 
 }
 
+/*---------------
+ *
+ * processing
+ *
+ * ---------------*/
+
+
 .processing{
 
     animation:none;
 }
 
+/*---------------
+ *
+ * synching
+ *
+ * ---------------*/
 
-@keyframes sampleBreathing{
 
-0%{
+/*---------------
+ *
+ * result
+ *
+ *---------------*/
 
-scale:1.02;
+.result{
 
+    opacity:0;
 }
 
-50%{
-
-scale:1.03;
-
-}
-
-100%{
-
-scale:1;
-
-}
-
-}
-
-@keyframes sampleWaiting{
-
-    0%,100%{
-
-        box-shadow:
-
-            0 0 4px rgba(168,85,247,.15);
-
-    }
-
-    50%{
-
-        box-shadow:
-
-            0 0 14px rgba(168,85,247,.55);
-
-    }
-
-}
-
-@keyframes sampleLock{
-
-    0%{
-
-        transform:scale(1);
-
-    }
-
-    35%{
-
-        transform:scale(.90);
-
-    }
-
-    60%{
-
-        transform:scale(1.04);
-
-    }
-
-    100%{
-
-        transform:scale(1);
-
-    }
-
-}

@@ -32,10 +32,10 @@ export default function CoreSymbol({
 
         ${phase === "synchronizing" ? styles.synchronizing:"" }
 
-        ${phase === "processing" ? styles.ready:""}        
+        ${phase === "processing" ? styles.processing:""}
 
         ${phase === "result" ? styles.result:""}
- 
+
         `}
 
         viewBox="0 0 100 100"
@@ -49,7 +49,7 @@ export default function CoreSymbol({
         d="
 
         M 34 20
- 
+
         A 32 32 0 1 0 66 20
 
         "
@@ -124,7 +124,7 @@ export default function CoreSymbol({
 
         />
 
-        
+
 
 
         </svg>

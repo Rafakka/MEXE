@@ -1,4 +1,99 @@
 
+/*----------------------
+ *
+ * animation
+ *
+ *-------------------*/
+
+
+@keyframes synchronizingPulse{
+
+    0%{
+
+        opacity:.90;
+
+        color:#4ADE80;
+
+        filter:
+            drop-shadow(0 0 4px rgba(239,68,68,.30));
+
+    }
+
+    35%{
+
+        opacity:.70;
+
+        color:#2a2fbe;
+
+    }
+
+    65%{
+
+        opacity:.40;
+
+        color:#be2aa8;
+
+    }
+
+    100%{
+
+        opacity:.08;
+
+        color:#2a8abe;
+
+        filter:
+            drop-shadow(0 0 2px rgba(74,222,128,.20));
+
+    }
+
+}
+
+@keyframes symbolFade {
+
+    0% {
+
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+
+        filter: blur(0);
+
+    }
+
+    40% {
+
+        opacity: .9;
+        transform: translate(-50%, -50%) scale(.98);
+
+    }
+
+    70% {
+
+        opacity: .45;
+        transform: translate(-50%, -50%) scale(.92);
+
+        filter: blur(.4px);
+
+    }
+
+    100% {
+
+        opacity: 0;
+
+        transform: translate(-50%, -50%) scale(.82);
+
+        filter: blur(1px);
+
+    }
+
+}
+
+/*----------------------
+ *
+ * BASE
+ *
+ *-------------------*/
+
+
 
 .symbol{
 
@@ -48,33 +143,7 @@
 
 }
 
-.activated{
 
-    opacity:.85;
-
-    color:#EF4444;
-
-}
-
-.synchronizing{ 
-
-    animation:
-
-        synchronizingPulse
-
-        1.2s
-
-        ease-in-out
-
-        infinite;
-
-}
-
-.processing{
-
-    color:#4ADE80;
-
-}
 
 .hover .ring{
 
@@ -96,18 +165,12 @@
 
     fill:none;
 
-    stroke:currentColor;    
+    stroke:currentColor;
 
     stroke-width:2.2;
 
 }
 
-
-.ready{
-
-    color:#4ADE80;
-
-}
 
 .stem{
 
@@ -130,49 +193,86 @@
 }
 
 
-.result{
+/*----------------------
+ *
+ * activated
+ *
+ *-------------------*/
+
+
+.activated{
+
+    opacity:.85;
+
+    color:#EF4444;
+
+}
+
+/*----------------------
+ *
+ * synchronizing
+ *
+ *-------------------*/
+
+
+
+
+.synchronizing{
+
+    color:#4ADE80;
 
 }
 
 
-@keyframes synchronizingPulse{
+/*----------------------
+ *
+ * processing
+ *
+ *-------------------*/
 
-    0%{
+.ready{
 
-        color:#DC2626;
-
-        filter:
-
-            drop-shadow(
-                0 0 2px rgba(220,38,38,.25)
-            );
-
-    }
-
-    50%{
-
-        color:#FF5A5A;
-
-        filter:
-
-            drop-shadow(
-                0 0 6px rgba(255,90,90,.45)
-            );
-
-    }
-
-    100%{
-
-        color:#DC2626;
-
-        filter:
-
-            drop-shadow(
-                0 0 2px rgba(220,38,38,.25)
-            );
-
-    }
+    color:#4ADE80;
 
 }
 
+.processing{
 
+    animation-fill-mode: both;
+
+       animation:
+
+        synchronizingPulse
+
+        1.8s
+
+        ease-in-out
+
+        4s
+
+        infinite
+
+        both;
+
+    filter:
+
+        drop-shadow(0 0 4px rgba(74,222,128,.25));
+
+}
+
+/*----------------------
+ *
+ * result
+ *
+ *-------------------*/
+
+
+.result {
+
+    animation:
+        symbolFade
+        1.4s
+        ease-out
+        forwards;
+
+}
