@@ -14,40 +14,32 @@ export default function ReactionField({
 
 }: ReactionProps) {
 
+    const phaseClass = styles[phase];
+
     return (
 
-        <div 
+        <div
             className={`
 
                 ${styles.field}
-                ${phase==="processing" ? styles.processing: ""}
-            `} 
+                ${phaseClass}
+            `}
         >
-            <div className={styles.trailRotorA}>
-
-                <div className={styles.trailA} />
-
-            </div>
 
             <div className={styles.rotorA}>
-                
+
                 <div className={styles.axisA} />
-            
-            </div>
-
-            <div className={styles.trailRotorB}>
-
-                <div className={styles.trailB} />
 
             </div>
+
 
             <div className={styles.rotorB}>
-                
+
                 <div className={styles.axisB} />
-            
+
             </div>
-            
-    
+
+
         </div>
     );
 }

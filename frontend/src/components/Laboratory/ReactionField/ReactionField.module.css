@@ -1,5 +1,155 @@
 
 
+/*-------- animation -------*/
+
+@keyframes rotorSpinA{
+
+    from{
+
+        transform:
+
+            translate(-50%,-50%)
+
+            rotate(0deg);
+
+    }
+
+    to{
+
+        transform:
+
+            translate(-50%,-50%)
+
+            rotate(360deg);
+
+    }
+
+}
+
+@keyframes rotorSpinB{
+
+    from{
+
+        transform:
+
+            translate(-50%,-50%)
+
+            rotate(0deg);
+
+    }
+
+    to{
+
+        transform:
+
+            translate(-50%,-50%)
+
+            rotate(-360deg);
+
+    }
+
+}
+
+@keyframes axisFade{
+
+    0%{
+
+        opacity:1;
+
+    }
+
+    100%{
+
+        opacity:.18;
+
+    }
+
+}
+
+
+@keyframes axisAReveal {
+    0%   { opacity: 0; transform: translate(-50%, -50%) rotate(0deg) scale(.75); }
+    55%  { opacity: .65; transform: translate(-50%, -50%) rotate(12deg) scale(.92); }
+    100% { opacity: 1; transform: translate(-50%, -50%) rotate(45deg) scale(1); }
+}
+
+@keyframes axisBReveal {
+    0%   { opacity: 0; transform: translate(-50%, -50%) rotate(0deg) scale(.75); }
+    55%  { opacity: .65; transform: translate(-50%, -50%) rotate(-12deg) scale(.92); }
+    100% { opacity: 1; transform: translate(-50%, -50%) rotate(-45deg) scale(1); }
+}
+
+
+@keyframes rotorCollapseA {
+
+    0%{
+
+        transform:
+            translate(-50%,-50%)
+            rotate(0deg);
+
+        opacity:1;
+
+    }
+
+    70%{
+
+        transform:
+            translate(-50%,-50%)
+            rotate(900deg);
+
+        opacity:1;
+
+    }
+
+    100%{
+
+        transform:
+            translate(-50%,-50%)
+            rotate(1440deg);
+
+        opacity:0;
+
+    }
+
+}
+
+@keyframes rotorCollapseB {
+
+    0%{
+
+        transform:
+            translate(-50%,-50%)
+            rotate(0deg);
+
+        opacity:1;
+
+    }
+
+    70%{
+
+        transform:
+            translate(-50%,-50%)
+            rotate(-900deg);
+
+        opacity:1;
+
+    }
+
+    100%{
+
+        transform:
+            translate(-50%,-50%)
+            rotate(-1440deg);
+
+        opacity:0;
+
+    }
+
+}
+
+/*-------- base --------*/
+
 .field{
 
     position:absolute;
@@ -23,18 +173,6 @@
     --reaction-intensity:1;
 
     --rotor-speed:3s;
-
-    --trail-speed:3.2s;
-
-    --trail-height:4px;
-
-    --trail-width:calc(500px + var(--reaction-intensity) * 500px);
-
-    --trail-blur:calc(8px + var(--reaction-intensity) * 52px);
-
-    --trail-opacity:1;
-
-     --trail-offset:-18px;
 
 }
 
@@ -89,78 +227,17 @@
     transform:
 
         translate(-50%, -50%)
-        
+
         rotate(0deg)
-        
+
         scale(.75);
 
     overflow:visible;
 
 }
 
-.processing .axisA { 
-    animation: axisAReveal .45s cubic-bezier(.22,.61,.36,1) 2.0s forwards;
-
-}
-
-.processing .axisB {
-    animation: axisBReveal .45s cubic-bezier(.22,.61,.36,1) 2.2s forwards;
-    
-}
-
-@keyframes rotorSpinA{
-
-    from{
-
-        transform:
-
-            translate(-50%,-50%)
-
-            rotate(0deg);
-
-    }
-
-    to{
-
-        transform:
-
-            translate(-50%,-50%)
-
-            rotate(360deg);
-
-    }
-
-}
-
-@keyframes rotorSpinB{
-
-    from{
-
-        transform:
-
-            translate(-50%,-50%)
-
-            rotate(0deg);
-
-    }
-
-    to{
-
-        transform:
-
-            translate(-50%,-50%)
-
-            rotate(-360deg);
-
-    }
-
-}
-
-
 .rotorA,
-.rotorB,
-.trailRotorA,
-.trailRotorB{
+.rotorB{
 
     position:absolute;
 
@@ -177,258 +254,21 @@
 }
 
 
-@keyframes haloGrow{
+/*-------processing--------*/
 
-    0%{
+.processing {
 
-        opacity:.10;
-
-        filter:blur(6px);
-
-    }
-
-    50%{
-
-        opacity:.35;
-
-        filter:blur(10px);
-
-    }
-
-    100%{
-
-        opacity:.70;
-
-        filter:blur(18px);
-
-    }
+    --rotor-speed: 3s;
 
 }
 
-@keyframes transferEnergy{
-
-    0%{
- 
-        opacity:0;
-
-        transform:
-            
-            rotate(0deg)
-
-            translate(-50%,-50%)
-
-            scale(1);
-
-    }
-
-    100%{
-
-        opacity:.18;
-
-        transform:
-
-            translate(-50%,-50%)
-
-            rotate(45deg)
-
-            scale(.88);
-
-    }
+.processing .axisA {
+    animation: axisAReveal .45s cubic-bezier(.22,.61,.36,1) 2.0s forwards;
 
 }
 
-@keyframes axisFade{
-
-    0%{
-
-        opacity:1;
-
-    }
-
-    100%{
-
-        opacity:.18;
-
-    }
-
-}
-
-
-@keyframes axisAReveal {
-    0%   { opacity: 0; transform: translate(-50%, -50%) rotate(0deg) scale(.75); }
-    55%  { opacity: .65; transform: translate(-50%, -50%) rotate(12deg) scale(.92); }
-    100% { opacity: 1; transform: translate(-50%, -50%) rotate(45deg) scale(1); }
-}
-
-@keyframes axisBReveal {
-    0%   { opacity: 0; transform: translate(-50%, -50%) rotate(0deg) scale(.75); }
-    55%  { opacity: .65; transform: translate(-50%, -50%) rotate(-12deg) scale(.92); }
-    100% { opacity: 1; transform: translate(-50%, -50%) rotate(-45deg) scale(1); }
-}
-
-.trailA{
-
-    position:absolute;
-
-    top:0;
-
-    left:0;
-
-    width:var(--trail-width);
-
-    height:var(--trail-height);
-
-    transform:
-
-        translate(-50%,-50%)
-
-        translateX(var(--trail-offset))
-
-        rotate(45deg);
-
-    border-radius:999px;
-
-    opacity:0;
-
-    background:
-
-        linear-gradient(
-
-            90deg,
-
-            transparent,
-
-            rgba(145,160,255,.12),
-
-            rgba(145,160,255,.45),
-
-            rgba(145,160,255,.12),
-
-            transparent
-
-        );
-
-    filter:
-
-        blur(var(--trail-blur));
-
-}
-
-.trailB{
-
-    position:absolute;
-
-    top:0;
-
-    left:0;
-
-    width:var(--trail-width);
-
-    height:var(--trail-height);
-
-    transform:
-
-        translate(-50%,-50%)
-
-        translateX(calc(var(--trail-offset) * -1))
-
-        rotate(-45deg);
-
-    border-radius:999px;
-
-    opacity:0;
-
-    background:
-
-        linear-gradient(
-
-            90deg,
-
-            transparent,
-
-            rgba(145,160,255,.12),
-
-            rgba(145,160,255,.45),
-
-            rgba(145,160,255,.12),
-
-            transparent
-
-        );
-
-    filter:
-
-        blur(var(--trail-blur));
-
-}
-
-@keyframes trailRevealA{
-
-    0%{
-
-        opacity:0;
-
-        transform:
-
-            translate(-50%,-50%)
-
-            rotate(0deg)
-
-            scale(.75);
-
-    }
-
-    100%{
-
-        opacity:var(--trail-opacity);
-
-        transform:
-
-            translate(-50%,-50%)
-
-            translateX(var(--trail-offset))
-
-            rotate(45deg)
-
-            scale(1);
-
-    }
-
-}
-
-@keyframes trailRevealB{
-
-    0%{
-
-        opacity:0;
-
-        transform:
-
-            translate(-50%,-50%)
-
-            translateX(calc(var(--trail-offset)* -1))
-
-            rotate(0deg)
-
-            scale(1);
-
-    }
-
-    100%{
-
-        opacity:var(--trail-opacity);
-
-        transform:
-
-            translate(-50%,-50%)
-
-            translateX(calc(var(--trail-offset)* -1))
-
-            rotate(-45deg)
-
-            scale(1);
-
-    }
+.processing .axisB {
+    animation: axisBReveal .45s cubic-bezier(.22,.61,.36,1) 2.2s forwards;
 
 }
 
@@ -454,66 +294,45 @@
 
 }
 
-.processing .trailA{
+/*-------synchronizing----------*/
+
+
+/*-------result---------------*/
+
+.result {
+
+    --rotor-speed: .25s;
+
+}
+
+.result .rotorA{
 
     animation:
-
-        trailRevealA
-
-        .9s
-
-        ease
-
-        2s
-
+        rotorCollapseA
+        1.4s
+        cubic-bezier(.2,.9,.2,1)
         forwards;
 
 }
 
-.processing .trailB{
+.result .rotorB{
 
     animation:
-
-        trailRevealB
-
-        .9s
-
-        ease
-
-        2.2s
-
+        rotorCollapseB
+        1.4s
+        cubic-bezier(.2,.9,.2,1)
         forwards;
 
 }
 
-.processing .trailRotorA{
+.result .axisA,
+.result .axisB{
 
-    animation:
+    transition:
+        opacity 1.2s ease;
 
-        rotorSpinA
-
-        calc(var(--rotor-speed) * 1.08)
-
-        linear
-
-        3.5s
-
-        infinite;
+    opacity:0;
 
 }
 
-.processing .trailRotorB{
 
-    animation:
-
-        rotorSpinB
-
-        calc(var(--rotor-speed) * 1.08)
-
-        linear
-
-        3.5s
-
-        infinite;
-
-}
