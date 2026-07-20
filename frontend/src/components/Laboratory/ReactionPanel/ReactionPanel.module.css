@@ -8,7 +8,15 @@
 
         opacity:0;
 
-        transform:translateY(16px);
+        transform:
+
+            translateY(-50%)
+            translateX(24px)
+            scale(.96);
+
+        filter:
+
+            blur(10px);
 
     }
 
@@ -16,7 +24,15 @@
 
         opacity:1;
 
-        transform:translateY(0);
+        transform:
+
+            translateY(-50%)
+            translateX(0)
+            scale(1);
+
+        filter:
+
+            blur(0);
 
     }
 
@@ -32,26 +48,150 @@
 
 .panel{
 
+    pointer-events:none;
+
     position:absolute;
 
     opacity:0;
 
-    pointer-events:none;
-
     left:calc(50% - var(--core-panel-distance));
 
-    top:40%;
+    top:52%;
 
     transform:translateY(-50%);
 
+}
+
+.surface{
+
+    position:relative;
+
     width:420px;
-    height:220px;
+    height:260px;
 
-    border-radius:24px;
+    border-radius:30px;
 
-    background:rgba(255,255,255,.7);
+    backdrop-filter:blur(20px);
 
-    border:1px solid #ECECEC;
+    background:
+
+        rgba(255,255,255,.08);
+
+    border:
+
+        1px solid rgba(255,255,255,.10);
+
+    box-shadow:
+
+        0 20px 60px rgba(20,20,40,.12);
+
+    overflow:hidden;
+
+}
+
+.connector{
+
+    position:absolute;
+
+    right:-60px;
+
+    top:50%;
+
+    width:60px;
+    height:1px;
+
+    background:
+
+        linear-gradient(
+
+            to right,
+
+            rgba(255,255,255,.35),
+
+            rgba(255,255,255,0)
+
+        );
+
+}
+
+.preview{
+
+    width:100%;
+    height:100%;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    overflow:hidden;
+
+}
+
+.metadata{
+
+    position:absolute;
+
+    inset:0;
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:flex-end;
+
+    gap:6px;
+
+    padding:28px;
+
+    opacity:0;
+
+    background:
+
+        linear-gradient(
+
+            transparent,
+
+            rgba(15,20,30,.55)
+
+        );
+
+    transition:
+
+        opacity .25s ease;
+
+}
+
+.surface:hover .metadata{
+
+    opacity:1;
+
+}
+
+.metadata span{
+
+    color:white;
+
+    font-size:12px;
+
+    letter-spacing:.08em;
+
+    text-transform:uppercase;
+
+    font-weight:600;
+
+}
+
+
+/*--------phases--------*/
+
+.idle,
+.activated,
+.processing{
+
+    opacity:0;
+    pointer-events:none;
 
 }
 
@@ -59,14 +199,18 @@
 
 .result{
 
+}
+
+.panel.result{
+
     animation:
 
         panelReveal
-        .8s
+        .55s
         cubic-bezier(.22,.61,.36,1)
-        4s
+        4.8s
         forwards;
 
+    pointer-events:auto;
+
 }
-
-

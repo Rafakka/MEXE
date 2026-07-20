@@ -13,6 +13,7 @@ import type { SampleState} from "../../features/laboratory/sampleState";
 import {mergeImages} from "../../services/merge/mergeImages";
 import type {MergeResult} from "../../services/merge/types";
 import ResetLabNode from "../Laboratory/ActionNodes/resetNode/ResetLabNode";
+import DownloadNode from "../Laboratory/ActionNodes/downloadNode/DownloadNode";
 
 import styles from "./Laboratory.module.css";
 
@@ -240,6 +241,13 @@ export default function Laboratory() {
         onClick={() => {
         }}
         />
+
+        <DownloadNode
+        phase={phase}
+        onClick={() => {
+        }}
+        />
+
 
     </section>
 
