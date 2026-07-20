@@ -91,7 +91,7 @@
 
     50%{
 
-        transform:scale(1.012);
+        transform:scale(1.030);
 
     }
 
@@ -483,58 +483,29 @@
 
 }
 
+
 @keyframes auraToGreen{
 
     0%{
 
         background:
-
             radial-gradient(
-
                 circle,
-
-                rgba(168,85,247,.42),
-
-                rgba(130,90,255,.18),
-
-                transparent 78%
-
+                rgba(168,85,247,.42) 0%,
+                rgba(130,90,255,.18) 45%,
+                transparent 82%
             );
 
     }
 
-    35%{
+    75%{
 
         background:
-
             radial-gradient(
-
                 circle,
-
-                rgba(170,180,180,.40),
-
-                rgba(120,180,180,.18),
-
-                transparent 78%
-
-            );
-
-    }
-
-    70%{
-
-        background:
-
-            radial-gradient(
-
-                circle,
-
-                rgba(120,220,150,.42),
-
-                rgba(90,200,170,.18),
-
-                transparent 78%
-
+                rgba(168,85,247,.42) 0%,
+                rgba(130,90,255,.18) 45%,
+                transparent 82%
             );
 
     }
@@ -542,23 +513,80 @@
     100%{
 
         background:
-
             radial-gradient(
-
                 circle,
-
-                rgba(74,222,128,.45),
-
-                rgba(60,220,170,.20),
-
-                transparent 78%
-
+                rgba(74,222,128,.45) 0%,
+                rgba(50,190,120,.22) 45%,
+                transparent 82%
             );
 
     }
 
 }
 
+
+@keyframes planetFloat{
+
+    0%{
+
+        transform:
+            translateY(0px)
+            scale(1);
+
+    }
+
+    25%{
+
+        transform:
+            translateY(-3px)
+            scale(1.003);
+
+    }
+
+    50%{
+
+        transform:
+            translateY(-6px)
+            scale(1.006);
+
+    }
+
+    75%{
+
+        transform:
+            translateY(-3px)
+            scale(1.003);
+
+    }
+
+    100%{
+
+        transform:
+            translateY(0px)
+            scale(1);
+
+    }
+
+}
+
+
+@keyframes eclipseHalo{
+
+    from{
+
+        opacity:0;
+        transform:scale(.75);
+
+    }
+
+    to{
+
+        opacity:.55;
+        transform:scale(1);
+
+    }
+
+}
 
 /*--------------------
  *
@@ -714,7 +742,7 @@
 
     pointer-events:none;
 
-    opacity:.72;
+    opacity:.75;
 
 
     background:
@@ -735,7 +763,7 @@
 
         );
 
-    filter:blur(20px);
+    filter:blur(15px);
 
     transform: scale(1);
 
@@ -745,11 +773,16 @@
 
     position:absolute;
 
-    inset:-24px;
+    width:400px;
+    height:400px;
 
-    filter: blur(12px);
+    inset:-95px;
 
-    opacity:85%;
+    z-index:-1;
+
+    filter: blur(50px);
+
+    opacity:70%;
 
     border-radius:50%;
 
@@ -887,7 +920,7 @@
 
     border-radius:50%;
 
-    opacity:.18;
+    opacity:.88;
 
     background:
 
@@ -934,9 +967,9 @@
 .idle .planet {
 
     animation:
-        breathing 7s ease-in-out infinite,
-        drift 3s ease-in-out infinite;
-}
+        breathing 4s ease-in-out infinite,
+        drift .45s ease-in-out infinite;
+    }
 
 .idle.hover{
 
@@ -1044,15 +1077,6 @@
 
 .activated .planet{
 
-    animation:
-
-        breathing
-
-        4s
-
-        ease-in-out
-
-        infinite;
 
 }
 
@@ -1171,11 +1195,13 @@
 
 .processing .aura{
 
+    opacity:.90;
+
     animation:
 
-        auraBreathing 4.5s ease-in-out infinite,
+        auraBreathing .10s ease-in-out infinite,
 
-        auraToGreen 33s ease forwards;
+        auraToGreen .45s ease 1.5s forwards;
 }
 
 .processing .halo{
@@ -1209,20 +1235,58 @@
 
 .result .planet{
 
+
+    animation:
+
+        planetFloat 5s ease-in-out 1.2s infinite;
 }
 
 .result .halo{
 
-}
+    opacity:0;
 
-.result .aura{
+    background:
+
+        radial-gradient(
+
+        circle,
+
+        rgba(255,247,214,.95) 0%,
+
+        rgba(255,232,163,.72) 22%,
+
+        rgba(255,211,106,.42) 48%,
+
+        rgba(255,188,82,.16) 72%,
+
+        transparent 80%
+
+        );
 
     animation:
 
-        auraFade 3.5s ease forwards;
+        eclipseHalo .8s ease-in-out 2s forwards;
+   }
+
+.result .aura{
+
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+
 }
 
 .result .orbit{
+
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+
+}
+
+.result .orbitParticle{
+
+    opacity:0;
 
 }
 

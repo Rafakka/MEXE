@@ -260,6 +260,10 @@
 
     z-index:1;
 
+    transition:
+        opacity .45s ease,
+        transform .45s cubic-bezier(.22,.61,.36,1);
+
 }
 
 /* ---------- ACTIVATED ---------- */
@@ -382,6 +386,24 @@
         80ms
 
         forwards;
+
+}
+
+/*--------RESULT-----------*/
+
+.result.left{
+
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+
+}
+
+.result.right{
+
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
 
 }
 

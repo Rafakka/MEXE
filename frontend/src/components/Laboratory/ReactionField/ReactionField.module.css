@@ -148,6 +148,26 @@
 
 }
 
+@keyframes axisDisappear{
+
+    0%{
+
+        opacity:1;
+
+        scale:1;
+
+    }
+
+    100%{
+
+        opacity:0;
+
+        scale:.6;
+
+    }
+
+}
+
 /*-------- base --------*/
 
 .field{
@@ -172,7 +192,7 @@
 
     --reaction-intensity:1;
 
-    --rotor-speed:3s;
+    --rotor-speed:.80s;
 
 }
 
@@ -258,17 +278,15 @@
 
 .processing {
 
-    --rotor-speed: 3s;
-
 }
 
 .processing .axisA {
-    animation: axisAReveal .45s cubic-bezier(.22,.61,.36,1) 2.0s forwards;
+    animation: axisAReveal 1s cubic-bezier(.22,.61,.36,1) 1.8s forwards;
 
 }
 
 .processing .axisB {
-    animation: axisBReveal .45s cubic-bezier(.22,.61,.36,1) 2.2s forwards;
+    animation: axisBReveal 1s cubic-bezier(.22,.61,.36,1) 2.2s forwards;
 
 }
 
@@ -278,7 +296,7 @@
         rotorSpinA
         var(--rotor-speed)
         linear
-        3.5s
+        2s
         infinite;
 
 }
@@ -289,7 +307,7 @@
         rotorSpinB
         var(--rotor-speed)
         linear
-        3.5s
+        1.8s
         infinite;
 
 }
@@ -301,15 +319,13 @@
 
 .result {
 
-    --rotor-speed: .25s;
-
 }
 
 .result .rotorA{
 
     animation:
         rotorCollapseA
-        1.4s
+        3s
         cubic-bezier(.2,.9,.2,1)
         forwards;
 
@@ -319,7 +335,7 @@
 
     animation:
         rotorCollapseB
-        1.4s
+        2.8s
         cubic-bezier(.2,.9,.2,1)
         forwards;
 
@@ -328,11 +344,15 @@
 .result .axisA,
 .result .axisB{
 
-    transition:
-        opacity 1.2s ease;
+    animation:
 
-    opacity:0;
+        axisDisappear
+
+        1s
+
+        ease
+
+        forwards;
 
 }
-
 

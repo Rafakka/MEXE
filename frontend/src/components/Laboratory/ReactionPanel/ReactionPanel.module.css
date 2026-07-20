@@ -1,13 +1,50 @@
 
 
+/*-------ANIMATIONS-----------*/
+
+@keyframes panelReveal{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(16px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0);
+
+    }
+
+}
+
+/*--------Base----------*/
+
+:root{
+
+    --core-panel-distance:700px;
+
+}
+
 .panel{
 
     position:absolute;
 
-    bottom:80px;
+    opacity:0;
+
+    pointer-events:none;
+
+    left:calc(50% - var(--core-panel-distance));
+
+    top:40%;
+
+    transform:translateY(-50%);
 
     width:420px;
-
     height:220px;
 
     border-radius:24px;
@@ -17,3 +54,19 @@
     border:1px solid #ECECEC;
 
 }
+
+/*------RESULT--------*/
+
+.result{
+
+    animation:
+
+        panelReveal
+        .8s
+        cubic-bezier(.22,.61,.36,1)
+        4s
+        forwards;
+
+}
+
+

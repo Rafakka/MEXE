@@ -16,19 +16,20 @@ type SampleNodeProps = {
 export default function SampleNode({phase, loaded, onClick}: SampleNodeProps){
 
     return(
-    
+
     <div
 
     className={`
         ${styles.node}
+        ${styles[phase]}
         ${loaded ? styles.loaded : styles.pending}
         ${!loaded ? styles.waiting : ""}
     `}
 
     onClick={!loaded ? onClick : undefined}
 
-    />     
-    
+    />
+
     )
 
 }

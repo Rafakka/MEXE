@@ -12,6 +12,7 @@ import type {OperationPhase} from "../../features/laboratory/operationPhase";
 import type { SampleState} from "../../features/laboratory/sampleState";
 import {mergeImages} from "../../services/merge/mergeImages";
 import type {MergeResult} from "../../services/merge/types";
+import ResetLabNode from "../Laboratory/ActionNodes/resetNode/ResetLabNode";
 
 import styles from "./Laboratory.module.css";
 
@@ -146,7 +147,9 @@ export default function Laboratory() {
 
         if(operationPhase !== "completed") return;
 
-        setPhase("result");
+        setTimeout(()=>{
+            setPhase("result");
+        },5000);
 
         },
 
@@ -182,7 +185,7 @@ export default function Laboratory() {
         <SampleAnchor
             side="left"
             visible={samplesVisible}
-            processing={isProcessing}
+            phase={phase}
             floating={!samples.firstLoaded && !isProcessing}
             >
             <SampleNode
@@ -204,7 +207,7 @@ export default function Laboratory() {
         <SampleAnchor
             side="right"
             visible={samplesVisible}
-            processing={isProcessing}
+            phase={phase}
             floating={!samples.secondLoaded && !isProcessing}
             >
             <SampleNode
@@ -230,6 +233,12 @@ export default function Laboratory() {
         <ReactionPanel
         phase={phase}
         result={mergeResult}
+        />
+
+        <ResetLabNode
+        phase={phase}
+        onClick={() => {
+        }}
         />
 
     </section>

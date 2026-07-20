@@ -13,10 +13,6 @@
         opacity:.90;
 
         color:#4ADE80;
-
-        filter:
-            drop-shadow(0 0 4px rgba(239,68,68,.30));
-
     }
 
     35%{
@@ -41,47 +37,81 @@
 
         color:#2a8abe;
 
-        filter:
-            drop-shadow(0 0 2px rgba(74,222,128,.20));
-
     }
 
 }
 
 @keyframes symbolFade {
 
-    0% {
+    0%{
 
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
+        opacity:1;
 
-        filter: blur(0);
+        transform:
+            translate(-50%, -50%)
+            scale(.93);
 
-    }
-
-    40% {
-
-        opacity: .9;
-        transform: translate(-50%, -50%) scale(.98);
+        filter:blur(0);
 
     }
 
-    70% {
+    20%{
 
-        opacity: .45;
-        transform: translate(-50%, -50%) scale(.92);
+        opacity:.93;
 
-        filter: blur(.4px);
+        transform:
+            translate(-50%, -50%)
+            scale(.92);
+
+        filter:blur(.05px);
 
     }
 
-    100% {
+    45%{
 
-        opacity: 0;
+        opacity:.92;
 
-        transform: translate(-50%, -50%) scale(.82);
+        transform:
+            translate(-50%, -50%)
+            scale(.91);
 
-        filter: blur(1px);
+        filter:blur(.15px);
+
+    }
+
+    70%{
+
+        opacity:.55;
+
+        transform:
+            translate(-50%, -50%)
+            scale(.90);
+
+        filter:blur(.45px);
+
+    }
+
+    88%{
+
+        opacity:.20;
+
+        transform:
+            translate(-50%, -50%)
+            scale(.89);
+
+        filter:blur(.8px);
+
+    }
+
+    100%{
+
+        opacity:0;
+
+        transform:
+            translate(-50%, -50%)
+            scale(.88);
+
+        filter:blur(1.1px);
 
     }
 
@@ -244,7 +274,7 @@
 
         synchronizingPulse
 
-        1.8s
+        .55s
 
         ease-in-out
 
@@ -253,11 +283,6 @@
         infinite
 
         both;
-
-    filter:
-
-        drop-shadow(0 0 4px rgba(74,222,128,.25));
-
 }
 
 /*----------------------
@@ -266,13 +291,17 @@
  *
  *-------------------*/
 
-
 .result {
+
+    color:#4ADE80;
+
+    pointer-events:none;
 
     animation:
         symbolFade
-        1.4s
+        1.5s
         ease-out
         forwards;
 
 }
+
