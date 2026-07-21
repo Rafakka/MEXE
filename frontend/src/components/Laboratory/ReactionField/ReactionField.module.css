@@ -168,6 +168,58 @@
 
 }
 
+@keyframes rotorAcceleration{
+
+    0%{
+
+        transform:
+            translate(-50%,-50%)
+            rotate(0deg);
+
+    }
+
+    8%{
+
+        transform:
+            translate(-50%,-50%)
+            rotate(8deg);
+
+    }
+
+    20%{
+
+        transform:
+            translate(-50%,-50%)
+            rotate(35deg);
+
+    }
+
+    40%{
+
+        transform:
+            translate(-50%,-50%)
+            rotate(180deg);
+
+    }
+
+    70%{
+
+        transform:
+            translate(-50%,-50%)
+            rotate(720deg);
+
+    }
+
+    100%{
+
+        transform:
+            translate(-50%,-50%)
+            rotate(1800deg);
+
+    }
+
+}
+
 /*-------- base --------*/
 
 .field{
@@ -192,7 +244,7 @@
 
     --reaction-intensity:1;
 
-    --rotor-speed:.80s;
+    --rotor-speed:.40s;
 
 }
 
@@ -211,7 +263,11 @@
 
     border-radius:999px;
 
-    background: rgba(145,160,255,.55);
+    background:rgba(255,255,255,.65);
+
+    height:2px;
+
+    box-shadow:0 0 8px rgba(255,255,255,.25);
 
     opacity:0;
 
@@ -240,7 +296,11 @@
 
     border-radius:999px;
 
-    background:rgba(145,160,255,.55);
+    background:rgba(255,255,255,.65);
+
+    height:2px;
+
+    box-shadow:0 0 8px rgba(255,255,255,.25);
 
     opacity:0;
 
@@ -293,22 +353,18 @@
 .processing .rotorA{
 
     animation:
-        rotorSpinA
-        var(--rotor-speed)
-        linear
-        2s
-        infinite;
+
+    rotorAcceleration 2s forwards,
+    rotorSpinA var(--rotor-speed) linear 1.2s infinite;
 
 }
 
 .processing .rotorB{
 
     animation:
-        rotorSpinB
-        var(--rotor-speed)
-        linear
-        1.8s
-        infinite;
+
+    rotorAcceleration 2s forwards,
+    rotorSpinB var(--rotor-speed) linear 1.2s infinite;
 
 }
 
@@ -325,8 +381,8 @@
 
     animation:
         rotorCollapseA
-        3s
-        cubic-bezier(.2,.9,.2,1)
+        4s
+        linear
         forwards;
 
 }
@@ -335,8 +391,8 @@
 
     animation:
         rotorCollapseB
-        2.8s
-        cubic-bezier(.2,.9,.2,1)
+        4s
+        linear
         forwards;
 
 }
@@ -348,11 +404,9 @@
 
         axisDisappear
 
-        1s
+        1.8s
 
-        ease
-
-        forwards;
+        ease-out;
 
 }
 

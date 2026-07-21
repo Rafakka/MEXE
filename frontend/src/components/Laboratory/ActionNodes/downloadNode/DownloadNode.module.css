@@ -32,9 +32,9 @@
 :root{
 
     --core-panel-distance:700px;
-    --action-node-distance:320px;
-    --action-node-offset-y:-140px;
-    --download-offset-y:200px;
+    --action-node-distance:150px;
+    --action-node-offset-y:100px;
+    --download-offset-y:50px;
 
 }
 

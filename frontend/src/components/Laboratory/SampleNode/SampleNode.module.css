@@ -206,6 +206,30 @@ scale:1;
 
 }
 
+.tooltip{
+
+    position:absolute;
+
+    left:40%;
+    top:-60px;
+
+    transform:translateX(-50%);
+
+    opacity:0;
+
+    transition:.25s;
+
+    color:black;
+
+    z-index:100;
+}
+
+.pending:hover .tooltip{
+
+    opacity:1;
+
+}
+
 /*---------------
  *
  * activated

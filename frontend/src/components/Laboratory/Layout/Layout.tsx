@@ -1,16 +1,26 @@
 
 
 import styles from "./Layout.module.css";
-
+import type { LaboratoryPhase } from "../../../features/laboratory/laboratoryPhase";
 
 type LayoutProps = {
-  children: React.ReactNode;
+    phase: LaboratoryPhase;
+    children: React.ReactNode;
 };
 
-export default function Layout({ children }: LayoutProps) {
-  return (
-    <main className={styles.layout}>
-      {children}
-    </main>
-  );
+export default function Layout({ phase, children }: LayoutProps) {
+
+    return (
+
+        <main
+            className={`
+                ${styles.layout}
+                ${styles[phase]}
+            `}
+        >
+            {children}
+        </main>
+
+    );
+
 }

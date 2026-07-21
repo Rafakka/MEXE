@@ -1,20 +1,23 @@
 
+@keyframes processingGlow{
+
+    from{
+
+        transform:scale(1);
+
+    }
+
+    to{
+
+        transform:scale(1.08);
+
+    }
+
+}
+
 
 .layout {
 
-    background:
-
-    radial-gradient(
-
-    circle,
-
-    #F2F5FA 0%,
-
-    #E3EAF5 55%,
-
-    #D7E0ED 100%
-
-    );
 
     width:100%;
 
@@ -30,5 +33,128 @@
 
     position:relative;
 
+    min-height:100vh;
+
+     background:
+
+        radial-gradient(
+
+        circle,
+
+        #F2F5FA 0%,
+
+        #E3EAF5 55%,
+
+        #D7E0ED 100%
+
+    );
+
+    transition:
+        filter .8s ease,
+        transform .8s ease;
+
 }
 
+.layout > *{
+
+    position:relative;
+
+    z-index:1;
+
+}
+
+.layout::before{
+
+    z-index:0;
+
+    content:"";
+
+    position:absolute;
+    inset:0;
+
+    pointer-events:none;
+
+    background:
+        radial-gradient(
+            circle,
+            #D8E6DE 0%,
+            #C7D9CF 55%,
+            #B5C9BE 100%
+        );
+
+    opacity:0;
+
+    transition:
+        opacity 7s ease;
+
+
+}
+
+.layout::after{
+
+    z-index:0;
+
+    content:"";
+
+    position:absolute;
+    inset:0;
+
+    pointer-events:none;
+
+    background:
+        radial-gradient(...azul...);
+
+    opacity:0;
+
+    transition:
+        opacity 1s ease;
+
+}
+
+.layout.idle{
+
+}
+
+.layout.activated{
+
+    filter:brightness(1.05);
+}
+
+.layout.processing{
+
+}
+
+.layout.processing::before{
+
+    opacity:1;
+
+    animation:
+        processingGlow 8s ease-in-out 20s infinite alternate;
+
+}
+
+.processing::before{
+
+
+}
+
+.result::before{
+
+
+}
+
+.result::after{
+
+}
+
+.layout.result::before{
+
+    opacity:0;
+
+}
+
+.layout.result::after{
+
+    opacity:1;
+
+}

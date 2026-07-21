@@ -162,7 +162,7 @@ export default function Laboratory() {
 
         return (
 
-        <Layout>
+        <Layout phase={phase}>
 
             <section className={styles.laboratory}>
 
@@ -192,6 +192,7 @@ export default function Laboratory() {
             <SampleNode
             phase={phase}
             loaded={samples.firstLoaded}
+            label="Sample 01"
             onClick={()=>{
                 setSamples(previous => ({
 
@@ -214,6 +215,7 @@ export default function Laboratory() {
             <SampleNode
             phase={phase}
             loaded={samples.secondLoaded}
+            label="Sample 02"
             onClick={()=>{
                    setSamples(previous => ({
 
