@@ -19,6 +19,13 @@ export default function SampleAnchor({
     phase,
     children,
 }: SampleAnchorProps) {
+
+    console.log({
+    phase,
+    visible,
+    floating
+    });
+
     return (
         <div
            className={`

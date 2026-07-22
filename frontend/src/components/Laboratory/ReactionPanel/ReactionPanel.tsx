@@ -5,9 +5,10 @@ import type {LaboratoryPhase} from "../../../features/laboratory/laboratoryPhase
 
 type ReactionPanelProps = {
     phase: LaboratoryPhase;
+    visible: boolean
 };
 
-export default function ReactionPanel({phase}:ReactionPanelProps){
+export default function ReactionPanel({phase, visible }:ReactionPanelProps){
 
     return(
 
@@ -15,6 +16,7 @@ export default function ReactionPanel({phase}:ReactionPanelProps){
             className={`
                 ${styles.panel}
                 ${styles[phase]}
+                ${visible ? styles.visible: styles.hidden}
             `}
         >
 

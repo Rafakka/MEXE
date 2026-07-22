@@ -6,14 +6,23 @@ import SampleNode from "../Laboratory/SampleNode/SampleNode";
 import SampleAnchor from "../Laboratory/SampleAnchor/SampleAnchor";
 import ReactionPanel from "../Laboratory/ReactionPanel/ReactionPanel";
 import ReactionField from "../Laboratory/ReactionField/ReactionField";
-import {useState, useEffect} from "react";
-import type {LaboratoryPhase} from "../../features/laboratory/laboratoryPhase";
-import type {OperationPhase} from "../../features/laboratory/operationPhase";
-import type { SampleState} from "../../features/laboratory/sampleState";
+import {useEffect} from "react";
 import {mergeImages} from "../../services/merge/mergeImages";
-import type {MergeResult} from "../../services/merge/types";
 import ResetLabNode from "../Laboratory/ActionNodes/resetNode/ResetLabNode";
 import DownloadNode from "../Laboratory/ActionNodes/downloadNode/DownloadNode";
+import {useSelector, useDispatch} from "react-redux";
+import type {RootState, AppDispatch} from "../../store/store";
+import {
+
+        setPhase,
+        clearLaboratory,
+        setStartupFinished,
+        setOperationPhase,
+        setMergeResult,
+        loadFirstSample,
+        loadSecondSample,
+
+    } from "../../features/laboratory/laboratorySlice";
 
 import styles from "./Laboratory.module.css";
 
@@ -22,24 +31,29 @@ const SYNCHRONIZING_DURATION = 2200;
 
 export default function Laboratory() {
 
-    const [phase, setPhase] =
-        useState<LaboratoryPhase>("idle");
+    const dispatch = useDispatch<AppDispatch>();
 
-    const [operationPhase, setOperationPhase ] =
-        useState<OperationPhase>("idle");
+    const phase = useSelector(
 
-    const [startupFinished, setStartupFinished] =
-        useState(false);
+    (state: RootState) => state.laboratory.phase
 
-    const [samples, setSamples] =
-        useState<SampleState>({
+    );
 
-            firstLoaded: false,
-            secondLoaded: false
-        });
+    const startupFinished = useSelector(
+    (state: RootState) => state.laboratory.startupFinished
+    );
 
-    const [mergeResult, setMergeResult] =
-    useState<MergeResult | null>(null);
+    const operationPhase = useSelector(
+    (state: RootState) => state.laboratory.operationPhase
+    );
+
+    const samples = useSelector(
+    (state: RootState) => state.laboratory.samples
+    );
+
+    const mergeResult = useSelector(
+    (state: RootState) => state.laboratory.mergeResult
+    );
 
     const isReadyToProcess =
         samples.firstLoaded && samples.secondLoaded;
@@ -49,7 +63,7 @@ export default function Laboratory() {
 
         const timer = setTimeout(() => {
 
-        setStartupFinished(true);
+        dispatch(setStartupFinished(true));
 
         }, STARTUP_DURATION);
 
@@ -69,7 +83,7 @@ export default function Laboratory() {
 
         ) return;
 
-        setPhase("synchronizing");
+        dispatch(setPhase("synchronizing"));
 
         }, [
 
@@ -87,30 +101,30 @@ export default function Laboratory() {
 
         const timer = setTimeout(() => {
 
-            setPhase("processing");
+            dispatch(setPhase("processing"));
 
-            setOperationPhase("pending");
+            dispatch(setOperationPhase("pending"));
 
         }, SYNCHRONIZING_DURATION);
 
         return () => clearTimeout(timer);
 
-    }, [phase]);
+    }, [phase, dispatch]);
 
 
     useEffect(() => {
 
         if (phase === "idle") {
 
-        setStartupFinished(false);
+        dispatch(setStartupFinished(false));
 
-        setOperationPhase("idle");
+        dispatch(setOperationPhase("idle"));
 
-        setMergeResult(null);
+        dispatch(setMergeResult(null));
 
         }},
 
-        [phase]);
+        [phase, dispatch]);
 
     useEffect(() => {
 
@@ -120,7 +134,7 @@ export default function Laboratory() {
 
             try {
 
-                setOperationPhase("running");
+                dispatch(setOperationPhase("running"));
         /*
             await mergeImages(...)
         */
@@ -128,13 +142,13 @@ export default function Laboratory() {
 
                 console.log(result);
 
-                setMergeResult(result);
+                dispatch(setMergeResult(result));
 
-                setOperationPhase("completed");
+                dispatch(setOperationPhase("completed"));
 
             } catch {
 
-                setOperationPhase("failed");
+                dispatch(setOperationPhase("failed"));
             }
 
         }
@@ -144,19 +158,84 @@ export default function Laboratory() {
         }, [operationPhase]);
 
 
-    useEffect(() => {
+     useEffect(() => {
 
         if(operationPhase !== "completed") return;
 
-        setTimeout(()=>{
-            setPhase("result");
-        },5000);
+        const timer = setTimeout(()=> {
+        dispatch(setPhase("result"));
+        }, 5000 );
 
-        },
+        return ()=> clearTimeout(timer);
 
-        [operationPhase]);
+        }, [operationPhase]);
 
-    const samplesVisible = phase !== "idle";
+    useEffect(() => {
+
+    if (phase !== "resetting") return;
+
+    const timer = setTimeout(() => {
+
+        dispatch(setPhase("resetting-actions"));
+
+    },300);
+
+    return () => clearTimeout(timer);
+
+    }, [phase, dispatch]);
+
+
+    useEffect(() => {
+
+    if (phase !== "resetting-actions") return;
+
+    const timer = setTimeout(() => {
+
+        dispatch(setPhase("resetting-panel"));
+
+    },350);
+
+    return () => clearTimeout(timer);
+
+    }, [phase]);
+
+
+    useEffect(() => {
+
+    if (phase !== "resetting-panel") return;
+
+    const timer = setTimeout(() => {
+
+        dispatch(setPhase("resetting-core"));
+
+    },500);
+
+    return () => clearTimeout(timer);
+
+    }, [phase]);
+
+
+
+    useEffect(() => {
+
+    if (phase !== "resetting-core") return;
+
+    const timer = setTimeout(() => {
+
+        dispatch(clearLaboratory());
+
+    },500);
+
+    return () => clearTimeout(timer);
+
+    }, [phase]);
+
+
+    const samplesVisible = phase === "activated" || phase === "synchronizing";
+
+    const actionsVisible = phase === "result";
+
+    const panelVisible = phase === "result";
 
     const isProcessing = phase === "processing";
 
@@ -177,8 +256,8 @@ export default function Laboratory() {
           ready={isReadyToProcess}
 
           onClick={()=>{
-              if (phase == "idle") {
-                  setPhase("activated")
+              if (phase === "idle") {
+                  dispatch(setPhase("activated"));
               }
           }}
           />
@@ -194,14 +273,8 @@ export default function Laboratory() {
             loaded={samples.firstLoaded}
             label="Sample 01"
             onClick={()=>{
-                setSamples(previous => ({
-
-                ...previous,
-
-                firstLoaded:true
-
-                    }));
-                }}
+                dispatch(loadFirstSample())
+            }}
             />
 
         </SampleAnchor>
@@ -217,16 +290,8 @@ export default function Laboratory() {
             loaded={samples.secondLoaded}
             label="Sample 02"
             onClick={()=>{
-                   setSamples(previous => ({
-
-                ...previous,
-
-                secondLoaded:true
-
-                    }));
-
+                dispatch(loadSecondSample())
                 }}
-
             />
 
         </SampleAnchor>
@@ -235,17 +300,22 @@ export default function Laboratory() {
 
         <ReactionPanel
         phase={phase}
+        visible={panelVisible}
         result={mergeResult}
         />
 
         <ResetLabNode
         phase={phase}
+        visible={actionsVisible}
         onClick={() => {
-        }}
+            if (phase !== "result") return;
+            dispatch(setPhase("resetting"));
+            }}
         />
 
         <DownloadNode
         phase={phase}
+        visible={actionsVisible}
         onClick={() => {
         }}
         />

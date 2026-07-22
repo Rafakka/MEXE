@@ -27,6 +27,26 @@
 
 }
 
+@keyframes resetShutdown{
+
+    from{
+
+        opacity:1;
+
+        transform:scale(1);
+
+    }
+
+    to{
+
+        opacity:0;
+
+        transform:scale(.92);
+
+    }
+
+}
+
 /*--------BASE--------*/
 
 :root{
@@ -64,6 +84,13 @@
     user-select:none;
 
     z-index:20;
+
+    transition:
+
+        opacity .35s ease,
+
+        transform .35s ease;
+
 
 }
 
@@ -196,4 +223,18 @@
 
 }
 
+.visible{
 
+    opacity:1;
+
+    pointer-events:auto;
+
+}
+
+.hidden{
+
+    opacity:0;
+
+    pointer-events:none;
+
+}

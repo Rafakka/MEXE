@@ -17,6 +17,12 @@ export default function SampleNode({
     onClick
 }: SampleNodeProps){
 
+console.log({
+    phase,
+    loaded,
+    label
+});
+
     return(
 
         <div
@@ -24,6 +30,7 @@ export default function SampleNode({
             className={`
                 ${styles.node}
                 ${styles[phase]}
+                }
                 ${loaded ? styles.loaded : styles.pending}
                 ${!loaded ? styles.waiting : ""}
             `}

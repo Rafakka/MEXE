@@ -124,6 +124,8 @@ scale:1;
 
         transform .35s ease;
 
+        opacity: .35s ease;
+
 }
 
 .pending:hover{
@@ -296,4 +298,5 @@ scale:1;
 .result{
 
 }
+
 

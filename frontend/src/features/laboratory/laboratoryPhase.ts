@@ -10,5 +10,13 @@ export type LaboratoryPhase =
 
         | "processing"
 
-        | "result";
+        | "result"
+
+        | "resetting"
+
+        | "resetting-actions"
+
+        | "resetting-panel"
+
+        | "resetting-core";
 

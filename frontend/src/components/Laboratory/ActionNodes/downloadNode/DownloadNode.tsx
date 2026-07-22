@@ -2,27 +2,31 @@
 
 import styles from "./DownloadNode.module.css";
 import type { LaboratoryPhase } from "../../../../features/laboratory/laboratoryPhase";
+import {useDispatch} from "react-redux";
+import type {AppDispatch} from "../../../../store/store";
 
 type DownloadNodeProps = {
-    phase: LaboratoryPhase;
-    onClick: () => void;
+    phase: LaboratoryPhase,
+    visible: boolean
 };
 
 export default function DownLoadNode({
     phase,
-    onClick,
+    visible
 }: DownloadNodeProps) {
 
     return (
 
         <button
             type="button"
-            className={`
+           className={`
                 ${styles.node}
+                ${visible ? styles.visible: styles.hidden}
                 ${styles[phase]}
-            `}
-            onClick={onClick}
-            aria-label="Download File">
+        `}
+            aria-label="Download File"
+        >
+
         </button>
 
     );
