@@ -2,34 +2,18 @@
 
 import styles from "./ResetLabNode.module.css";
 import type { LaboratoryPhase } from "../../../../features/laboratory/laboratoryPhase";
-import {useDispatch} from "react-redux";
-import type {AppDispatch} from "../../../../store/store";
-import {clearLaboratory, setPhase} from "../../../../features/laboratory/laboratorySlice";
 
 type ResetLabNodeProps = {
     phase: LaboratoryPhase;
     visible: boolean;
+    onClick: () => void;
 };
 
 export default function ResetLabNode({
     phase,
-    visible
+    visible,
+    onClick
 }: ResetLabNodeProps) {
-
-    const dispatch = useDispatch<AppDispatch>();
-
-    function handleReset(){
-        if(phase !="result") return;
-
-        dispatch(setPhase("resetting"));
-    }
-
-    function handleAnimationEnd(){
-        if(phase !== "resetting") return;
-
-        dispatch(clearLaboratory());
-
-    }
 
     return (
 
@@ -41,8 +25,7 @@ export default function ResetLabNode({
                 ${styles[phase]}
 
                 `}
-            onClick={handleReset}
-            onAnimationEnd={handleAnimationEnd}
+            onClick={onClick}
             aria-label="Reset Laboratory"
 
         >
@@ -51,4 +34,4 @@ export default function ResetLabNode({
 
     );
 
-}
+

@@ -2,8 +2,6 @@
 
 import styles from "./DownloadNode.module.css";
 import type { LaboratoryPhase } from "../../../../features/laboratory/laboratoryPhase";
-import {useDispatch} from "react-redux";
-import type {AppDispatch} from "../../../../store/store";
 
 type DownloadNodeProps = {
     phase: LaboratoryPhase,

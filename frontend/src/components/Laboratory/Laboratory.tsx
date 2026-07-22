@@ -29,6 +29,14 @@ import styles from "./Laboratory.module.css";
 const STARTUP_DURATION = 2600;
 const SYNCHRONIZING_DURATION = 2200;
 
+function handleReset() {
+
+    if (phase !== "result") return;
+
+    dispatch(setPhase("resetting"));
+
+}
+
 export default function Laboratory() {
 
     const dispatch = useDispatch<AppDispatch>();
@@ -235,8 +243,6 @@ export default function Laboratory() {
 
     const actionsVisible = phase === "result";
 
-    const panelVisible = phase === "result";
-
     const isProcessing = phase === "processing";
 
         return (
@@ -300,18 +306,15 @@ export default function Laboratory() {
 
         <ReactionPanel
         phase={phase}
-        visible={panelVisible}
+        visible={phase === "result"}
         result={mergeResult}
         />
 
         <ResetLabNode
         phase={phase}
         visible={actionsVisible}
-        onClick={() => {
-            if (phase !== "result") return;
-            dispatch(setPhase("resetting"));
-            }}
-        />
+        onClick={handleReset}
+            />
 
         <DownloadNode
         phase={phase}
