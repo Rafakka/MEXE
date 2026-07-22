@@ -184,43 +184,13 @@ export default function Laboratory() {
 
     const timer = setTimeout(() => {
 
-        dispatch(setPhase("resetting-actions"));
+        dispatch(setPhase("resetting-core"));
 
     },300);
 
     return () => clearTimeout(timer);
 
     }, [phase, dispatch]);
-
-
-    useEffect(() => {
-
-    if (phase !== "resetting-actions") return;
-
-    const timer = setTimeout(() => {
-
-        dispatch(setPhase("resetting-panel"));
-
-    },350);
-
-    return () => clearTimeout(timer);
-
-    }, [phase]);
-
-
-    useEffect(() => {
-
-    if (phase !== "resetting-panel") return;
-
-    const timer = setTimeout(() => {
-
-        dispatch(setPhase("resetting-core"));
-
-    },500);
-
-    return () => clearTimeout(timer);
-
-    }, [phase]);
 
 
 
