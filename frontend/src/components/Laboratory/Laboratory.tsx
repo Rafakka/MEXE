@@ -29,13 +29,6 @@ import styles from "./Laboratory.module.css";
 const STARTUP_DURATION = 2600;
 const SYNCHRONIZING_DURATION = 2200;
 
-function handleReset() {
-
-    if (phase !== "result") return;
-
-    dispatch(setPhase("resetting"));
-
-}
 
 export default function Laboratory() {
 
@@ -214,6 +207,14 @@ export default function Laboratory() {
     const actionsVisible = phase === "result";
 
     const isProcessing = phase === "processing";
+
+    function handleReset() {
+
+        if (phase !== "result") return;
+
+        dispatch(setPhase("resetting"));
+
+        };
 
         return (
 
