@@ -15,6 +15,13 @@ export default function Core( {phase, onClick }:CoreProps ) {
 
     const [hovered, setHovered] = useState(false);
 
+    const orbitVisible = [
+        "activated",
+        "synchronizing",
+        "processing",
+        "resetting"
+    ].includes(phase);
+
     useEffect(() => {
 
     if (phase !== "idle") {
@@ -200,7 +207,14 @@ export default function Core( {phase, onClick }:CoreProps ) {
 
     <div className={styles.aura} />
 
-    <div className={styles.orbit} >
+    <div className={`
+            ${styles.orbit}
+                ? styles.visible
+                : styles.hidden
+        }
+    `}
+
+    >
 
     {renderOrbitLayer(
 

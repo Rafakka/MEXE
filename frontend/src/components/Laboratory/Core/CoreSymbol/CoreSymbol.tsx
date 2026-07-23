@@ -19,6 +19,16 @@ export default function CoreSymbol({
 
 }: CoreSymbolProps ) {
 
+    const active = [
+
+        "activated",
+
+        "synchronizing",
+
+        "processing",
+
+    ].inlcudes(phase);
+
     return (
 
         <svg
@@ -28,13 +38,7 @@ export default function CoreSymbol({
 
         ${phase === "idle" && hovered ? styles.hover : ""}
 
-        ${phase !== "idle" ? styles.activated :"" }
-
-        ${phase === "synchronizing" ? styles.synchronizing:"" }
-
-        ${phase === "processing" ? styles.processing:""}
-
-        ${phase === "result" ? styles.result:""}
+        ${phase ? styles.activated :"" }
 
         `}
 
@@ -123,9 +127,6 @@ export default function CoreSymbol({
             strokeLinecap="round"
 
         />
-
-
-
 
         </svg>
 

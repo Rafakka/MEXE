@@ -1,5 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+import type {PayloadAction} from "@reduxjs/toolkit";
+
 const initialState = {
 
     phase: "idle",
@@ -17,6 +19,8 @@ const initialState = {
     },
 
     mergeResult: null,
+
+    resultVisible: false,
 
 };
 
@@ -64,6 +68,11 @@ const laboratorySlice = createSlice({
 
     },
 
+    setResultVisible(state, action: PayloadAction<boolean>)
+    {
+        state.resultVisible = action.payload;
+    },
+
     clearLaboratory(state) {
 
         state.phase = "idle";
@@ -78,10 +87,13 @@ const laboratorySlice = createSlice({
 
         state.mergeResult = null;
 
+        state.resultVisible = false;
+
         }
 
     }
-});
+
+    });
 
 export const {
 
@@ -90,6 +102,8 @@ export const {
     setStartupFinished,
 
     setOperationPhase,
+
+    setResultVisible,
 
     loadFirstSample,
 

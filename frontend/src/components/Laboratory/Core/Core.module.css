@@ -588,6 +588,102 @@
 
 }
 
+@keyframes orbitRebirth {
+
+    0% {
+
+        opacity:0;
+
+        transform:
+            translate(-50%, -50%)
+            scale(.75);
+
+        filter:
+            blur(10px);
+
+    }
+
+    40% {
+
+        opacity:.35;
+
+        transform:
+            translate(-50%, -50%)
+            scale(.90);
+
+        filter:
+            blur(6px);
+
+    }
+
+    70% {
+
+        opacity:.75;
+
+        transform:
+            translate(-50%, -50%)
+            scale(1.02);
+
+        filter:
+            blur(2px);
+
+    }
+
+    100% {
+
+        opacity:1;
+
+        transform:
+            translate(-50%, -50%)
+            scale(1);
+
+        filter:
+            blur(0);
+
+    }
+
+}
+
+@keyframes planetRebirth{
+
+    0%{
+
+        transform: scale(.94);
+
+        opacity:.65;
+
+        filter:
+            brightness(1.35)
+            saturate(.55);
+
+    }
+
+    45%{
+
+        transform: scale(.985);
+
+        opacity:.9;
+
+        filter:
+            brightness(1.15)
+            saturate(.8);
+
+    }
+
+    100%{
+
+        transform: scale(1);
+
+        opacity:1;
+
+        filter:
+            brightness(1)
+            saturate(1);
+
+    }
+
+}
+
 /*--------------------
  *
  *
@@ -820,7 +916,6 @@
     z-index:2;
 
 }
-
 
 .orbitRing{
 
@@ -1055,7 +1150,7 @@
 
         cubic-bezier(.22,.61,.36,1)
 
-        forwards;
+        both;
 
     --outer-speed:30s;
 
@@ -1279,8 +1374,10 @@
 .result .orbit{
 
     opacity:0;
-    visibility:hidden;
     pointer-events:none;
+    transform:
+        translate(-50%, -50%)
+        scale(.92);
 
 }
 
@@ -1292,8 +1389,54 @@
 
 .result .rotor{
 
+    animation-play-state: paused;
+
 }
 
+.resetting .aura{
+
+    animation:
+
+        auraBirth .8s ease forwards;
+
+}
+
+.resetting .rotor{
+
+    animation-play-state: running;
+
+}
+
+
+.resetting .halo{
+
+    animation:
+
+        haloIgnition .6s ease forwards;
+
+}
+
+.resetting .planet{
+
+    animation:
+
+        planetRebirth
+        .9s
+        cubic-bezier(.22,.61,.36,1)
+        forwards;
+
+}
+
+.resetting .orbit {
+
+    animation:
+
+        orbitRebirth
+        .8s
+        ease-out
+        forwards;
+
+}
 
 /*---------------
  *

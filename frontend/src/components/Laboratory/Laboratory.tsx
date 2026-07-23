@@ -21,6 +21,7 @@ import {
         setMergeResult,
         loadFirstSample,
         loadSecondSample,
+        setResultVisible,
 
     } from "../../features/laboratory/laboratorySlice";
 
@@ -54,6 +55,10 @@ export default function Laboratory() {
 
     const mergeResult = useSelector(
     (state: RootState) => state.laboratory.mergeResult
+    );
+
+    const resultVisible = useSelector(
+        (state:RootState) => state.laboratory.resultVisible
     );
 
     const isReadyToProcess =
@@ -163,8 +168,11 @@ export default function Laboratory() {
 
         if(operationPhase !== "completed") return;
 
-        const timer = setTimeout(()=> {
         dispatch(setPhase("result"));
+
+        const timer = setTimeout(()=> {
+        dispatch(setResultVisible(true));
+
         }, 5000 );
 
         return ()=> clearTimeout(timer);
@@ -177,34 +185,16 @@ export default function Laboratory() {
 
     const timer = setTimeout(() => {
 
-        dispatch(setPhase("resetting-core"));
+        dispatch(clearLaboratory());
 
-    },300);
+    },1000);
 
     return () => clearTimeout(timer);
 
     }, [phase, dispatch]);
 
 
-
-    useEffect(() => {
-
-    if (phase !== "resetting-core") return;
-
-    const timer = setTimeout(() => {
-
-        dispatch(clearLaboratory());
-
-    },500);
-
-    return () => clearTimeout(timer);
-
-    }, [phase]);
-
-
     const samplesVisible = phase === "activated" || phase === "synchronizing";
-
-    const actionsVisible = phase === "result";
 
     const isProcessing = phase === "processing";
 
@@ -212,6 +202,8 @@ export default function Laboratory() {
 
         if (phase !== "result") return;
 
+
+        dispatch(setResultVisible(false));
         dispatch(setPhase("resetting"));
 
         };
@@ -230,8 +222,6 @@ export default function Laboratory() {
 
           <Core
           phase={phase}
-          ready={isReadyToProcess}
-
           onClick={()=>{
               if (phase === "idle") {
                   dispatch(setPhase("activated"));
@@ -277,19 +267,19 @@ export default function Laboratory() {
 
         <ReactionPanel
         phase={phase}
-        visible={phase === "result"}
+        visible={resultVisible}
         result={mergeResult}
         />
 
         <ResetLabNode
         phase={phase}
-        visible={actionsVisible}
+        visible={resultVisible}
         onClick={handleReset}
             />
 
         <DownloadNode
         phase={phase}
-        visible={actionsVisible}
+        visible={resultVisible}
         onClick={() => {
         }}
         />
