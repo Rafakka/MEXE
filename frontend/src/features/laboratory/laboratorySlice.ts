@@ -2,6 +2,32 @@ import { createSlice } from "@reduxjs/toolkit";
 
 import type {PayloadAction} from "@reduxjs/toolkit";
 
+interface SamplesState {
+    firstFile: File | null;
+    secondFile: File | null;
+    firstLoaded: boolean;
+    secondLoaded: boolean;
+}
+
+export type NotificationType =
+
+    | "info"
+    | "success"
+    | "warning"
+    | "error";
+
+export interface LaboratoryNotification {
+
+    type: NotificationType;
+
+    title: string;
+
+    message: string;
+
+    code?: number;
+
+}
+
 const initialState = {
 
     phase: "idle",
@@ -12,6 +38,11 @@ const initialState = {
 
     samples: {
 
+
+        firstFile: null,
+
+        secondFile: null,
+
         firstLoaded: false,
 
         secondLoaded: false,
@@ -21,6 +52,8 @@ const initialState = {
     mergeResult: null,
 
     resultVisible: false,
+
+    notification: null as LaboratoryNotification | null,
 
 };
 
@@ -50,13 +83,17 @@ const laboratorySlice = createSlice({
 
     },
 
-    loadFirstSample(state) {
+    loadFirstSample(state, action:PayloadAction<File>) {
+
+        state.samples.firstFile = action.payload;
 
         state.samples.firstLoaded = true;
 
     },
 
-    loadSecondSample(state) {
+    loadSecondSample(state, action:PayloadAction<File>) {
+
+        state.samples.secondFile = action.payload;
 
         state.samples.secondLoaded = true;
 
@@ -66,6 +103,16 @@ const laboratorySlice = createSlice({
 
         state.mergeResult = action.payload;
 
+    },
+
+    setNotification(state, action:PayloadAction<LaboratoryNotification>)
+    {
+      state.notification = action.payload;
+    },
+
+    clearNotification(state) {
+
+        state.notification = null;
     },
 
     setResultVisible(state, action: PayloadAction<boolean>)
@@ -110,6 +157,10 @@ export const {
     loadSecondSample,
 
     setMergeResult,
+
+    setNotification,
+
+    clearNotification,
 
     clearLaboratory
 

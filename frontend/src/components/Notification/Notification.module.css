@@ -1,0 +1,21 @@
+
+
+.notification{
+
+    position:absolute;
+
+    bottom:3rem;
+
+    left:50%;
+
+    transform:translateX(-50%);
+
+    width:420px;
+
+    padding:1rem;
+
+    border-radius:14px;
+
+    backdrop-filter:blur(20px);
+
+}

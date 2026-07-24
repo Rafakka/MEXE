@@ -6,8 +6,9 @@ import SampleNode from "../Laboratory/SampleNode/SampleNode";
 import SampleAnchor from "../Laboratory/SampleAnchor/SampleAnchor";
 import ReactionPanel from "../Laboratory/ReactionPanel/ReactionPanel";
 import ReactionField from "../Laboratory/ReactionField/ReactionField";
+import Notification from "../Notification/Notification";
 import {useEffect} from "react";
-import {mergeImages} from "../../services/merge/mergeImages";
+import {mexeApi} from "../../api/mexeApi";
 import ResetLabNode from "../Laboratory/ActionNodes/resetNode/ResetLabNode";
 import DownloadNode from "../Laboratory/ActionNodes/downloadNode/DownloadNode";
 import {useSelector, useDispatch} from "react-redux";
@@ -22,8 +23,12 @@ import {
         loadFirstSample,
         loadSecondSample,
         setResultVisible,
+        setNotification,
+        clearNotification,
 
     } from "../../features/laboratory/laboratorySlice";
+
+import type {LaboratoryNotification} from "../../features/laboratory/laboratorySlice";
 
 import styles from "./Laboratory.module.css";
 
@@ -61,8 +66,36 @@ export default function Laboratory() {
         (state:RootState) => state.laboratory.resultVisible
     );
 
+    const handleFirstSample = (file:File) => {
+
+        dispatch(loadFirstSample(file));
+    }
+
+    const handleSecondSample = (file:File) => {
+
+        dispatch(loadSecondSample(file));
+    }
+
+    const notification = useSelector(
+    (state: RootState) => state.laboratory.notification
+    );
+
+    useEffect(() => {
+
+    console.log("notification:", notification);
+
+    }, [notification]);
+
     const isReadyToProcess =
         samples.firstLoaded && samples.secondLoaded;
+
+    useEffect(() => {
+
+    console.log("phase:", phase);
+    console.log("operationPhase:", operationPhase);
+    console.log("samples:", samples);
+
+    }, [phase, operationPhase, samples]);
 
     useEffect(() => {
         if (phase !== "activated") return;
@@ -140,28 +173,74 @@ export default function Laboratory() {
 
             try {
 
-                dispatch(setOperationPhase("running"));
-        /*
-            await mergeImages(...)
-        */
-                const result = await mergeImages();
+                const {firstFile, secondFile } = samples;
 
-                console.log(result);
+                if(!firstFile || !secondFile){
+                throw new Error("Samples not loaded");
+                }
+
+
+                dispatch(setOperationPhase("running"));
+
+                const result = await mexeApi.blend(
+                    firstFile,
+                    secondFile
+                );
 
                 dispatch(setMergeResult(result));
 
                 dispatch(setOperationPhase("completed"));
 
-            } catch {
+                dispatch(
 
-                dispatch(setOperationPhase("failed"));
+                setNotification({
+
+                type:"success",
+
+                title:"Merge completed",
+
+                message:"Image generated."
+
+                })
+
+            );
+
+            } catch(error) {
+
+                console.error(error);
+
+            dispatch(
+
+                setNotification({
+
+                type:"error",
+
+                title:"Merge Error",
+
+                message:"Unable to merge images."
+
+                })
+
+            );
+
+            dispatch(setOperationPhase("failed"));
+
             }
 
         }
 
         executeMerge();
 
-        }, [operationPhase]);
+        }, [
+            operationPhase,
+
+            samples.firstFile,
+
+            samples.secondFile,
+
+            dispatch
+
+        ]);
 
 
      useEffect(() => {
@@ -179,6 +258,7 @@ export default function Laboratory() {
 
         }, [operationPhase]);
 
+
     useEffect(() => {
 
     if (phase !== "resetting") return;
@@ -192,6 +272,21 @@ export default function Laboratory() {
     return () => clearTimeout(timer);
 
     }, [phase, dispatch]);
+
+
+    useEffect(() => {
+
+    if ( operationPhase !== "completed" &&
+    operationPhase !== "failed") return;
+
+    const timer = setTimeout(() => {
+
+    dispatch(setPhase("resetting"));
+
+    }, 3000);
+
+    return () => clearTimeout(timer);
+    }, [operationPhase, dispatch]);
 
 
     const samplesVisible = phase === "activated" || phase === "synchronizing";
@@ -223,10 +318,16 @@ export default function Laboratory() {
           <Core
           phase={phase}
           onClick={()=>{
-              if (phase === "idle") {
-                  dispatch(setPhase("activated"));
-              }
-          }}
+
+            if (phase !== "idle"){
+                return;
+            }
+
+            dispatch(clearNotification());
+
+            dispatch(setPhase("activated"));
+
+            }}
           />
 
         <SampleAnchor
@@ -239,9 +340,7 @@ export default function Laboratory() {
             phase={phase}
             loaded={samples.firstLoaded}
             label="Sample 01"
-            onClick={()=>{
-                dispatch(loadFirstSample())
-            }}
+            onFileSelected={handleFirstSample}
             />
 
         </SampleAnchor>
@@ -256,14 +355,16 @@ export default function Laboratory() {
             phase={phase}
             loaded={samples.secondLoaded}
             label="Sample 02"
-            onClick={()=>{
-                dispatch(loadSecondSample())
-                }}
+            onFileSelected={handleSecondSample}
             />
 
         </SampleAnchor>
 
         </Scene>
+
+        <Notification
+        notification={notification}
+        />
 
         <ReactionPanel
         phase={phase}
@@ -275,7 +376,7 @@ export default function Laboratory() {
         phase={phase}
         visible={resultVisible}
         onClick={handleReset}
-            />
+        />
 
         <DownloadNode
         phase={phase}
@@ -283,7 +384,6 @@ export default function Laboratory() {
         onClick={() => {
         }}
         />
-
 
     </section>
 

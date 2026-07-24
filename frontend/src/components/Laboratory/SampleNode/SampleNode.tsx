@@ -2,19 +2,20 @@
 
 import styles from "./SampleNode.module.css";
 import type {LaboratoryPhase} from "../../../features/laboratory/laboratoryPhase";
+import { useRef, type ChangeEvent } from "react";
 
 type SampleNodeProps = {
     phase: LaboratoryPhase;
     loaded: boolean;
     label: string;
-    onClick: () => void;
+    onFileSelected: (file:File) => void;
 }
 
 export default function SampleNode({
     phase,
     loaded,
     label,
-    onClick
+    onFileSelected
 }: SampleNodeProps){
 
 console.log({
@@ -23,6 +24,29 @@ console.log({
     label
 });
 
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    const handleClick = () => {
+
+        if (loaded) return;
+
+        inputRef.current?.click();
+
+    }
+
+    const handleFileChange = (
+        event: React.ChangeEvent<HTMLInputElement>
+    ) => {
+
+        const file = event.target.files?.[0];
+
+        if (!file) return;
+
+        onFileSelected(file);
+
+        event.target.value = "";
+    }
+
     return(
 
         <div
@@ -30,14 +54,21 @@ console.log({
             className={`
                 ${styles.node}
                 ${styles[phase]}
-                }
                 ${loaded ? styles.loaded : styles.pending}
                 ${!loaded ? styles.waiting : ""}
             `}
 
-            onClick={!loaded ? onClick : undefined}
+            onClick={handleClick}
 
         >
+
+        <input
+            ref={inputRef}
+            type="file"
+            hidden
+            accept="image/*"
+            onChange={handleFileChange}
+        />
 
             <span className={styles.tooltip}>
                 {label}
