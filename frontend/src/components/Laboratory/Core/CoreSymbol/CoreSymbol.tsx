@@ -19,30 +19,31 @@ export default function CoreSymbol({
 
 }: CoreSymbolProps ) {
 
-    const active = [
-
-        "activated",
-
-        "synchronizing",
-
-        "processing",
-
-    ].inlcudes(phase);
+   const active = [
+    "activated",
+    "synchronizing",
+    "processing",
+].includes(phase);
 
     return (
 
         <svg
 
-        className={`
-        ${styles.symbol}
+   className={`
 
-        ${phase === "idle" && hovered ? styles.hover : ""}
+    ${styles.symbol}
 
-        ${phase ? styles.activated :"" }
+    ${styles[phase]}
 
-        `}
+    ${phase === "idle" && hovered ? styles.hover : ""}
 
-        viewBox="0 0 100 100"
+    ${
+        active && phase !== "activated"
+            ? styles.activated
+            : ""
+    }
+
+`}        viewBox="0 0 100 100"
 
         >
 
