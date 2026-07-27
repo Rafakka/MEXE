@@ -7,302 +7,79 @@ import SampleAnchor from "../Laboratory/SampleAnchor/SampleAnchor";
 import ReactionPanel from "../Laboratory/ReactionPanel/ReactionPanel";
 import ReactionField from "../Laboratory/ReactionField/ReactionField";
 import Notification from "../Notification/Notification";
-import {useEffect} from "react";
-import {mexeApi} from "../../api/mexeApi";
 import ResetLabNode from "../Laboratory/ActionNodes/resetNode/ResetLabNode";
 import DownloadNode from "../Laboratory/ActionNodes/downloadNode/DownloadNode";
 import {useSelector, useDispatch} from "react-redux";
 import type {RootState, AppDispatch} from "../../store/store";
 import {
-
-        setPhase,
         clearLaboratory,
-        setStartupFinished,
-        setOperationPhase,
-        setMergeResult,
         loadFirstSample,
         loadSecondSample,
-        setResultVisible,
-        setNotification,
-        clearNotification,
 
     } from "../../features/laboratory/laboratorySlice";
 
-import type {LaboratoryNotification} from "../../features/laboratory/laboratorySlice";
+import { runExperiment } from "../../features/laboratory/laboratoryThunks";
 
 import styles from "./Laboratory.module.css";
-
-const STARTUP_DURATION = 2600;
-const SYNCHRONIZING_DURATION = 2200;
-
 
 export default function Laboratory() {
 
     const dispatch = useDispatch<AppDispatch>();
 
-    const phase = useSelector(
+    const {
 
-    (state: RootState) => state.laboratory.phase
+        phase,
 
-    );
+        operationPhase,
 
-    const startupFinished = useSelector(
-    (state: RootState) => state.laboratory.startupFinished
-    );
+        samples,
 
-    const operationPhase = useSelector(
-    (state: RootState) => state.laboratory.operationPhase
-    );
+        mergeResult,
 
-    const samples = useSelector(
-    (state: RootState) => state.laboratory.samples
-    );
+        resultVisible,
 
-    const mergeResult = useSelector(
-    (state: RootState) => state.laboratory.mergeResult
-    );
+        notification,
 
-    const resultVisible = useSelector(
-        (state:RootState) => state.laboratory.resultVisible
+    } = useSelector(
+
+        (state:RootState) => state.laboratory
+
     );
 
     const handleFirstSample = (file:File) => {
 
         dispatch(loadFirstSample(file));
-    }
+    };
 
     const handleSecondSample = (file:File) => {
 
         dispatch(loadSecondSample(file));
-    }
+    };
 
-    const notification = useSelector(
-    (state: RootState) => state.laboratory.notification
-    );
+    const handleCoreClick = () => {
 
-    useEffect(() => {
+        if (phase !== "idle") return;
 
-    console.log("notification:", notification);
+        dispatch(runExperiment());
+    };
 
-    }, [notification]);
+    const handleReset = () => {
 
-    const isReadyToProcess =
-        samples.firstLoaded && samples.secondLoaded;
+    dispatch(clearLaboratory());
 
-    useEffect(() => {
 
-    console.log("phase:", phase);
-    console.log("operationPhase:", operationPhase);
-    console.log("samples:", samples);
+    };
 
-    }, [phase, operationPhase, samples]);
+    const view = {
 
-    useEffect(() => {
-        if (phase !== "activated") return;
+    areSamplesVisible:
+        phase === "activated" ||
+        phase === "synchronizing",
 
-        const timer = setTimeout(() => {
+    isProcessing:
+        phase === "processing",
 
-        dispatch(setStartupFinished(true));
-
-        }, STARTUP_DURATION);
-
-        return () => clearTimeout(timer);
-
-        }, [phase]);
-
-    useEffect(() => {
-
-        if (
-
-            phase !== "activated" ||
-
-            !startupFinished ||
-
-            !isReadyToProcess
-
-        ) return;
-
-        dispatch(setPhase("synchronizing"));
-
-        }, [
-
-            phase,
-
-            startupFinished,
-
-            isReadyToProcess,
-
-        ]);
-
-    useEffect(() => {
-
-        if (phase !== "synchronizing") return;
-
-        const timer = setTimeout(() => {
-
-            dispatch(setPhase("processing"));
-
-            dispatch(setOperationPhase("pending"));
-
-        }, SYNCHRONIZING_DURATION);
-
-        return () => clearTimeout(timer);
-
-    }, [phase, dispatch]);
-
-
-    useEffect(() => {
-
-        if (phase === "idle") {
-
-        dispatch(setStartupFinished(false));
-
-        dispatch(setOperationPhase("idle"));
-
-        dispatch(setMergeResult(null));
-
-        }},
-
-        [phase, dispatch]);
-
-    useEffect(() => {
-
-        if (operationPhase !== "pending") return;
-
-        async function executeMerge(){
-
-            try {
-
-                const {firstFile, secondFile } = samples;
-
-                if(!firstFile || !secondFile){
-                throw new Error("Samples not loaded");
-                }
-
-
-                dispatch(setOperationPhase("running"));
-
-                const result = await mexeApi.blend(
-                    firstFile,
-                    secondFile
-                );
-
-                dispatch(setMergeResult(result));
-
-                dispatch(setOperationPhase("completed"));
-
-                dispatch(
-
-                setNotification({
-
-                type:"success",
-
-                title:"Merge completed",
-
-                message:"Image generated."
-
-                })
-
-            );
-
-            } catch(error) {
-
-                console.error(error);
-
-            dispatch(
-
-                setNotification({
-
-                type:"error",
-
-                title:"Merge Error",
-
-                message:"Unable to merge images."
-
-                })
-
-            );
-
-            dispatch(setOperationPhase("failed"));
-
-            }
-
-        }
-
-        executeMerge();
-
-        }, [
-            operationPhase,
-
-            samples.firstFile,
-
-            samples.secondFile,
-
-            dispatch
-
-        ]);
-
-
-     useEffect(() => {
-
-        if(operationPhase !== "completed") return;
-
-        dispatch(setPhase("result"));
-
-        const timer = setTimeout(()=> {
-        dispatch(setResultVisible(true));
-
-        }, 5000 );
-
-        return ()=> clearTimeout(timer);
-
-        }, [operationPhase]);
-
-
-    useEffect(() => {
-
-    if (phase !== "resetting") return;
-
-    const timer = setTimeout(() => {
-
-        dispatch(clearLaboratory());
-
-    },1000);
-
-    return () => clearTimeout(timer);
-
-    }, [phase, dispatch]);
-
-
-    useEffect(() => {
-
-    if ( operationPhase !== "completed" &&
-    operationPhase !== "failed") return;
-
-    const timer = setTimeout(() => {
-
-    dispatch(setPhase("resetting"));
-
-    }, 3000);
-
-    return () => clearTimeout(timer);
-    }, [operationPhase, dispatch]);
-
-
-    const samplesVisible = phase === "activated" || phase === "synchronizing";
-
-    const isProcessing = phase === "processing";
-
-    function handleReset() {
-
-        if (phase !== "result") return;
-
-
-        dispatch(setResultVisible(false));
-        dispatch(setPhase("resetting"));
-
-        };
-
+    };
         return (
 
         <Layout phase={phase}>
@@ -313,28 +90,21 @@ export default function Laboratory() {
 
           <ReactionField
             phase={phase}
+            operationPhase={operationPhase}
             />
 
           <Core
           phase={phase}
-          onClick={()=>{
+          operationPhase={operationPhase}
+          onClick={handleCoreClick}
 
-            if (phase !== "idle"){
-                return;
-            }
-
-            dispatch(clearNotification());
-
-            dispatch(setPhase("activated"));
-
-            }}
-          />
+            />
 
         <SampleAnchor
             side="left"
-            visible={samplesVisible}
+            visible={view.areSamplesVisible}
             phase={phase}
-            floating={!samples.firstLoaded && !isProcessing}
+            floating={!samples.firstLoaded && !view.isProcessing}
             >
             <SampleNode
             phase={phase}
@@ -347,9 +117,9 @@ export default function Laboratory() {
 
         <SampleAnchor
             side="right"
-            visible={samplesVisible}
+            visible={view.areSamplesVisible}
             phase={phase}
-            floating={!samples.secondLoaded && !isProcessing}
+            floating={!samples.secondLoaded && !view.isProcessing}
             >
             <SampleNode
             phase={phase}

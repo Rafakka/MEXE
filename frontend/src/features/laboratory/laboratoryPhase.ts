@@ -10,7 +10,11 @@ export type LaboratoryPhase =
 
         | "processing"
 
+        | "stabilizing"
+
         | "result"
 
         | "resetting";
+
+
 

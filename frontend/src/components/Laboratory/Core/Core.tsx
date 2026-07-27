@@ -1,17 +1,19 @@
 
 import styles from "../Core/Core.module.css";
 import type {LaboratoryPhase} from "../../../features/laboratory/laboratoryPhase";
+import type {OperationPhase} from "../../../features/laboratory/operationPhase";
 import CoreSymbol from "../Core/CoreSymbol/CoreSymbol";
 import {useEffect, useState, type CSSProperties } from "react";
 
 
 type CoreProps = {
         phase: LaboratoryPhase;
+        operationPhase: OperationPhase;
         onClick: () => void;
 
     };
 
-export default function Core( {phase, onClick }:CoreProps ) {
+export default function Core( {phase, onClick, operationPhase }:CoreProps ) {
 
     const [hovered, setHovered] = useState(false);
 
@@ -22,6 +24,17 @@ export default function Core( {phase, onClick }:CoreProps ) {
         "resetting"
     ].includes(phase);
 
+    const className = [
+
+        styles.core,
+
+        styles[phase],
+
+        styles[operationPhase]
+
+    ].join(" ");
+
+
     useEffect(() => {
 
     if (phase !== "idle") {
@@ -31,6 +44,8 @@ export default function Core( {phase, onClick }:CoreProps ) {
     }
 
     }, [phase]);
+
+
 
     const outerParticles = [
 
@@ -171,6 +186,8 @@ export default function Core( {phase, onClick }:CoreProps ) {
 ); return (
 
     <div
+
+    className={className}
 
     className={`
         ${styles.core}

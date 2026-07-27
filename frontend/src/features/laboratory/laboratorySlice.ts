@@ -1,13 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-import type {PayloadAction} from "@reduxjs/toolkit";
+import type { OperationPhase } from "./operationPhase";
 
-interface SamplesState {
-    firstFile: File | null;
-    secondFile: File | null;
-    firstLoaded: boolean;
-    secondLoaded: boolean;
-}
+import type { LaboratoryPhase } from "./laboratoryPhase";
+
+import type {PayloadAction} from "@reduxjs/toolkit";
 
 export type NotificationType =
 
@@ -15,6 +12,15 @@ export type NotificationType =
     | "success"
     | "warning"
     | "error";
+
+
+export interface LaboratoryState {
+
+    phase: LaboratoryPhase;
+
+    operationPhase: OperationPhase;
+
+}
 
 export interface LaboratoryNotification {
 
@@ -65,22 +71,15 @@ const laboratorySlice = createSlice({
 
     reducers: {
 
-    setPhase(state, action) {
+    // USER EVENTS
 
-        state.phase = action.payload;
+    startExperiment(state) {
 
-    },
+        state.notification = null;
 
-    setStartupFinished(state, action) {
+        state.phase = "activated";
 
-        state.startupFinished = action.payload;
-
-    },
-
-    setOperationPhase(state, action) {
-
-        state.operationPhase = action.payload;
-
+        state.startupFinished = false;
     },
 
     loadFirstSample(state, action:PayloadAction<File>) {
@@ -96,6 +95,83 @@ const laboratorySlice = createSlice({
         state.samples.secondFile = action.payload;
 
         state.samples.secondLoaded = true;
+
+    },
+
+    // DOMAIN EVENTS
+
+    startupCompleted(state) {
+
+        state.startupFinished = true;
+
+        state.phase = "synchronizing";
+
+    },
+
+
+    mergeStarted(state){
+
+        state.phase = "processing";
+
+        state.operationPhase = "running";
+
+    },
+
+    mergeCompleted(state, action: PayloadAction<BlendResult>){
+
+        state.operationPhase = "completed";
+
+        state.mergeResult = action.payload;
+
+        state.notification = {
+
+            type: "success",
+
+            title: "Merge Completed",
+
+            message: "Image generated."
+        };
+    },
+
+    mergeFailed(state, action: PayloadAction<LaboratoryNotification>) {
+
+        state.operationPhase = "failed";
+
+        state.notification = action.payload;
+    },
+
+    clearLaboratory(state) {
+
+        state.phase = "idle";
+
+        state.startupFinished = false;
+
+        state.operationPhase = "idle";
+
+        state.samples.firstLoaded = false;
+
+        state.samples.secondLoaded = false;
+
+        state.samples.firstFile = null;
+
+        state.samples.secondFile = null;
+
+        state.mergeResult = null;
+
+        state.resultVisible = false;
+
+    },
+
+    //INTERNAL
+
+    setPhase(state, action) {
+
+        state.phase = action.payload;
+    },
+
+    setOperationPhase(state, action) {
+
+        state.operationPhase = action.payload;
 
     },
 
@@ -120,49 +196,52 @@ const laboratorySlice = createSlice({
         state.resultVisible = action.payload;
     },
 
-    clearLaboratory(state) {
+    stabilizationStarted(state) {
 
-        state.phase = "idle";
+        state.phase = "stabilizing";
+    },
 
-        state.startupFinished = false;
+    resultDisplayed(state) {
 
-        state.operationPhase = "idle";
+        state.phase = "result";
 
-        state.samples.firstLoaded = false;
+        state.resultVisible = true;
+    },
 
-        state.samples.secondLoaded = false;
+    resetStarted(state) {
 
-        state.mergeResult = null;
-
-        state.resultVisible = false;
+        state.phase = "resetting";
+    },
 
         }
 
-    }
+});
 
-    });
 
 export const {
 
-    setPhase,
-
-    setStartupFinished,
-
-    setOperationPhase,
-
-    setResultVisible,
+    startExperiment,
 
     loadFirstSample,
 
     loadSecondSample,
 
-    setMergeResult,
+    startupCompleted,
 
-    setNotification,
+    mergeStarted,
 
-    clearNotification,
+    mergeCompleted,
 
-    clearLaboratory
+    mergeFailed,
+
+    clearLaboratory,
+
+    stabilizationStarted,
+
+    resultDisplayed,
+
+    resetStarted,
+
 
 } = laboratorySlice.actions;
 
