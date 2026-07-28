@@ -1,10 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-import type { OperationPhase } from "./operationPhase";
+ import type { OperationPhase } from "./operationPhase";
 
 import type { LaboratoryPhase } from "./laboratoryPhase";
 
 import type {PayloadAction} from "@reduxjs/toolkit";
+
+import type {BlendResult} from "../../api/contracts/blend";
 
 export type NotificationType =
 
@@ -18,7 +20,27 @@ export interface LaboratoryState {
 
     phase: LaboratoryPhase;
 
+    startupFinished: boolean;
+
     operationPhase: OperationPhase;
+
+    samples: {
+
+        firstFile: File | null;
+
+        secondFile: File | null;
+
+        firstLoaded: boolean;
+
+        secondLoaded: boolean;
+
+    };
+
+    mergeResult: BlendResult | null;
+
+    resultVisible: boolean;
+
+    notification: LaboratoryNotification | null;
 
 }
 
@@ -34,7 +56,7 @@ export interface LaboratoryNotification {
 
 }
 
-const initialState = {
+const initialState: LaboratoryState = {
 
     phase: "idle",
 
@@ -59,9 +81,9 @@ const initialState = {
 
     resultVisible: false,
 
-    notification: null as LaboratoryNotification | null,
+    notification: null,
 
-};
+} satisfies LaboratoryState;
 
 const laboratorySlice = createSlice({
 
@@ -160,41 +182,11 @@ const laboratorySlice = createSlice({
 
         state.resultVisible = false;
 
+        state.notification = null;
+
     },
 
     //INTERNAL
-
-    setPhase(state, action) {
-
-        state.phase = action.payload;
-    },
-
-    setOperationPhase(state, action) {
-
-        state.operationPhase = action.payload;
-
-    },
-
-    setMergeResult(state, action) {
-
-        state.mergeResult = action.payload;
-
-    },
-
-    setNotification(state, action:PayloadAction<LaboratoryNotification>)
-    {
-      state.notification = action.payload;
-    },
-
-    clearNotification(state) {
-
-        state.notification = null;
-    },
-
-    setResultVisible(state, action: PayloadAction<boolean>)
-    {
-        state.resultVisible = action.payload;
-    },
 
     stabilizationStarted(state) {
 
@@ -221,27 +213,19 @@ const laboratorySlice = createSlice({
 export const {
 
     startExperiment,
-
     loadFirstSample,
-
     loadSecondSample,
 
     startupCompleted,
-
     mergeStarted,
-
     mergeCompleted,
-
     mergeFailed,
 
-    clearLaboratory,
-
     stabilizationStarted,
-
     resultDisplayed,
-
     resetStarted,
 
+    clearLaboratory,
 
 } = laboratorySlice.actions;
 
