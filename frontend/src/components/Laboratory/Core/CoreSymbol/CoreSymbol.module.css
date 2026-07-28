@@ -302,6 +302,9 @@
         1.5s
         ease-out
         forwards;
+    }
 
+.processing.failed{
+
+    opacity:.15;
 }
-

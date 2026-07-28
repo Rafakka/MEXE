@@ -37,7 +37,6 @@ export default function Notification({
             <p>{notification.message}</p>
 
         </aside>
-
     );
 
 }

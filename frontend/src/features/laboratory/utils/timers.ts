@@ -1,6 +1,6 @@
 
 
-    export const STARTUP_DURATION = 3000;
+    export const STARTUP_DURATION = 200;
 
     export const SYNCHRONIZING_DURATION = 3000;
 

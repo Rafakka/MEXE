@@ -720,6 +720,65 @@
 
 }
 
+@keyframes beaconBlink{
+
+    0%,100%{
+
+        opacity:0;
+
+        transform:
+            translate(-50%,-50%)
+            scale(.85);
+
+    }
+
+    10%{
+
+        opacity:1;
+
+        transform:
+            translate(-50%,-50%)
+            scale(1.08);
+
+    }
+
+    20%{
+
+        opacity:0;
+
+    }
+
+    35%{
+
+        opacity:1;
+
+    }
+
+    45%{
+
+        opacity:0;
+
+    }
+
+    60%{
+
+        opacity:1;
+
+        transform:
+            translate(-50%,-50%)
+            scale(1);
+
+    }
+
+    100%{
+
+        opacity:0;
+
+    }
+
+}
+
+
 /*--------------------
  *
  *
@@ -1082,6 +1141,63 @@
 
 
 }
+
+
+.errorBeacon{
+
+    position:absolute;
+
+    left:50%;
+    top:45%;
+
+    transform:translate(-50%,-50%);
+
+    width:22px;
+    height:78px;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:space-between;
+
+    pointer-events:none;
+
+    animation:beaconBlink 3s ease-in-out infinite;
+
+    z-index:999;
+
+}
+
+.bar{
+
+    width:5px;
+    height:58px;
+
+    border-radius:999px;
+
+    background:#ff4d4d;
+
+    box-shadow:
+        0 0 8px rgba(255,80,80,.9),
+        0 0 18px rgba(255,60,60,.5);
+
+}
+
+.dot{
+
+    width:9px;
+    height:9px;
+
+    border-radius:50%;
+
+    background:#ff4d4d;
+
+    box-shadow:
+        0 0 8px rgba(255,80,80,.9),
+        0 0 18px rgba(255,60,60,.5);
+
+}
+
 
 
  /*-------------------
@@ -1520,7 +1636,6 @@
 }
 
 
-
 /*---------------
  *
  * HELPERS
@@ -1603,7 +1718,6 @@
         infinite;
 
 }
-
 
 /*-------------
  *

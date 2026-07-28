@@ -4,7 +4,8 @@ import type {LaboratoryPhase} from "../../../features/laboratory/laboratoryPhase
 import type {OperationPhase} from "../../../features/laboratory/operationPhase";
 import CoreSymbol from "../Core/CoreSymbol/CoreSymbol";
 import {useEffect, useState, type CSSProperties } from "react";
-
+import {useSelector} from "react-redux";
+import {selectHasErrorNotification} from "../laboratorySelectors";
 
 type CoreProps = {
         phase: LaboratoryPhase;
@@ -33,6 +34,10 @@ export default function Core( {phase, onClick, operationPhase }:CoreProps ) {
         styles[operationPhase]
 
     ].join(" ");
+
+    const showErrorBeacon = useSelector(
+        selectHasErrorNotification
+    );
 
 
     useEffect(() => {
@@ -187,8 +192,6 @@ export default function Core( {phase, onClick, operationPhase }:CoreProps ) {
 
     <div
 
-    className={className}
-
     className={`
         ${styles.core}
         ${styles[phase]}
@@ -271,9 +274,22 @@ export default function Core( {phase, onClick, operationPhase }:CoreProps ) {
 
     <div className={styles.planet} />
 
+    {showErrorBeacon && (
+
+        <div className={styles.errorBeacon}>
+
+            <span className={styles.bar}></span>
+
+            <span className={styles.dot}></span>
+
+        </div>
+
+    )}
+
     <CoreSymbol
       phase={phase}
       hovered={hovered}
+      operationPhase={operationPhase}
     />
 
   </div>

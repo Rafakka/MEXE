@@ -95,7 +95,7 @@ const laboratorySlice = createSlice({
 
     // USER EVENTS
 
-    startExperiment(state) {
+    activatedExperiment(state) {
 
         state.notification = null;
 
@@ -182,8 +182,6 @@ const laboratorySlice = createSlice({
 
         state.resultVisible = false;
 
-        state.notification = null;
-
     },
 
     //INTERNAL
@@ -212,7 +210,7 @@ const laboratorySlice = createSlice({
 
 export const {
 
-    startExperiment,
+    activatedExperiment,
     loadFirstSample,
     loadSecondSample,
 

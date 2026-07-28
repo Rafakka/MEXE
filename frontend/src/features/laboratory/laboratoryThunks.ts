@@ -2,10 +2,11 @@
 
 import type {AppDispatch, RootState} from "../../store/store";
 
+import {selectSamplesReady} from "../../components/Laboratory/laboratorySelectors";
 
 import {
 
-    startExperiment,
+    activatedExperiment,
 
     startupCompleted,
 
@@ -41,12 +42,42 @@ import {delay} from "../../features/laboratory/utils/delay";
 
 import { mexeApi } from "../../api/mexeApi";
 
+    export const activeLab = () =>
+
+        async (
+            dispatch: AppDispatch
+        ) => {
+
+            dispatch(activatedExperiment());
+
+        };
+
+    export const tryStartExperiment =
+        () => async (
+            dispatch: AppDispatch,
+            getState: () => RootState
+        ) => {
+
+        if (!selectSamplesReady(getState())) {
+        return;
+        }
+
+        return dispatch(runExperiment());
+
+        };
 
     export const runExperiment = () =>
 
-        async (dispatch: AppDispatch) => {
+        async (
+            dispatch: AppDispatch,
+            getState: () => RootState
+        ) => {
 
-            dispatch(startExperiment());
+            const ready = selectSamplesReady(getState());
+
+            if (!ready) {
+                return;
+            }
 
             await delay(STARTUP_DURATION);
 
@@ -56,7 +87,15 @@ import { mexeApi } from "../../api/mexeApi";
 
             dispatch(mergeStarted());
 
-            return await dispatch(performMerge());
+            const success = await dispatch(performMerge());
+
+            if (!success) {
+                dispatch(clearLaboratory());
+
+                return;
+            }
+
+            return await dispatch(stabilizeExperiment());
         };
 
 
@@ -93,11 +132,9 @@ import { mexeApi } from "../../api/mexeApi";
 
         );
 
-        dispatch(
+        dispatch(mergeCompleted(result));
 
-            mergeCompleted(result)
-
-        );
+        return true;
 
     }
 
@@ -119,16 +156,11 @@ import { mexeApi } from "../../api/mexeApi";
 
             );
 
+            return false;
 
         }
-
-        return await dispatch(
-
-            stabilizeExperiment()
-
-        );
-
     };
+
 
     export const stabilizeExperiment =
     () => async (

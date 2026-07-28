@@ -18,7 +18,7 @@ import {
 
     } from "../../features/laboratory/laboratorySlice";
 
-import { runExperiment } from "../../features/laboratory/laboratoryThunks";
+import { activeLab, tryStartExperiment } from "../../features/laboratory/laboratoryThunks";
 
 import styles from "./Laboratory.module.css";
 
@@ -46,27 +46,31 @@ export default function Laboratory() {
 
     );
 
-    const handleFirstSample = (file:File) => {
+    const handleFirstSample = (file:File | null) => {
+
+        if (!file) return;
 
         dispatch(loadFirstSample(file));
+
+        dispatch(tryStartExperiment());
     };
 
-    const handleSecondSample = (file:File) => {
+    const handleSecondSample = (file:File | null) => {
+        if(!file) return;
 
         dispatch(loadSecondSample(file));
+
+        dispatch(tryStartExperiment());
     };
 
     const handleCoreClick = () => {
 
-        if (phase !== "idle") return;
-
-        dispatch(runExperiment());
+        dispatch(activeLab());
     };
 
     const handleReset = () => {
 
-    dispatch(clearLaboratory());
-
+        dispatch(clearLaboratory());
 
     };
 

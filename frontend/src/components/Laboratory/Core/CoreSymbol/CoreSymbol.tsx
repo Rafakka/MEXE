@@ -2,12 +2,15 @@
 
 import styles from "./CoreSymbol.module.css";
 import type {LaboratoryPhase} from "../../../../features/laboratory/laboratoryPhase";
+import type {OperationPhase} from "../../../../features/laboratory/operationPhase";
 
 type CoreSymbolProps = {
 
     phase: LaboratoryPhase;
 
     hovered: boolean;
+
+    operationPhase : OperationPhase;
 
 };
 
@@ -16,6 +19,8 @@ export default function CoreSymbol({
     phase,
 
     hovered,
+
+    operationPhase,
 
 }: CoreSymbolProps ) {
 
@@ -27,6 +32,8 @@ export default function CoreSymbol({
 
     return (
 
+    console.log({ phase, operationPhase }),
+
         <svg
 
    className={`
@@ -34,6 +41,8 @@ export default function CoreSymbol({
     ${styles.symbol}
 
     ${styles[phase]}
+
+    ${styles[operationPhase]}
 
     ${phase === "idle" && hovered ? styles.hover : ""}
 

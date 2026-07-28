@@ -1,21 +1,187 @@
 
+@keyframes notificationFadeIn{
+
+    from{
+        opacity:0;
+        filter:blur(8px);
+    }
+
+    to{
+        opacity:1;
+        filter:blur(0);
+    }
+
+}
+
+@keyframes notificationFloat{
+
+    0%{
+        transform:translateX(-80%) translateY(0);
+    }
+
+    25%{
+        transform:translateX(-80%) translateY(-2px);
+    }
+
+    50%{
+        transform:translateX(-80%) translateY(1px);
+    }
+
+    75%{
+        transform:translateX(-80%) translateY(-1px);
+    }
+
+    100%{
+        transform:translateX(-80%) translateY(0);
+    }
+
+}
+
+@keyframes textFloat{
+
+    0%,100%{
+        letter-spacing:.02em;
+        opacity:.92;
+    }
+
+    50%{
+        letter-spacing:.05em;
+        opacity:1;
+    }
+
+}
+
+
+@keyframes notificationFadeOut{
+
+    from{
+
+        opacity:1;
+        filter:blur(0);
+
+    }
+
+    to{
+
+        opacity:0;
+        filter:blur(8px);
+
+    }
+
+}
+
+@keyframes beaconFlash{
+
+    0%,100%{
+
+        opacity:0;
+        transform:translate(-50%,-50%) scale(.8);
+
+    }
+
+    10%{
+
+        opacity:1;
+        transform:translate(-50%,-50%) scale(1.08);
+
+    }
+
+    20%{
+
+        opacity:0;
+
+    }
+
+    35%{
+
+        opacity:1;
+        transform:translate(-50%,-50%) scale(1);
+
+    }
+
+    45%{
+
+        opacity:0;
+
+    }
+
+    60%{
+
+        opacity:1;
+        transform:translate(-50%,-50%) scale(1.05);
+
+    }
+
+    100%{
+
+        opacity:0;
+
+    }
+
+}
 
 .notification{
 
     position:absolute;
+    bottom:5rem;
+    left:70%;
 
-    bottom:3rem;
+    transform:translateX(-80%);
 
-    left:50%;
-
-    transform:translateX(-50%);
-
-    width:420px;
-
+    width:350px;
     padding:1rem;
-
     border-radius:14px;
-
     backdrop-filter:blur(20px);
+
+    animation:
+        notificationFadeIn .8s ease,
+        notificationFloat 5s ease-in-out infinite;
+
+}
+
+.notification h2,
+.notification p{
+
+    animation:textFloat 4s ease-in-out infinite;
+
+}
+
+.notification.hide{
+
+    animation:notificationFadeOut .45s ease forwards;
+
+}
+
+.errorBeacon{
+
+    width:18px;
+    height:60px;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:space-between;
+
+}
+
+.bar{
+
+    width:4px;
+    height:40px;
+
+    border-radius:99px;
+
+    background:#ff5c5c;
+
+}
+
+.dot{
+
+    width:8px;
+    height:8px;
+
+    border-radius:50%;
+
+    background:#ff5c5c;
 
 }
