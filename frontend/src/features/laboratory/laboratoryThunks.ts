@@ -95,7 +95,7 @@ import { mexeApi } from "../../api/mexeApi";
                 return;
             }
 
-            return await dispatch(stabilizeExperiment());
+            return success;
         };
 
 
@@ -131,6 +131,8 @@ import { mexeApi } from "../../api/mexeApi";
             secondFile
 
         );
+
+        console.log(result);
 
         dispatch(mergeCompleted(result));
 

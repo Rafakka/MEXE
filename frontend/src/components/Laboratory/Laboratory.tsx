@@ -13,6 +13,7 @@ import {useSelector, useDispatch} from "react-redux";
 import type {RootState, AppDispatch} from "../../store/store";
 import {
         clearLaboratory,
+        clearNotification,
         loadFirstSample,
         loadSecondSample,
 
@@ -34,7 +35,7 @@ export default function Laboratory() {
 
         samples,
 
-        mergeResult,
+        resultImage,
 
         resultVisible,
 
@@ -71,6 +72,8 @@ export default function Laboratory() {
     const handleReset = () => {
 
         dispatch(clearLaboratory());
+
+        dispatch(clearNotification());
 
     };
 
@@ -143,7 +146,7 @@ export default function Laboratory() {
         <ReactionPanel
         phase={phase}
         visible={resultVisible}
-        result={mergeResult}
+        resultUrl={resultImage}
         />
 
         <ResetLabNode

@@ -5,10 +5,11 @@ import type {LaboratoryPhase} from "../../../features/laboratory/laboratoryPhase
 
 type ReactionPanelProps = {
     phase: LaboratoryPhase;
-    visible: boolean
+    visible: boolean;
+    resultUrl?: string | null;
 };
 
-export default function ReactionPanel({phase, visible }:ReactionPanelProps){
+export default function ReactionPanel({phase, visible, resultUrl }:ReactionPanelProps){
 
     return(
 
@@ -33,7 +34,13 @@ export default function ReactionPanel({phase, visible }:ReactionPanelProps){
         <div className={styles.surface}>
 
             <div className={styles.preview}>
-
+                {resultUrl && (
+                    <img
+                        src={resultUrl}
+                        alt="Merged result"
+                        className={styles.image}
+                    />
+                )}
             </div>
 
             <div className={styles.metadata}>

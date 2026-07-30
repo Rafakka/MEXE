@@ -6,7 +6,6 @@ import type { LaboratoryPhase } from "./laboratoryPhase";
 
 import type {PayloadAction} from "@reduxjs/toolkit";
 
-import type {BlendResult} from "../../api/contracts/blend";
 
 export type NotificationType =
 
@@ -36,7 +35,7 @@ export interface LaboratoryState {
 
     };
 
-    mergeResult: BlendResult | null;
+    resultImage: string | null;
 
     resultVisible: boolean;
 
@@ -77,7 +76,7 @@ const initialState: LaboratoryState = {
 
     },
 
-    mergeResult: null,
+    resultImage: null,
 
     resultVisible: false,
 
@@ -139,11 +138,11 @@ const laboratorySlice = createSlice({
 
     },
 
-    mergeCompleted(state, action: PayloadAction<BlendResult>){
+    mergeCompleted(state, action: PayloadAction<string>){
 
         state.operationPhase = "completed";
 
-        state.mergeResult = action.payload;
+        state.resultImage = action.payload;
 
         state.notification = {
 
@@ -178,10 +177,15 @@ const laboratorySlice = createSlice({
 
         state.samples.secondFile = null;
 
-        state.mergeResult = null;
+        state.resultImage = null;
 
         state.resultVisible = false;
 
+    },
+
+    clearNotification (state) {
+
+        state.notification = null;
     },
 
     //INTERNAL
@@ -224,6 +228,7 @@ export const {
     resetStarted,
 
     clearLaboratory,
+    clearNotification,
 
 } = laboratorySlice.actions;
 

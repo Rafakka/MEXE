@@ -1,7 +1,7 @@
 
 
-import {postBlob} from "../../api/http";
-import { ENDPOINTS } from "../../api/endpoints";
+import {postBlob} from "../api/http";
+import { ENDPOINTS } from "../api/endpoints";
 
 export async function blend(
 
@@ -26,7 +26,17 @@ export async function blend(
         formData,
     );
 
-    return URL.createObjectURL(blob);
+    console.log(blob);
+    console.log(blob.size);
+    console.log(blob.type);
+
+    const url = URL.createObjectURL(blob);
+
+    console.log(url);
+
+    return url;
+
+    //return URL.createObjectURL(blob);
 
 }
 

@@ -350,22 +350,60 @@
 
 }
 
-.processing .rotorA{
+.processing.running .rotorA{
 
     animation:
 
-    rotorAcceleration 2s forwards,
-    rotorSpinA var(--rotor-speed) linear 1.2s infinite;
+        rotorSpinA
+
+        var(--rotor-speed)
+
+        linear
+
+        infinite;
 
 }
 
-.processing .rotorB{
+.processing.running .rotorB{
 
     animation:
 
-    rotorAcceleration 2s forwards,
-    rotorSpinB var(--rotor-speed) linear 1.2s infinite;
+        rotorSpinA
 
+        var(--rotor-speed)
+
+        linear
+
+        infinite;
+
+}
+
+.processing.completed .rotorA{
+
+    animation:
+
+        rotorAcceleration 5s forwards;
+}
+
+.processing.completed .rotorB{
+
+    animation:
+
+        rotorAcceleration 5s forwards;
+}
+
+.processing.completed .axisA{
+
+    animation:
+
+        axisDisappear 900ms forwards;
+}
+
+.processing.completed .axisB{
+
+    animation:
+
+        axisDisappear 900ms forwards;
 }
 
 /*-------synchronizing----------*/
