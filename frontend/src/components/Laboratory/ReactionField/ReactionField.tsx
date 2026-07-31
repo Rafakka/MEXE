@@ -25,47 +25,36 @@ export default function ReactionField({
 
     const dispatch = useDispatch();
 
-    const handleAnimationEnd = (
-        event: React.AnimationEvent<HTMLDivElement>
+   const handleAnimationEnd = (
+    event: React.AnimationEvent<HTMLDivElement>
     ) => {
 
-        console.log(
+    const name = event.animationName;
 
-            event.currentTarget,
+    switch (phase) {
 
-            event.target,
+        case "processing": {
 
-            event.animationName
+            if (operationPhase !== "completed") return;
 
-        );
+            if (!name.includes("rotorAcceleration")) return;
 
-        if (
-        phase !== "processing" ||
-        operationPhase !== "completed"
-        ) {
-            if (event.target !== event.currentTarget){
-                return;
-            }
+            dispatch(stabilizationStarted());
 
-            if (!event.animationName.includes("rotorAcceleration")){
-                return;
-            }
-
-            if (
-                phase === "processing" && operationPhase === "completed"
-            ) {
-                console.log(">>> stabilizationStarted");
-                dispatch(stabilizationStarted());
-                return;
-            }
-
-            if (phase === "stabilizing") {
-
-                console.log('stabilizing:', event.animationName);
-
-                return;
-            }
+            return;
         }
+
+        case "stabilizing": {
+
+            if (!name.includes("axisDisappear")) return;
+
+            dispatch(resultDisplayed());
+
+            return;
+            }
+
+        }
+
     };
 
     const phaseClass = styles[phase]
@@ -75,6 +64,18 @@ export default function ReactionField({
             ? styles[operationPhase]
             : "";
 
+    console.log({
+
+    phase,
+
+    operationPhase,
+
+    phaseClass,
+
+    operationClass
+
+    });
+
     return (
 
         <div
@@ -83,14 +84,15 @@ export default function ReactionField({
                 ${styles.field}
                 ${phaseClass}
                 ${operationClass}
+
             `}
+            onAnimationEnd={handleAnimationEnd}
 
         >
 
-            <div className={styles.rotorA}
-            onAnimationEnd={handleAnimationEnd}>
+            <div className={styles.rotorA}>
 
-                <div className={styles.axisA} />
+                <div className={styles.axisA}/>
 
             </div>
 
@@ -104,4 +106,6 @@ export default function ReactionField({
 
         </div>
     );
+
 }
+
