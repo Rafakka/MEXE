@@ -6,7 +6,13 @@ export type OperationPhase =
 
     | "pending"
 
+    | "revealing"
+
     | "running"
+
+    | "accelerating"
+
+    | "collapse"
 
     | "completed"
 

@@ -1,9 +1,16 @@
 
+export const STARTUP_DURATION = 800;
 
-    export const STARTUP_DURATION = 200;
+export const SYNCHRONIZING_DURATION = 900;
 
-    export const SYNCHRONIZING_DURATION = 3000;
+export const PROCESSING_DURATION = 3000;
 
-    export const STABILIZATION_DURATION = 3000;
+export const AXIS_REVEAL_DURATION = 3000;
 
-    export const RESET_DURATION = 1000;
+export const AXIS_ROTATION_TIME = 2000;
+
+export const STABILIZATION_DURATION = 5000;
+
+export const RESULT_DURATION = 1000;
+
+export const RESET_DURATION = 1200;

@@ -2,219 +2,160 @@
 
 /*-------- animation -------*/
 
-@keyframes rotorSpinA{
+
+@keyframes axisAReveal {
+    0%   { opacity: 0;}
+    55%  { opacity: .65;}
+    100% { opacity: 1;}
+}
+
+@keyframes axisBReveal {
+    0%   { opacity: 0;}
+    55%  { opacity: .65;}
+    100% { opacity: 1;}
+}
+
+@keyframes axisRevealA{
 
     from{
 
-        transform:
-
-            translate(-50%,-50%)
-
-            rotate(0deg);
+        opacity:0;
+        scale:.7;
 
     }
 
     to{
 
+        opacity:1;
+        scale:1;
+
+    }
+
+}
+
+@keyframes rotorSpinA {
+
+    from {
+
         transform:
+            translate(-50%, -50%)
+            rotate(0deg);
 
-            translate(-50%,-50%)
+    }
 
+    to {
+
+        transform:
+            translate(-50%, -50%)
             rotate(360deg);
 
     }
 
 }
 
-@keyframes rotorSpinB{
+@keyframes rotorSpinB {
 
-    from{
+    from {
 
         transform:
-
-            translate(-50%,-50%)
-
+            translate(-50%, -50%)
             rotate(0deg);
 
     }
 
-    to{
+    to {
 
         transform:
-
-            translate(-50%,-50%)
-
+            translate(-50%, -50%)
             rotate(-360deg);
 
     }
 
 }
 
+@keyframes rotorAccelerationA {
 
-@keyframes axisAReveal {
-    0%   { opacity: 0; transform: translate(-50%, -50%) rotate(0deg) scale(.75); }
-    55%  { opacity: .65; transform: translate(-50%, -50%) rotate(12deg) scale(.92); }
-    100% { opacity: 1; transform: translate(-50%, -50%) rotate(45deg) scale(1); }
-}
-
-@keyframes axisBReveal {
-    0%   { opacity: 0; transform: translate(-50%, -50%) rotate(0deg) scale(.75); }
-    55%  { opacity: .65; transform: translate(-50%, -50%) rotate(-12deg) scale(.92); }
-    100% { opacity: 1; transform: translate(-50%, -50%) rotate(-45deg) scale(1); }
-}
-
-@keyframes axisFade{
-
-    0%{
-
-        opacity:1;
-
-    }
-
-    100%{
-
-        opacity:.18;
-
-    }
-
-}
-
-
-@keyframes rotorAccelerationA{
-
-    0%{
+    0% {
 
         transform:
-            translate(-50%,-50%)
+            translate(-50%, -50%)
             rotate(0deg);
 
     }
 
-    20%{
+    15% {
 
         transform:
-            translate(-50%,-50%)
+            translate(-50%, -50%)
+            rotate(20deg);
+
+    }
+
+    35% {
+
+        transform:
+            translate(-50%, -50%)
             rotate(120deg);
 
     }
 
-    45%{
+    60% {
 
         transform:
-            translate(-50%,-50%)
-            rotate(480deg);
+            translate(-50%, -50%)
+            rotate(520deg);
 
     }
 
-    70%{
+    100% {
 
         transform:
-            translate(-50%,-50%)
-            rotate(1200deg);
-
-    }
-
-    100%{
-
-        transform:
-            translate(-50%,-50%)
+            translate(-50%, -50%)
             rotate(2400deg);
 
     }
 
 }
 
-@keyframes rotorAccelerationB{
+@keyframes rotorAccelerationB {
 
-    0%{
+    0% {
 
         transform:
-            translate(-50%,-50%)
+            translate(-50%, -50%)
             rotate(0deg);
 
     }
 
-    20%{
+    15% {
 
         transform:
-            translate(-50%,-50%)
+            translate(-50%, -50%)
+            rotate(-20deg);
+
+    }
+
+    35% {
+
+        transform:
+            translate(-50%, -50%)
             rotate(-120deg);
 
     }
 
-    45%{
+    60% {
 
         transform:
-            translate(-50%,-50%)
-            rotate(-480deg);
+            translate(-50%, -50%)
+            rotate(-520deg);
 
     }
 
-    70%{
+    100% {
 
         transform:
-            translate(-50%,-50%)
-            rotate(-1200deg);
-
-    }
-
-    100%{
-
-        transform:
-            translate(-50%,-50%)
+            translate(-50%, -50%)
             rotate(-2400deg);
-
-    }
-
-}
-
-@keyframes rotorAcceleration{
-
-    0%{
-
-        transform:
-            translate(-50%,-50%)
-            rotate(0deg);
-
-    }
-
-    8%{
-
-        transform:
-            translate(-50%,-50%)
-            rotate(8deg);
-
-    }
-
-    20%{
-
-        transform:
-            translate(-50%,-50%)
-            rotate(35deg);
-
-    }
-
-    40%{
-
-        transform:
-            translate(-50%,-50%)
-            rotate(180deg);
-
-    }
-
-    70%{
-
-        transform:
-            translate(-50%,-50%)
-            rotate(720deg);
-
-    }
-
-    100%{
-
-        transform:
-            translate(-50%,-50%)
-            rotate(1800deg);
 
     }
 
@@ -314,20 +255,25 @@
 }
 
 
+/*-------- base states --------*/
 
-/*-------- base --------*/
+.idle {}
 
-.running{
+.activated {}
 
-}
+.processing {}
 
-.completed{
+.revealing {}
 
-}
+.result {}
 
-.failed{
+.running{}
 
-}
+.completed{}
+
+.failed{}
+
+/*------- base objects ------*/
 
 .field{
 
@@ -347,7 +293,7 @@
 
     --reaction-intensity:1;
 
-    --rotor-speed:.90;
+    --rotor-speed:.90s;
 
 }
 
@@ -378,11 +324,9 @@
 
         translate(-50%, -50%)
 
-       rotate(0deg)
+       rotate(45deg);
 
-       scale(.75);
-
-    overflow:visible;
+       overflow:visible;
 }
 
 .axisB{
@@ -411,9 +355,7 @@
 
         translate(-50%, -50%)
 
-        rotate(0deg)
-
-        scale(.75);
+        rotate(0deg);
 
     overflow:visible;
 
@@ -439,99 +381,48 @@
 
 /*-------processing--------*/
 
-.processing {
+.rotorA.revealing .axisA {
+
+    animation: axisAReveal .9s forwards;
 
 }
 
-.processing .axisA {
-    animation: axisAReveal 1s cubic-bezier(.22,.61,.36,1) 1.8s forwards;
+.rotorB.revealing .axisB {
 
+    animation: axisBReveal .9s .2s forwards;
 }
 
-.processing .axisB {
-    animation: axisBReveal 1s cubic-bezier(.22,.61,.36,1) 2.2s forwards;
-
-}
-
-
-.completed .rotorA{
+.rotorA.running {
 
     animation:
-
-        rotorAcceleration 5s forwards;
+        rotorSpinA .7s linear infinite;
 }
 
-.completed .rotorB{
+.rotorB.running {
 
     animation:
-
-        rotorAcceleration 5s forwards;
+        rotorSpinB .80s linear infinite;
 }
 
-/*-------synchronizing----------*/
+.rotorA.acceleration{
 
-.stabilizing{
-
+    animation:rotorAccelerationA 1.2s forwards;
 }
 
-.stabilizing .rotorA{
+.rotorB.acceleration{
 
-    animation:
-
-        rotorSpinA
-
-        var(--rotor-speed)
-
-        linear
-
-        infinite;
-
+    animation:rotorAccelerationB 1.0s forwards;
 }
-
-.stabilizing .rotorB{
-
-    animation:
-
-        rotorSpinB
-
-        var(--rotor-speed)
-
-        linear
-
-        infinite;
-
-}
-
 
 /*-------result---------------*/
 
-.result {
-
-}
-
-.result .rotorA{
-
-    animation:
-
-        rotorCollapseA 900ms cubic-bezier(.22,.61,.36,1) forwards;
-
-}
-
-.result .rotorB{
-
-    animation:
-
-        rotorCollapseB 900ms cubic-bezier(.22,.61,.36,1) forwards;
-
-}
-
-.result .axisA{
+.rotorA.collapse .axisA{
 
     animation:axisDisappear 900ms forwards;
 
 }
 
-.result .axisB{
+.rotorB.collapse .axisB{
 
     animation:axisDisappear 900ms forwards;
 

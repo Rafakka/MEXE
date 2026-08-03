@@ -134,7 +134,7 @@ const laboratorySlice = createSlice({
 
         state.phase = "processing";
 
-        state.operationPhase = "running";
+        state.operationPhase = "revealing";
 
     },
 
@@ -190,6 +190,10 @@ const laboratorySlice = createSlice({
 
     //INTERNAL
 
+    processingRunning(state){
+        state.operationPhase = "running";
+    },
+
     stabilizationStarted(state) {
 
         state.phase = "stabilizing";
@@ -223,6 +227,7 @@ export const {
     mergeCompleted,
     mergeFailed,
 
+    processingRunning,
     stabilizationStarted,
     resultDisplayed,
     resetStarted,

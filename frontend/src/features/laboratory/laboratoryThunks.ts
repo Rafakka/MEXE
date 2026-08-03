@@ -16,6 +16,8 @@ import {
 
     mergeFailed,
 
+    processingRunning,
+
     stabilizationStarted,
 
     resultDisplayed,
@@ -30,17 +32,27 @@ import {
 
     STARTUP_DURATION,
 
+    AXIS_REVEAL_DURATION,
+
+    AXIS_ROTATION_TIME,
+
     SYNCHRONIZING_DURATION,
+
+    PROCESSING_DURATION,
 
     STABILIZATION_DURATION,
 
-    RESET_DURATION
+    RESULT_DURATION,
+
+    RESET_DURATION,
+
 
     } from "../../features/laboratory/utils/timers";
 
 import {delay} from "../../features/laboratory/utils/delay";
 
 import { mexeApi } from "../../api/mexeApi";
+
 
     export const activeLab = () =>
 
@@ -87,6 +99,12 @@ import { mexeApi } from "../../api/mexeApi";
 
             dispatch(mergeStarted());
 
+            await delay(AXIS_REVEAL_DURATION);
+
+            dispatch(processingRunning());
+
+            await delay(AXIS_ROTATION_TIME);
+
             const success = await dispatch(performMerge());
 
             if (!success) {
@@ -124,6 +142,8 @@ import { mexeApi } from "../../api/mexeApi";
 
         }
 
+        console.log(">>> API START");
+
         const result = await mexeApi.blend(
 
             firstFile,
@@ -132,9 +152,19 @@ import { mexeApi } from "../../api/mexeApi";
 
         );
 
-        console.log(result);
+        console.log(">>> API END");
 
         dispatch(mergeCompleted(result));
+
+        await delay(PROCESSING_DURATION);
+
+        console.log(">>DISPATCHING STABILIZATING")
+
+        dispatch(stabilizationStarted());
+
+        await delay(STABILIZATION_DURATION);
+
+        dispatch(resultDisplayed());
 
         return true;
 
@@ -161,51 +191,6 @@ import { mexeApi } from "../../api/mexeApi";
             return false;
 
         }
-    };
-
-
-    export const stabilizeExperiment =
-    () => async (
-
-    dispatch: AppDispatch,
-
-    getState: () => RootState
-
-    ) => {
-
-    await delay(STABILIZATION_DURATION);
-
-    dispatch(stabilizationStarted());
-
-    await delay(STABILIZATION_DURATION);
-
-    const {
-
-        operationPhase
-
-    } = getState().laboratory;
-
-    if (operationPhase === "completed") {
-
-        dispatch(resultDisplayed());
-
-    }
-
-    else {
-
-        dispatch(
-
-            resetStarted()
-
-            );
-
-        await dispatch(
-
-           resetExperiment()
-        );
-
-        }
-
     };
 
 

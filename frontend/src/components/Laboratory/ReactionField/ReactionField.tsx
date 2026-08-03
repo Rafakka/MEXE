@@ -5,7 +5,6 @@ import { useDispatch } from "react-redux";
 import type {LaboratoryPhase} from "../../../features/laboratory/laboratoryPhase";
 import type {OperationPhase} from "../../../features/laboratory/operationPhase";
 import {
-    stabilizationStarted,
     resultDisplayed,
 } from "../../../features/laboratory/laboratorySlice";
 
@@ -33,27 +32,19 @@ export default function ReactionField({
 
     switch (phase) {
 
-        case "processing": {
-
-            if (operationPhase !== "completed") return;
+        case "stabilizing": {
 
             if (!name.includes("rotorAcceleration")) return;
 
-            dispatch(stabilizationStarted());
-
-            return;
-        }
-
-        case "stabilizing": {
-
-            if (!name.includes("axisDisappear")) return;
-
-            dispatch(resultDisplayed());
-
-            return;
+                dispatch(resultDisplayed()); return;
             }
 
         }
+
+    console.log({
+    phase,
+    operationPhase,
+    });
 
     };
 
@@ -78,33 +69,22 @@ export default function ReactionField({
 
     return (
 
-        <div
-            className={`
+        <div className={styles.field}>
 
-                ${styles.field}
-                ${phaseClass}
-                ${operationClass}
-
-            `}
-            onAnimationEnd={handleAnimationEnd}
-
-        >
-
-            <div className={styles.rotorA}>
+            <div className={`${styles.rotorA} ${styles[operationPhase]}`}>
 
                 <div className={styles.axisA}/>
 
             </div>
 
+        <div className={`${styles.rotorB} ${styles[operationPhase]}`}>
 
-            <div className={styles.rotorB}>
-
-                <div className={styles.axisB} />
+            <div className={styles.axisB}/>
 
             </div>
 
-
         </div>
+
     );
 
 }
