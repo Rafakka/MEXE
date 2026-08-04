@@ -15,24 +15,6 @@
     100% { opacity: 1;}
 }
 
-@keyframes axisRevealA{
-
-    from{
-
-        opacity:0;
-        scale:.7;
-
-    }
-
-    to{
-
-        opacity:1;
-        scale:1;
-
-    }
-
-}
-
 @keyframes rotorSpinA {
 
     from {
@@ -235,20 +217,11 @@
     0%{
 
         opacity:1;
-
-        transform:
-            translate(-50%,-50%)
-            scale(1);
     }
 
     100%{
 
         opacity:0;
-
-        transform:
-            translate(-50%,-50%)
-            scale(.6);
-
 
     }
 
@@ -263,15 +236,21 @@
 
 .processing {}
 
-.revealing {}
+.syncronizing{}
 
 .result {}
-
-.running{}
 
 .completed{}
 
 .failed{}
+
+.revealing {}
+
+.running {}
+
+.accelerating {}
+
+.collapse {}
 
 /*------- base objects ------*/
 
@@ -379,51 +358,59 @@
 }
 
 
-/*-------processing--------*/
+.rotorA.revealing .axisA{
 
-.rotorA.revealing .axisA {
-
-    animation: axisAReveal .9s forwards;
+    animation:
+        axisAReveal 3s linear 5s forwards;
 
 }
 
-.rotorB.revealing .axisB {
+.rotorB.revealing .axisB{
 
-    animation: axisBReveal .9s .2s forwards;
+    animation:
+        axisBReveal 3s linear 5s forwards;
+
 }
 
 .rotorA.running {
 
     animation:
-        rotorSpinA .7s linear infinite;
+        rotorSpinA 8s linear infinite;
+
 }
 
 .rotorB.running {
 
     animation:
-        rotorSpinB .80s linear infinite;
+        rotorSpinB 8s linear infinite;
 }
 
-.rotorA.acceleration{
+.rotorA.accelerating{
 
     animation:rotorAccelerationA 1.2s forwards;
 }
 
-.rotorB.acceleration{
+.rotorB.accelerating{
 
     animation:rotorAccelerationB 1.0s forwards;
 }
 
-/*-------result---------------*/
 
-.rotorA.collapse .axisA{
+.rotorA.collapse {
 
-    animation:axisDisappear 900ms forwards;
+    animation: rotorCollapseA .9s forwards;
 
 }
 
-.rotorB.collapse .axisB{
+.rotorB.collapse {
 
-    animation:axisDisappear 900ms forwards;
+    animation: rotorCollapseB .9s forwards;
+
+}
+
+.rotorA.collapse .axisA,
+.rotorB.collapse .axisB {
+
+    animation: axisDisappear .9s forwards;
 
 }

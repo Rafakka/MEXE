@@ -16,33 +16,19 @@ import {
 
     mergeFailed,
 
+    revealingStarted,
+
     processingRunning,
 
-    stabilizationStarted,
-
-    resultDisplayed,
-
-    resetStarted,
-
     clearLaboratory,
+
+    acceleratingStarted,
 
 } from "./laboratorySlice";
 
 import {
 
     STARTUP_DURATION,
-
-    AXIS_REVEAL_DURATION,
-
-    AXIS_ROTATION_TIME,
-
-    SYNCHRONIZING_DURATION,
-
-    PROCESSING_DURATION,
-
-    STABILIZATION_DURATION,
-
-    RESULT_DURATION,
 
     RESET_DURATION,
 
@@ -53,6 +39,46 @@ import {delay} from "../../features/laboratory/utils/delay";
 
 import { mexeApi } from "../../api/mexeApi";
 
+    export const waitForSamples =
+    () => async (
+
+    dispatch: AppDispatch,
+
+    getState: ()=> RootState
+
+    ) => {
+
+        console.log("WAIT FOR SAMPLES");
+
+    const {
+
+        sampleArrivals,
+
+        operationPhase
+
+    } = getState().laboratory;
+
+    if (sampleArrivals < 2) {
+
+        console.log("WAITING...");
+
+        return;
+
+    }
+
+    if (operationPhase !== "idle") {
+
+        return;
+    }
+
+        console.log("BOTH ARRIVED");
+
+        dispatch(revealingStarted());
+
+        console.log("REVEALING STARTED", performance.now());
+
+
+    };
 
     export const activeLab = () =>
 
@@ -95,27 +121,26 @@ import { mexeApi } from "../../api/mexeApi";
 
             dispatch(startupCompleted());
 
-            await delay(SYNCHRONIZING_DURATION);
-
-            dispatch(mergeStarted());
-
-            await delay(AXIS_REVEAL_DURATION);
-
-            dispatch(processingRunning());
-
-            await delay(AXIS_ROTATION_TIME);
-
-            const success = await dispatch(performMerge());
-
-            if (!success) {
-                dispatch(clearLaboratory());
-
-                return;
-            }
-
-            return success;
+            return;
         };
 
+
+    export const startProcessing = () => async (
+
+        dispatch: AppDispatch
+    ) => {
+
+        dispatch(processingRunning());
+
+        dispatch(mergeStarted());
+
+        const success = await dispatch(performMerge());
+
+        if(!success) {
+
+            dispatch(clearLaboratory());
+        }
+    };
 
     export const performMerge =
         () => async (
@@ -156,15 +181,9 @@ import { mexeApi } from "../../api/mexeApi";
 
         dispatch(mergeCompleted(result));
 
-        await delay(PROCESSING_DURATION);
+        console.log(">>DISPATCHING ACCELERATING")
 
-        console.log(">>DISPATCHING STABILIZATING")
-
-        dispatch(stabilizationStarted());
-
-        await delay(STABILIZATION_DURATION);
-
-        dispatch(resultDisplayed());
+        dispatch(acceleratingStarted());
 
         return true;
 

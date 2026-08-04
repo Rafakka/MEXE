@@ -35,6 +35,8 @@ export interface LaboratoryState {
 
     };
 
+    sampleArrivals: number;
+
     resultImage: string | null;
 
     resultVisible: boolean;
@@ -75,6 +77,8 @@ const initialState: LaboratoryState = {
         secondLoaded: false,
 
     },
+
+    sampleArrivals: 0,
 
     resultImage: null,
 
@@ -119,6 +123,20 @@ const laboratorySlice = createSlice({
 
     },
 
+    sampleArrived(state){
+        state.sampleArrivals++;
+    },
+
+    acceleratingStarted(state){
+
+        state.operationPhase = "accelerating";
+    },
+
+    collapseStarted(state){
+
+        state.operationPhase = "collapse";
+    },
+
     // DOMAIN EVENTS
 
     startupCompleted(state) {
@@ -134,7 +152,7 @@ const laboratorySlice = createSlice({
 
         state.phase = "processing";
 
-        state.operationPhase = "revealing";
+        state.operationPhase = "idle";
 
     },
 
@@ -181,6 +199,7 @@ const laboratorySlice = createSlice({
 
         state.resultVisible = false;
 
+        state.sampleArrivals = 0;
     },
 
     clearNotification (state) {
@@ -189,6 +208,10 @@ const laboratorySlice = createSlice({
     },
 
     //INTERNAL
+
+    revealingStarted(state){
+        state.operationPhase = "revealing";
+    },
 
     processingRunning(state){
         state.operationPhase = "running";
@@ -222,11 +245,15 @@ export const {
     loadFirstSample,
     loadSecondSample,
 
+    sampleArrived,
     startupCompleted,
     mergeStarted,
     mergeCompleted,
     mergeFailed,
+    acceleratingStarted,
+    collapseStarted,
 
+    revealingStarted,
     processingRunning,
     stabilizationStarted,
     resultDisplayed,

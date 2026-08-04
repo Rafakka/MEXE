@@ -2,7 +2,7 @@
 
 import styles from "./SampleNode.module.css";
 import type {LaboratoryPhase} from "../../../features/laboratory/laboratoryPhase";
-import { useRef, type ChangeEvent } from "react";
+import { useRef } from "react";
 
 type SampleNodeProps = {
     phase: LaboratoryPhase;
@@ -46,6 +46,7 @@ console.log({
 
         event.target.value = "";
     }
+
 
     return(
 

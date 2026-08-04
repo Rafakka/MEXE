@@ -2,11 +2,11 @@
 
 import styles from "./ReactionField.module.css";
 import { useDispatch } from "react-redux";
+import type {AppDispatch} from "../../../store/store";
 import type {LaboratoryPhase} from "../../../features/laboratory/laboratoryPhase";
 import type {OperationPhase} from "../../../features/laboratory/operationPhase";
-import {
-    resultDisplayed,
-} from "../../../features/laboratory/laboratorySlice";
+import {startProcessing} from "../../../features/laboratory/laboratoryThunks";
+import {collapseStarted, resultDisplayed} from "../../../features/laboratory/laboratorySlice";
 
 type ReactionProps = {
 
@@ -22,64 +22,97 @@ export default function ReactionField({
 
 }: ReactionProps) {
 
-    const dispatch = useDispatch();
+    const dispatch = useDispatch<AppDispatch>();
 
    const handleAnimationEnd = (
     event: React.AnimationEvent<HTMLDivElement>
     ) => {
 
+    console.log("REACTION FIELD HANDLE ANIMATION REAGINDO");
+
     const name = event.animationName;
 
-    switch (phase) {
+    console.log(name);
 
-        case "stabilizing": {
+    console.log("ACIMA TEM UM NAME DE animationName");
 
-            if (!name.includes("rotorAcceleration")) return;
+    console.log("AXIS REVEAL", performance.now());
 
-                dispatch(resultDisplayed()); return;
+    switch (operationPhase) {
+
+        case "revealing": {
+
+            if (!name.includes("axisAReveal")) {
+
+                return;
+
             }
+
+            console.log("PROCESSING DO REACTIONFIELD INICIANDO");
+
+            dispatch(startProcessing());
+
+            return;
 
         }
 
-    console.log({
-    phase,
-    operationPhase,
-    });
+        case "accelerating":
 
+            if(!name.includes("rotorAcceleration")) return;
+
+            console.log("COLLAPSE DO REACTIONFIELD INICIANDO");
+
+            dispatch(collapseStarted());
+
+            return;
+
+        case "collapse":
+
+            if(!name.includes("rotorCollapse")) return;
+
+            console.log("RETURNDISPLAY DO REACTIONFIELD INICIANDO");
+
+            dispatch(resultDisplayed());
+
+            return;
+
+        }
     };
-
-    const phaseClass = styles[phase]
 
     const operationClass =
         operationPhase !== "idle"
             ? styles[operationPhase]
             : "";
 
-    console.log({
-
-    phase,
-
-    operationPhase,
-
-    phaseClass,
-
-    operationClass
-
-    });
-
     return (
 
         <div className={styles.field}>
 
-            <div className={`${styles.rotorA} ${styles[operationPhase]}`}>
+            <div className={`${styles.rotorA} ${styles[operationPhase]}`}
 
-                <div className={styles.axisA}/>
+            onAnimationEnd={handleAnimationEnd}
+
+            >
+
+                <div className={styles.axisA}
+
+                onAnimationEnd={handleAnimationEnd}
+
+                />
 
             </div>
 
-        <div className={`${styles.rotorB} ${styles[operationPhase]}`}>
+        <div className={`${styles.rotorB} ${styles[operationPhase]}`}
 
-            <div className={styles.axisB}/>
+        onAnimationEnd={handleAnimationEnd}
+
+        >
+
+            <div className={styles.axisB}
+
+            onAnimationEnd={handleAnimationEnd}
+
+            />
 
             </div>
 

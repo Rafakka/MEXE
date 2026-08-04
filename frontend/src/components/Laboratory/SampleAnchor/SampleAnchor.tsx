@@ -1,7 +1,9 @@
 
-
+import {useDispatch} from "react-redux";
+import type { AppDispatch } from "../../../store/store";
 import styles from "./SampleAnchor.module.css";
-
+import {sampleArrived} from "../../../features/laboratory/laboratorySlice";
+import {waitForSamples} from "../../../features/laboratory/laboratoryThunks";
 import type {LaboratoryPhase} from "../../../features/laboratory/laboratoryPhase";
 
 type SampleAnchorProps = {
@@ -26,6 +28,31 @@ export default function SampleAnchor({
     floating
     });
 
+    const dispatch = useDispatch<AppDispatch>();
+
+    const handleAnimationEnd = (event: React.AnimationEvent<HTMLDivElement>) => {
+
+        const name = event.animationName;
+
+        console.log("ANCHOR END", event.animationName);
+
+        console.log(
+            "Sample arrived",
+            name
+        );
+
+        dispatch(sampleArrived());
+
+        console.log(
+            "WAIT FOR SAMPLES"
+        );
+
+        dispatch(waitForSamples());
+
+        console.log("LEFT END", event.animationName, performance.now());
+
+        };
+
     return (
         <div
            className={`
@@ -48,6 +75,7 @@ export default function SampleAnchor({
             : ""
             }
         `}
+        onAnimationEnd={handleAnimationEnd}
     >
     {children}
         </div>
