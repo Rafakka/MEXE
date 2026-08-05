@@ -490,7 +490,8 @@
 
 .idle,
 .activated,
-.processing{
+.processing,
+.resetting{
 
     opacity:0;
     pointer-events:none;
@@ -499,11 +500,11 @@
 
 /*------RESULT--------*/
 
-.result{
+.result{}
 
-}
+.completed{}
 
-.panel.result{
+.panel.result .completed{
 
     animation:
 

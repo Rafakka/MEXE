@@ -2,14 +2,16 @@
 
 import styles from "./ReactionPanel.module.css";
 import type {LaboratoryPhase} from "../../../features/laboratory/laboratoryPhase";
+import type {OperationPhase} from "../../../features/laboratory/operationPhase";
 
 type ReactionPanelProps = {
     phase: LaboratoryPhase;
     visible: boolean;
+    operationPhase: OperationPhase;
     resultUrl?: string | null;
 };
 
-export default function ReactionPanel({phase, visible, resultUrl }:ReactionPanelProps){
+export default function ReactionPanel({phase, operationPhase, visible, resultUrl }:ReactionPanelProps){
 
     return(
 
@@ -17,6 +19,7 @@ export default function ReactionPanel({phase, visible, resultUrl }:ReactionPanel
             className={`
                 ${styles.panel}
                 ${styles[phase]}
+                ${styles[operationPhase]}
                 ${visible ? styles.visible: styles.hidden}
             `}
         >

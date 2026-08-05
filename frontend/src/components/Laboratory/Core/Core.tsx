@@ -22,7 +22,9 @@ export default function Core( {phase, onClick, operationPhase }:CoreProps ) {
 
     const dispatch = useDispatch<AppDispatch>();
 
-    const cantInteract = phase === "idle" && operationPhase === "idle";
+    const canInteract = phase === "idle" && operationPhase === "idle";
+
+    const canHover = canInteract;
 
     const orbitVisible = [
         "activated",
@@ -30,16 +32,6 @@ export default function Core( {phase, onClick, operationPhase }:CoreProps ) {
         "processing",
         "resetting"
     ].includes(phase);
-
-    const className = [
-
-        styles.core,
-
-        styles[phase],
-
-        styles[operationPhase]
-
-    ].join(" ");
 
     const showErrorBeacon = useSelector(
         selectHasErrorNotification
@@ -63,18 +55,22 @@ export default function Core( {phase, onClick, operationPhase }:CoreProps ) {
 
         const name = event.animationName;
 
-        if (event.target !== event.currentTarget) {
-            return;
-        }
+        console.log(name);
 
-        console.log("EVEMT", operationPhase, name);
+        switch(operationPhase) {
 
-        if(!event.animationName.includes("coreResult")) return;
+            case "completed":
 
-        dispatch(resultDisplayed());
+                console.log("THIS IS CORE LOG!!");
 
-    }
+                dispatch(resultDisplayed());
 
+                console.log(operationPhase);
+
+                return;
+            }
+
+        };
 
 
     const outerParticles = [
@@ -220,6 +216,7 @@ export default function Core( {phase, onClick, operationPhase }:CoreProps ) {
     className={`
         ${styles.core}
         ${styles[phase]}
+        ${styles[operationPhase]}
         ${
             hovered
                 ? styles.hover
@@ -227,16 +224,16 @@ export default function Core( {phase, onClick, operationPhase }:CoreProps ) {
         }
     `}
     onMouseEnter={() => {
-        if (phase === "idle" && operationPhase === "idle") {
+        if (!canHover) return; {
             setHovered(true);
         }
     }}
     onMouseLeave={() => {
-        if (phase === "idle" && operationPhase === "idle") {
+        if (!canHover) return; {
             setHovered(false);
         }
     }}
-    onClick={cantInteract ? onClick: undefined}
+    onClick={canInteract ? onClick: undefined}
     >
 
     <div
@@ -246,19 +243,17 @@ export default function Core( {phase, onClick, operationPhase }:CoreProps ) {
           ? styles.hover
           : ""}
       `}
-
+    onAnimationEnd={handleAnimationEnd}
     />
 
 
-    <div className={styles.aura} />
+    <div className={styles.aura}/>
 
     <div className={`
             ${styles.orbit}
-                ? styles.visible
-                : styles.hidden
+            ${orbitVisible ? styles.visible : styles.hidden}
         }
     `}
-
     >
 
     {renderOrbitLayer(
@@ -295,13 +290,9 @@ export default function Core( {phase, onClick, operationPhase }:CoreProps ) {
 
     </div>
 
-    <div className={styles.halo} />
+    <div className={styles.halo}/>
 
-    <div className={`${styles.planet} ${styles[operationPhase]}`}
-
-        onAnimationEnd={handleAnimationEnd}
-
-    />
+    <div className={styles.planet}/>
 
     {showErrorBeacon && (
 

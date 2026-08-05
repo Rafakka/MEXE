@@ -6,7 +6,7 @@ import type {AppDispatch} from "../../../store/store";
 import type {LaboratoryPhase} from "../../../features/laboratory/laboratoryPhase";
 import type {OperationPhase} from "../../../features/laboratory/operationPhase";
 import {startProcessing} from "../../../features/laboratory/laboratoryThunks";
-import {collapseStarted, resultDisplayed, completedStarted} from "../../../features/laboratory/laboratorySlice";
+import {collapseStarted, completedStarted} from "../../../features/laboratory/laboratorySlice";
 
 type ReactionProps = {
 
@@ -103,8 +103,6 @@ export default function ReactionField({
                 console.log("COMPLETED AND RESULT STARTING");
 
                 dispatch(completedStarted());
-
-                dispatch(resultDisplayed());
 
                 console.log(operationPhase);
 
