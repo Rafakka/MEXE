@@ -52,24 +52,16 @@ import { mexeApi } from "../../api/mexeApi";
 
     const {
 
-        sampleArrivals,
-
-        operationPhase
+        sampleArrivals
 
     } = getState().laboratory;
 
-    if (sampleArrivals < 2) {
+        if (sampleArrivals < 2) {
 
         console.log("WAITING...");
 
         return;
-
-    }
-
-    if (operationPhase !== "idle") {
-
-        return;
-    }
+        }
 
         console.log("BOTH ARRIVED");
 
@@ -181,9 +173,11 @@ import { mexeApi } from "../../api/mexeApi";
 
         dispatch(mergeCompleted(result));
 
-        console.log(">>DISPATCHING ACCELERATING")
+        console.log("OP BEFORE", getState().laboratory.operationPhase);
 
         dispatch(acceleratingStarted());
+
+        console.log("OP AFTER", getState().laboratory.operationPhase);
 
         return true;
 

@@ -236,7 +236,7 @@
 
 .processing {}
 
-.syncronizing{}
+.synchronizing{}
 
 .result {}
 
@@ -361,56 +361,70 @@
 .rotorA.revealing .axisA{
 
     animation:
-        axisAReveal 3s linear 5s forwards;
+        axisAReveal linear 3s forwards;
 
 }
 
 .rotorB.revealing .axisB{
 
     animation:
-        axisBReveal 3s linear 5s forwards;
+        axisBReveal linear 2.8s forwards;
 
 }
 
-.rotorA.running {
+.rotorA.running .axisA{
+
+    opacity:1;
 
     animation:
-        rotorSpinA 8s linear infinite;
+        rotorSpinA .80s linear infinite;
 
 }
 
-.rotorB.running {
+.rotorB.running .axisB{
+
+    opacity:1;
 
     animation:
-        rotorSpinB 8s linear infinite;
+        rotorSpinB .85s linear infinite;
 }
 
 .rotorA.accelerating{
 
-    animation:rotorAccelerationA 1.2s forwards;
+    opacity:1;
+
+    animation:rotorAccelerationA .70s forwards;
 }
 
 .rotorB.accelerating{
 
-    animation:rotorAccelerationB 1.0s forwards;
+    opacity:1;
+
+    animation:rotorAccelerationB .65s forwards;
 }
 
 
 .rotorA.collapse {
 
-    animation: rotorCollapseA .9s forwards;
+    opacity:.50;
+
+    animation: rotorCollapseA 2s forwards;
 
 }
 
 .rotorB.collapse {
 
-    animation: rotorCollapseB .9s forwards;
+    opacity:.50;
+
+    animation: rotorCollapseB 2s forwards;
 
 }
 
 .rotorA.collapse .axisA,
 .rotorB.collapse .axisB {
 
-    animation: axisDisappear .9s forwards;
+    opacity:40;
+
+    animation: axisDisappear 2s forwards;
 
 }

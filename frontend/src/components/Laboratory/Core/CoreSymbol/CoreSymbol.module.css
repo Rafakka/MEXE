@@ -238,35 +238,15 @@
 
 }
 
-/*----------------------
- *
- * synchronizing
- *
- *-------------------*/
-
-
-
-
-.synchronizing{
-
-    color:#4ADE80;
-
-}
-
-
-/*----------------------
- *
- * processing
- *
- *-------------------*/
-
 .ready{
 
     color:#4ADE80;
 
 }
 
-.processing{
+.synchronizing{
+
+    color:#4ADE80;
 
     animation-fill-mode: both;
 
@@ -278,20 +258,14 @@
 
         ease-in-out
 
-        4s
+        5s
 
         infinite
 
         both;
 }
 
-/*----------------------
- *
- * result
- *
- *-------------------*/
-
-.result {
+.processing  {
 
     color:#4ADE80;
 
@@ -299,10 +273,15 @@
 
     animation:
         symbolFade
-        1.5s
+        4s
         ease-out
         forwards;
     }
+
+.result{
+
+    opacity:0;
+}
 
 .processing.failed{
 

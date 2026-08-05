@@ -147,18 +147,19 @@ const laboratorySlice = createSlice({
 
     },
 
+    completedStarted(state){
+
+        state.operationPhase = "completed";
+    },
+
 
     mergeStarted(state){
 
         state.phase = "processing";
 
-        state.operationPhase = "idle";
-
     },
 
     mergeCompleted(state, action: PayloadAction<string>){
-
-        state.operationPhase = "completed";
 
         state.resultImage = action.payload;
 
@@ -217,11 +218,6 @@ const laboratorySlice = createSlice({
         state.operationPhase = "running";
     },
 
-    stabilizationStarted(state) {
-
-        state.phase = "stabilizing";
-    },
-
     resultDisplayed(state) {
 
         state.phase = "result";
@@ -247,6 +243,7 @@ export const {
 
     sampleArrived,
     startupCompleted,
+    completedStarted,
     mergeStarted,
     mergeCompleted,
     mergeFailed,
@@ -255,7 +252,6 @@ export const {
 
     revealingStarted,
     processingRunning,
-    stabilizationStarted,
     resultDisplayed,
     resetStarted,
 

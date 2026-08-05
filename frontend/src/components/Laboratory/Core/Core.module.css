@@ -779,6 +779,14 @@
 }
 
 
+/*-------BaseClass--------*/
+
+.revealing{}
+.running{}
+.accelerating{}
+.colapsed{}
+.completed{}
+
 /*--------------------
  *
  *
@@ -1512,7 +1520,7 @@
 
     animation:
 
-        eclipseHalo .8s ease-in-out 2s forwards;
+        eclipseHalo .8s ease-in-out forwards;
    }
 
 .result .aura{

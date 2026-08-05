@@ -244,6 +244,14 @@
 
 }
 
+/*---------Phase Base--------*/
+
+.processing {}
+
+.synchronizing {}
+
+.result {}
+
 /*--------- BASE -----------*/
 
 .anchor{
@@ -357,7 +365,7 @@
 
 /*---------------PROCESSING-------------*/
 
-.processing.left{
+.synchronizing.left{
 
     animation:
 
@@ -373,7 +381,7 @@
 
 }
 
-.processing.right{
+.synchronizing.right{
 
     animation:
 

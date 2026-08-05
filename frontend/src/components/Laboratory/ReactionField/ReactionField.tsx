@@ -6,7 +6,7 @@ import type {AppDispatch} from "../../../store/store";
 import type {LaboratoryPhase} from "../../../features/laboratory/laboratoryPhase";
 import type {OperationPhase} from "../../../features/laboratory/operationPhase";
 import {startProcessing} from "../../../features/laboratory/laboratoryThunks";
-import {collapseStarted, resultDisplayed} from "../../../features/laboratory/laboratorySlice";
+import {collapseStarted, resultDisplayed, completedStarted} from "../../../features/laboratory/laboratorySlice";
 
 type ReactionProps = {
 
@@ -24,60 +24,93 @@ export default function ReactionField({
 
     const dispatch = useDispatch<AppDispatch>();
 
-   const handleAnimationEnd = (
+   const handleAxisAnimationEnd = (
     event: React.AnimationEvent<HTMLDivElement>
     ) => {
 
-    console.log("REACTION FIELD HANDLE ANIMATION REAGINDO");
+        console.log("AXIS ANIMATION END");
 
-    const name = event.animationName;
+        const name = event.animationName;
 
-    console.log(name);
+        console.log(
+        "EVENT",
+        operationPhase,
+        name
+        );
 
-    console.log("ACIMA TEM UM NAME DE animationName");
+        if (event.target !== event.currentTarget){
 
-    console.log("AXIS REVEAL", performance.now());
-
-    switch (operationPhase) {
-
-        case "revealing": {
-
-            if (!name.includes("axisAReveal")) {
-
-                return;
+            return;
 
             }
 
-            console.log("PROCESSING DO REACTIONFIELD INICIANDO");
-
-            dispatch(startProcessing());
+        if (!name.includes("axisAReveal")) {
 
             return;
 
-        }
+            }
 
-        case "accelerating":
+        console.log("RUNNING");
 
-            if(!name.includes("rotorAcceleration")) return;
+        dispatch(startProcessing());
 
-            console.log("COLLAPSE DO REACTIONFIELD INICIANDO");
-
-            dispatch(collapseStarted());
-
-            return;
-
-        case "collapse":
-
-            if(!name.includes("rotorCollapse")) return;
-
-            console.log("RETURNDISPLAY DO REACTIONFIELD INICIANDO");
-
-            dispatch(resultDisplayed());
-
-            return;
-
-        }
     };
+
+    const handleRotorAnimationEnd = (
+    event: React.AnimationEvent<HTMLDivElement>
+    ) => {
+
+        console.log("ROTOR ANIMATION END")
+
+        const name = event.animationName;
+
+        console.log(
+        "EVENT",
+        operationPhase,
+        name
+        );
+
+        switch(operationPhase) {
+
+            case "accelerating":
+
+                if (event.target !== event.currentTarget){
+
+                return;
+
+                }
+
+                if(!name.includes("rotorAcceleration")) return;
+
+                console.log("COLLAPSING STARTED");
+
+                dispatch(collapseStarted());
+
+                console.log(operationPhase);
+
+                return;
+
+            case "collapse":
+
+                if (event.target !== event.currentTarget){
+
+                return;
+
+                }
+
+                if(!name.includes("rotorCollapse")) return;
+
+                console.log("COMPLETED AND RESULT STARTING");
+
+                dispatch(completedStarted());
+
+                dispatch(resultDisplayed());
+
+                console.log(operationPhase);
+
+                return;
+            }
+        };
 
     const operationClass =
         operationPhase !== "idle"
@@ -90,29 +123,21 @@ export default function ReactionField({
 
             <div className={`${styles.rotorA} ${styles[operationPhase]}`}
 
-            onAnimationEnd={handleAnimationEnd}
+             onAnimationEnd={handleRotorAnimationEnd}
 
             >
 
                 <div className={styles.axisA}
 
-                onAnimationEnd={handleAnimationEnd}
+                onAnimationEnd={handleAxisAnimationEnd}
 
                 />
 
             </div>
 
-        <div className={`${styles.rotorB} ${styles[operationPhase]}`}
+        <div className={`${styles.rotorB} ${styles[operationPhase]}`}>
 
-        onAnimationEnd={handleAnimationEnd}
-
-        >
-
-            <div className={styles.axisB}
-
-            onAnimationEnd={handleAnimationEnd}
-
-            />
+            <div className={styles.axisB}/>
 
             </div>
 

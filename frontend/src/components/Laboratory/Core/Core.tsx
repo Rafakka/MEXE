@@ -4,8 +4,10 @@ import type {LaboratoryPhase} from "../../../features/laboratory/laboratoryPhase
 import type {OperationPhase} from "../../../features/laboratory/operationPhase";
 import CoreSymbol from "../Core/CoreSymbol/CoreSymbol";
 import {useEffect, useState, type CSSProperties } from "react";
-import {useSelector} from "react-redux";
+import {useSelector, useDispatch} from "react-redux";
+import type {AppDispatch} from "../../../store/store";
 import {selectHasErrorNotification} from "../laboratorySelectors";
+import {resultDisplayed} from "../../../features/laboratory/laboratorySlice";
 
 type CoreProps = {
         phase: LaboratoryPhase;
@@ -17,6 +19,10 @@ type CoreProps = {
 export default function Core( {phase, onClick, operationPhase }:CoreProps ) {
 
     const [hovered, setHovered] = useState(false);
+
+    const dispatch = useDispatch<AppDispatch>();
+
+    const cantInteract = phase === "idle" && operationPhase === "idle";
 
     const orbitVisible = [
         "activated",
@@ -46,9 +52,28 @@ export default function Core( {phase, onClick, operationPhase }:CoreProps ) {
 
         setHovered(false);
 
-    }
+        }
 
     }, [phase]);
+
+
+    const handleAnimationEnd = (event:React.AnimationEvent<HTMLDivElement>) => {
+
+        console.log("Core Animation end");
+
+        const name = event.animationName;
+
+        if (event.target !== event.currentTarget) {
+            return;
+        }
+
+        console.log("EVEMT", operationPhase, name);
+
+        if(!event.animationName.includes("coreResult")) return;
+
+        dispatch(resultDisplayed());
+
+    }
 
 
 
@@ -202,16 +227,16 @@ export default function Core( {phase, onClick, operationPhase }:CoreProps ) {
         }
     `}
     onMouseEnter={() => {
-        if (phase === "idle") {
+        if (phase === "idle" && operationPhase === "idle") {
             setHovered(true);
         }
     }}
     onMouseLeave={() => {
-        if (phase === "idle") {
+        if (phase === "idle" && operationPhase === "idle") {
             setHovered(false);
         }
     }}
-    onClick={onClick}
+    onClick={cantInteract ? onClick: undefined}
     >
 
     <div
@@ -272,7 +297,11 @@ export default function Core( {phase, onClick, operationPhase }:CoreProps ) {
 
     <div className={styles.halo} />
 
-    <div className={styles.planet} />
+    <div className={`${styles.planet} ${styles[operationPhase]}`}
+
+        onAnimationEnd={handleAnimationEnd}
+
+    />
 
     {showErrorBeacon && (
 

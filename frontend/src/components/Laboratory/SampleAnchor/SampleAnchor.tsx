@@ -30,11 +30,41 @@ export default function SampleAnchor({
 
     const dispatch = useDispatch<AppDispatch>();
 
+
+        console.log({
+        phase,
+        side,
+        className:`
+        ${styles.anchor}
+        ${styles[phase]}
+        ${side === "left" ? styles.left : styles.right}`
+        });
+
     const handleAnimationEnd = (event: React.AnimationEvent<HTMLDivElement>) => {
+
+        console.log({
+        side,
+        animation: event.animationName,
+        phase
+        });
 
         const name = event.animationName;
 
         console.log("ANCHOR END", event.animationName);
+
+        if (
+        side === "left" &&
+        !name.includes("mergeLeft")
+        ) {
+        return;
+        }
+
+        if (
+        side === "right" &&
+        !name.includes("mergeRight")
+        ) {
+        return;
+        }
 
         console.log(
             "Sample arrived",
