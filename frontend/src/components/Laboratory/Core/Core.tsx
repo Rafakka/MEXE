@@ -227,7 +227,7 @@ export default function Core( {phase, onClick, operationPhase }:CoreProps ) {
     }}
     onMouseLeave={() => {
         if (!canHover) return; {
-            setHovered(true);
+            setHovered(false);
         }
     }}
     onClick={canInteract ? onClick: undefined}
