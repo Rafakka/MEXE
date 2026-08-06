@@ -779,6 +779,141 @@
 }
 
 
+@keyframes coreResult{
+
+    0%{
+
+        filter:
+            brightness(1)
+            contrast(1);
+
+    }
+
+    30%{
+
+        filter:
+            brightness(1.55)
+            contrast(1.25);
+
+    }
+
+    65%{
+
+        filter:
+            brightness(1.35)
+            contrast(1.15);
+
+    }
+
+    100%{
+
+        filter:
+            brightness(1)
+            contrast(1);
+
+    }
+
+}
+
+@keyframes coreOrbit{
+
+    /* Centro */
+
+    0%{
+
+        transform:
+
+            translateX(0)
+
+            translateY(0)
+
+            scale(1);
+
+    }
+
+    /* Vai para a direita */
+
+    22%{
+
+        transform:
+
+            translateX(42vw)
+
+            translateY(-12px)
+
+            scale(.70);
+
+    }
+
+    /* Passa por trás */
+
+    50%{
+
+        transform:
+
+            translateX(0)
+
+            translateY(0)
+
+            scale(.38);
+
+    }
+
+    /* Volta pela esquerda */
+
+    78%{
+
+        transform:
+
+            translateX(-42vw)
+
+            translateY(12px)
+
+            scale(.70);
+
+    }
+
+    /* Centro novamente */
+
+    100%{
+
+        transform:
+
+            translateX(0)
+
+            translateY(0)
+
+            scale(1);
+
+    }
+
+}
+
+@keyframes haloAbsorb{
+
+    0%{
+
+        opacity:1;
+
+        transform:
+
+            scale(1);
+
+    }
+
+    100%{
+
+        opacity:0;
+
+        transform:
+
+            scale(.4);
+
+    }
+
+}
+
+
 /*-------BaseClass--------*/
 
 .revealing{}
@@ -926,6 +1061,22 @@
         18px
 
         rgba(120,130,180,.12);
+
+}
+
+.coreOrbit{
+
+    position:absolute;
+
+    inset:0;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    pointer-events:none;
 
 }
 
@@ -1477,6 +1628,39 @@
 
 }
 
+.coreOrbit.completed{
+
+    animation:
+
+        coreOrbit
+        5.8s
+        cubic-bezier(.22,.61,.36,1)
+        forwards;
+
+}
+
+.aura.completed{
+
+    animation:
+
+        haloAbsorb
+        3.4s
+        ease-out
+        forwards;
+
+}
+
+.planet.completed {
+
+
+    animation:
+
+        coreResult
+        3.4s
+        cubic-bezier(.22,.61,.31,1)
+        forwards
+}
+
 
 /*----------------
  *
@@ -1488,13 +1672,15 @@
 
 }
 
-.result .planet{
-
+.result .planet {
 
     animation:
 
-        planetFloat 5s ease-in-out 1.2s infinite;
+        planetFloat 5s ease-in-out .9s infinite;
 }
+
+
+
 
 .result .halo{
 
@@ -1520,7 +1706,7 @@
 
     animation:
 
-        eclipseHalo .8s ease-in-out forwards;
+        eclipseHalo .8s ease-in-out 1.5s forwards;
    }
 
 .result .aura{

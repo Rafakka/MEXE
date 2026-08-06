@@ -55,20 +55,22 @@ export default function Core( {phase, onClick, operationPhase }:CoreProps ) {
 
         const name = event.animationName;
 
-        console.log(name);
+        if (event.target !== event.currentTarget) {
+            return;
+        }
 
-        switch(operationPhase) {
+        if (operationPhase !== "completed"){
+            return;
+        }
 
-            case "completed":
+        console.log("Core End", name);
 
-                console.log("THIS IS CORE LOG!!");
+        if(!name.includes("coreOrbit")) {
+            return;
+        }
 
-                dispatch(resultDisplayed());
+        dispatch(resultDisplayed());
 
-                console.log(operationPhase);
-
-                return;
-            }
 
         };
 
@@ -217,11 +219,6 @@ export default function Core( {phase, onClick, operationPhase }:CoreProps ) {
         ${styles.core}
         ${styles[phase]}
         ${styles[operationPhase]}
-        ${
-            hovered
-                ? styles.hover
-                : ""
-        }
     `}
     onMouseEnter={() => {
         if (!canHover) return; {
@@ -230,24 +227,19 @@ export default function Core( {phase, onClick, operationPhase }:CoreProps ) {
     }}
     onMouseLeave={() => {
         if (!canHover) return; {
-            setHovered(false);
+            setHovered(true);
         }
     }}
     onClick={canInteract ? onClick: undefined}
     >
 
+
     <div
-
-      className={`
-        ${phase === "idle" && hovered
-          ? styles.hover
-          : ""}
-      `}
-    onAnimationEnd={handleAnimationEnd}
-    />
-
-
-    <div className={styles.aura}/>
+        className={`
+            ${styles.aura}
+            ${styles[operationPhase]}
+            `}
+            />
 
     <div className={`
             ${styles.orbit}
@@ -290,9 +282,31 @@ export default function Core( {phase, onClick, operationPhase }:CoreProps ) {
 
     </div>
 
-    <div className={styles.halo}/>
+    <div className={`
+            ${styles.halo}
+            ${styles[operationPhase]}
+            `}
+    />
 
-    <div className={styles.planet}/>
+    <div
+        className={`
+            ${styles.coreOrbit}
+            ${styles[operationPhase]}
+            `}
+
+            onAnimationEnd={handleAnimationEnd}
+        >
+
+        <div
+            className={`
+            ${styles.planet}
+            ${styles[operationPhase]}
+            `}
+
+            />
+
+        </div>
+
 
     {showErrorBeacon && (
 
@@ -314,6 +328,6 @@ export default function Core( {phase, onClick, operationPhase }:CoreProps ) {
 
   </div>
 
-);
+    );
 
 }
