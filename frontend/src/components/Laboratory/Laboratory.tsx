@@ -89,7 +89,7 @@ export default function Laboratory() {
     };
         return (
 
-        <Layout phase={phase}>
+        <Layout phase={phase} operationPhase={operationPhase}>
 
             <section className={styles.laboratory}>
 
