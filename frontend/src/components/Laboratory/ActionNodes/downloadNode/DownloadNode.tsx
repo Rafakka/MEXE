@@ -2,15 +2,23 @@
 
 import styles from "./DownloadNode.module.css";
 import type { LaboratoryPhase } from "../../../../features/laboratory/laboratoryPhase";
+import type {OperationPhase} from "../../../../features/laboratory/operationPhase";
 
 type DownloadNodeProps = {
     phase: LaboratoryPhase,
-    visible: boolean
+    operationPhase: OperationPhase;
+    visible: boolean,
+    resetting: boolean,
+    onClick: () => void;
+
 };
 
 export default function DownLoadNode({
     phase,
-    visible
+    operationPhase,
+    visible,
+    resetting,
+    onClick
 }: DownloadNodeProps) {
 
     return (
@@ -19,9 +27,12 @@ export default function DownLoadNode({
             type="button"
            className={`
                 ${styles.node}
-                ${visible ? styles.visible: styles.hidden}
+                ${visible ? styles.visible: styles.hidden,
+                resetting ? styles.resetting: ""}
                 ${styles[phase]}
+                ${styles[operationPhase]}
         `}
+            onClick={onClick}
             aria-label="Download File"
         >
 

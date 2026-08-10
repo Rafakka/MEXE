@@ -12,11 +12,13 @@ import {resultDisplayed} from "../../../features/laboratory/laboratorySlice";
 type CoreProps = {
         phase: LaboratoryPhase;
         operationPhase: OperationPhase;
+        resetting: boolean;
         onClick: () => void;
+        onResetComplete: () => void;
 
     };
 
-export default function Core( {phase, onClick, operationPhase }:CoreProps ) {
+export default function Core( {phase, onClick, operationPhase, resetting, onResetComplete }:CoreProps ) {
 
     const [hovered, setHovered] = useState(false);
 
@@ -30,7 +32,7 @@ export default function Core( {phase, onClick, operationPhase }:CoreProps ) {
         "activated",
         "synchronizing",
         "processing",
-        "resetting"
+        "result"
     ].includes(phase);
 
     const showErrorBeacon = useSelector(
@@ -49,31 +51,49 @@ export default function Core( {phase, onClick, operationPhase }:CoreProps ) {
     }, [phase]);
 
 
-    const handleAnimationEnd = (event:React.AnimationEvent<HTMLDivElement>) => {
+   const handleResetAnimationEnd = (
+    event: React.AnimationEvent<HTMLDivElement>
+    ) => {
 
-        console.log("Core Animation end");
+    if (event.target !== event.currentTarget) {
+        return;
+    }
 
-        const name = event.animationName;
+    if (!resetting) {
+        return;
+    }
 
-        if (event.target !== event.currentTarget) {
-            return;
-        }
+    if (!event.animationName.includes("coreReset")) {
+        return;
+    }
 
-        if (operationPhase !== "completed"){
-            return;
-        }
+    console.log("Core Reset End");
 
-        console.log("Core End", name);
+    onResetComplete();
 
-        if(!name.includes("coreOrbit")) {
-            return;
-        }
-
-        dispatch(resultDisplayed());
+    };
 
 
-        };
+    const handleResultAnimationEnd = (
+    event: React.AnimationEvent<HTMLDivElement>
+    ) => {
 
+    if (event.target !== event.currentTarget) {
+        return;
+    }
+
+    if (operationPhase !== "completed") {
+        return;
+    }
+
+    if (!event.animationName.includes("coreOrbit")) {
+        return;
+    }
+
+    console.log("Core Result End");
+
+    dispatch(resultDisplayed());
+    };
 
     const outerParticles = [
 
@@ -219,17 +239,20 @@ export default function Core( {phase, onClick, operationPhase }:CoreProps ) {
         ${styles.core}
         ${styles[phase]}
         ${styles[operationPhase]}
+        ${resetting ? styles.resetting : ""}
+
     `}
+    onAnimationEnd={handleResetAnimationEnd}
     onMouseEnter={() => {
-        if (!canHover) return; {
+        if (!canHover) return;
             setHovered(true);
-        }
     }}
+
     onMouseLeave={() => {
-        if (!canHover) return; {
+        if (!canHover) return;
             setHovered(false);
-        }
     }}
+
     onClick={canInteract ? onClick: undefined}
     >
 
@@ -244,7 +267,6 @@ export default function Core( {phase, onClick, operationPhase }:CoreProps ) {
     <div className={`
             ${styles.orbit}
             ${orbitVisible ? styles.visible : styles.hidden}
-        }
     `}
     >
 
@@ -293,8 +315,7 @@ export default function Core( {phase, onClick, operationPhase }:CoreProps ) {
             ${styles.coreOrbit}
             ${styles[operationPhase]}
             `}
-
-            onAnimationEnd={handleAnimationEnd}
+            onAnimationEnd={handleResultAnimationEnd}
         >
 
         <div

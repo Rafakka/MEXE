@@ -120,6 +120,30 @@
 
 }
 
+@keyframes notificationFloat {
+
+    0% {
+        transform:translateX(-80%) translateY(0);
+    }
+
+    25% {
+        transform:translateX(-80%) translateY(-2px);
+    }
+
+    50% {
+        transform:translateX(-80%) translateY(1px);
+    }
+
+    75% {
+        transform:translateX(-80%) translateY(-1px);
+    }
+
+    100% {
+        transform:translateX(-80%) translateY(0);
+    }
+
+}
+
 .notification{
 
     position:absolute;
@@ -133,9 +157,42 @@
     border-radius:14px;
     backdrop-filter:blur(20px);
 
+    opacity:0;
+
+    pointer-events:none;
+
+    transition:
+        opacity .9s ease,
+        filter .9s ease;
+
+    filter:blur(8px);
+
+}
+
+.notification.visible{
+
+    opacity:1;
+
+    filter:blur(0);
+
+    pointer-events:auto;
+
     animation:
-        notificationFadeIn .8s ease,
-        notificationFloat 5s ease-in-out infinite;
+        notificationFloat 4s ease-in-out infinite;
+
+    pointer-events:auto;
+
+}
+
+.notification.hidden{
+
+    opacity:0;
+
+    pointer-events:none;
+
+    transition:
+        opacity .9s ease,
+        filter .9s ease;
 
 }
 
@@ -148,7 +205,7 @@
 
 .notification.hide{
 
-    animation:notificationFadeOut .45s ease forwards;
+    animation:notificationFadeOut 1s ease forwards;
 
 }
 

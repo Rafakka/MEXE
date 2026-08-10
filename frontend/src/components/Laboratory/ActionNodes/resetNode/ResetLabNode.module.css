@@ -184,9 +184,8 @@
     animation:
 
         revealNode
-        .6s
+        8s
         cubic-bezier(.22,.61,.36,1)
-        5s
         forwards;
 
 

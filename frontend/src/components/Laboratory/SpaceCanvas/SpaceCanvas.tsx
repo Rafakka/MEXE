@@ -593,8 +593,6 @@ export default function SpaceCanvas({ phase, operationPhase, debug }: SpaceCanva
 
     const animate = () => {
 
-        console.count("FRAME");
-
         const canvas = canvasRef.current;
 
             if(!canvas) return;

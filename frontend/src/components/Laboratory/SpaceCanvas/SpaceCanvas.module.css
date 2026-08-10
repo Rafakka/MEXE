@@ -42,15 +42,19 @@
     opacity:.45,
 }
 
+.canvasLayer.synchronizing{
+
+    opacity:.10,
+}
+
 .canvasLayer.processing{
 
     opacity:0;
 
 }
 
-
 .canvasLayer.result{
 
-    opacity:1;
+    opacity:.45;
 
 }

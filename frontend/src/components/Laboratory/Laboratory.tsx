@@ -10,6 +10,7 @@ import Notification from "../Notification/Notification";
 import ResetLabNode from "../Laboratory/ActionNodes/resetNode/ResetLabNode";
 import DownloadNode from "../Laboratory/ActionNodes/downloadNode/DownloadNode";
 import {useSelector, useDispatch} from "react-redux";
+import {useState} from "react";
 import type {RootState, AppDispatch} from "../../store/store";
 import {
         clearLaboratory,
@@ -47,6 +48,8 @@ export default function Laboratory() {
 
     );
 
+    const [isResetting, setIsResetting] = useState(false);
+
     const handleFirstSample = (file:File | null) => {
 
         if (!file) return;
@@ -71,10 +74,7 @@ export default function Laboratory() {
 
     const handleReset = () => {
 
-        dispatch(clearLaboratory());
-
-        dispatch(clearNotification());
-
+        setIsResetting(true);
     };
 
     const view = {
@@ -103,8 +103,14 @@ export default function Laboratory() {
           <Core
           phase={phase}
           operationPhase={operationPhase}
-          onClick={handleCoreClick}
+          resetting={isResetting}
+          onResetComplete={()=> {
 
+              dispatch(clearLaboratory());
+              dispatch(clearNotification());
+              setIsResetting(false);
+          }}
+          onClick={handleCoreClick}
             />
 
         <SampleAnchor
@@ -140,24 +146,42 @@ export default function Laboratory() {
         </Scene>
 
         <Notification
+        phase={phase}
         notification={notification}
+        operationPhase={operationPhase}
+        visible={phase === "result" &&
+            operationPhase === "completed" &&
+            resultVisible}
         />
 
         <ReactionPanel
         phase={phase}
-        visible={resultVisible}
+        operationPhase={operationPhase}
+        visible={phase === "result" &&
+            operationPhase === "completed" &&
+            resultVisible}
         resultUrl={resultImage}
+        resetting={isResetting}
         />
 
         <ResetLabNode
         phase={phase}
-        visible={resultVisible}
+        operationPhase={operationPhase}
+        visible={phase === "result" &&
+            operationPhase === "completed" &&
+            resultVisible}
+        resetting={isResetting}
         onClick={handleReset}
+
         />
 
         <DownloadNode
         phase={phase}
-        visible={resultVisible}
+        operationPhase={operationPhase}
+        visible={phase === "result" &&
+            operationPhase === "completed" &&
+            resultVisible}
+        resetting={isResetting}
         onClick={() => {
         }}
         />

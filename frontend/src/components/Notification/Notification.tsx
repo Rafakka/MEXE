@@ -3,16 +3,24 @@
 import styles from "./Notification.module.css";
 
 import type { LaboratoryNotification } from "../../features/laboratory/laboratorySlice";
+import type { OperationPhase } from "../../features/laboratory/operationPhase";
+import type { LaboratoryPhase } from  "../../features/laboratory/laboratoryPhase";
 
 interface NotificationProps {
 
     notification: LaboratoryNotification | null;
+    phase: LaboratoryPhase,
+    operationPhase: OperationPhase,
+    visible: boolean,
 
 }
 
 export default function Notification({
 
     notification,
+    phase,
+    operationPhase,
+    visible,
 
 }: NotificationProps) {
 
@@ -24,8 +32,10 @@ export default function Notification({
 
     const className = [
         styles.notification,
-
+        styles[phase],
+        styles[operationPhase],
         styles[notification.type],
+        visible ? styles.visible : styles.hidden,
     ].join(" ");
 
     return (

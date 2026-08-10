@@ -9,9 +9,10 @@ type ReactionPanelProps = {
     visible: boolean;
     operationPhase: OperationPhase;
     resultUrl?: string | null;
+    resetting:boolean;
 };
 
-export default function ReactionPanel({phase, operationPhase, visible, resultUrl }:ReactionPanelProps){
+export default function ReactionPanel({phase, operationPhase, visible, resultUrl, resetting }:ReactionPanelProps){
 
     return(
 
@@ -21,6 +22,7 @@ export default function ReactionPanel({phase, operationPhase, visible, resultUrl
                 ${styles[phase]}
                 ${styles[operationPhase]}
                 ${visible ? styles.visible: styles.hidden}
+                ${resetting ? styles.resetting: ""}
             `}
         >
 

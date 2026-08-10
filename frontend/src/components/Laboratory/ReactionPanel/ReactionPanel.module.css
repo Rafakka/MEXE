@@ -87,6 +87,35 @@
 
 }
 
+@keyframes panelHide {
+
+    from {
+
+        opacity:1;
+
+        transform:
+            translateY(-50%)
+            translateX(0)
+            scale(1);
+
+        filter:blur(0);
+
+    }
+
+    to {
+
+        opacity:0;
+
+        transform:
+            translateY(-50%)
+            translateX(-20px)
+            scale(.96);
+
+        filter:blur(8px);
+
+    }
+
+}
 
 /*--------Base----------*/
 
@@ -94,6 +123,28 @@
 
     --core-panel-distance:700px;
 
+}
+
+.notification {
+    position:absolute;
+    bottom:5rem;
+    left:70%;
+
+    transform:translateX(-80%);
+
+    width:350px;
+    padding:1rem;
+    border-radius:14px;
+    backdrop-filter:blur(20px);
+
+    opacity:0;
+    pointer-events:none;
+
+    transition:
+        opacity .8s ease,
+        filter .8s ease;
+
+    filter:blur(8px);
 }
 
 .panel{
@@ -490,8 +541,7 @@
 
 .idle,
 .activated,
-.processing,
-.resetting{
+.processing{
 
     opacity:0;
     pointer-events:none;
@@ -504,14 +554,14 @@
 
 .completed{}
 
-.panel.result .completed{
+.panel.visible{
 
     animation:
 
         panelReveal
         3s
         cubic-bezier(.22,.61,.36,1)
-        5s
+        7s
         forwards;
 
     pointer-events:auto;
@@ -523,12 +573,23 @@
     opacity:1;
 
     pointer-events:auto;
-
 }
 
 .hidden{
 
     opacity:0;
+
+    pointer-events:none;
+
+}
+
+.panel.resetting {
+
+    animation:
+        panelHide
+        1.5s
+        ease-in-out
+        forwards;
 
     pointer-events:none;
 
