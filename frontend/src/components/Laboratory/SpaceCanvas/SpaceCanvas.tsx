@@ -35,6 +35,8 @@ type Particle ={
 
     y:number;
 
+    depth: number;
+
     size:number;
 
     opacity:number;
@@ -50,7 +52,8 @@ type Particle ={
     twinkleSpeed:number;
 
     type:ParticleType;
-}
+
+    }
 
 
 
@@ -95,6 +98,40 @@ export default function SpaceCanvas({ phase, operationPhase, debug }: SpaceCanva
 
         }
 
+    };
+
+
+    const getRadialVelocity = (
+        x: number,
+        y: number,
+        width: number,
+        height: number,
+        depth: number
+    ) => {
+
+        const centerX = width / 2;
+        const centerY = height / 2;
+
+        const dx = x - centerX;
+        const dy = y - centerY;
+
+        const distance = Math.sqrt(
+        dx * dx + dy * dy
+        );
+
+        if (distance === 0) {
+            return {
+                dx: 0,
+                dy: 0
+            };
+        }
+
+        const speed = 0.18 * depth;
+
+        return {
+            dx: (dx / distance) * speed,
+            dy: (dy / distance) * speed
+        };
     };
 
     const createParticle = (
@@ -146,13 +183,37 @@ export default function SpaceCanvas({ phase, operationPhase, debug }: SpaceCanva
 
             }
 
+            const depth= Math.random();
+
+            const centerX = width / 2;
+            const centerY = height / 2;
+
+            const initialRadius = 250 + Math.random() * 360;
+
+            const angle = Math.random() * Math.PI * 2;
+
             const DEBUG = debug !== "off";
+
+            const x = centerX + Math.cos(angle) * initialRadius;
+
+            const y = centerY + Math.sin(angle) * initialRadius;
+
+
+            const velocity = getRadialVelocity(
+            x,
+            y,
+            width,
+            height,
+            depth
+            );
 
             return {
 
-                x:Math.random()*width,
+                x,
 
-                y:Math.random()*height,
+                y,
+
+                depth,
 
                 size:
                     DEBUG
@@ -164,22 +225,22 @@ export default function SpaceCanvas({ phase, operationPhase, debug }: SpaceCanva
                 opacity:
                     DEBUG
                         ?1
-                        :.20,
+                        :.08,
 
                 targetOpacity:
                     DEBUG
                         ?1
-                        :.20,
+                        :.08,
 
                 dx:
                     DEBUG
                         ?0
-                        :(Math.random()-.5)*.003,
+                        :velocity.dx,
 
                 dy:
                     DEBUG
                         ?0
-                        :(Math.random()-.5)*.003,
+                        :velocity.dy,
 
                 phase:Math.random()*Math.PI*2,
 
@@ -193,6 +254,12 @@ export default function SpaceCanvas({ phase, operationPhase, debug }: SpaceCanva
 
     };
 
+    const getDepthScale = (depth: number) => {
+
+    return 0.5 + depth * 1;
+
+    };
+
     const createParticles = () => {
 
     const width =
@@ -203,7 +270,7 @@ export default function SpaceCanvas({ phase, operationPhase, debug }: SpaceCanva
 
     particles.current=[];
 
-    for(let i=0;i<40;i++){
+    for(let i=0;i<28;i++){
 
         particles.current.push(
 
@@ -238,7 +305,7 @@ export default function SpaceCanvas({ phase, operationPhase, debug }: SpaceCanva
 
             particle.y,
 
-            particle.size * .45,
+            particle.size * .20,
 
             0,
 
@@ -250,7 +317,7 @@ export default function SpaceCanvas({ phase, operationPhase, debug }: SpaceCanva
             255,
             255,
             255,
-        ${particle.opacity * .25}
+        ${particle.opacity * .12}
         )`;
 
         ctx.fill();
@@ -266,11 +333,15 @@ export default function SpaceCanvas({ phase, operationPhase, debug }: SpaceCanva
 
         ) => {
 
+        const scale = getDepthScale(particle.depth);
+
+        const depthOpacity = 0.35 + particle.depth * 0.30;
+
     //--------------------------------
     // Glow externo
     //--------------------------------
 
-        const glowRadius = particle.size * ( 4 + particle.opacity * 2 );
+        const glowRadius = particle.size * scale * ( 0.5 + particle.opacity * .7 );
 
         const glow = ctx.createRadialGradient(
 
@@ -287,19 +358,37 @@ export default function SpaceCanvas({ phase, operationPhase, debug }: SpaceCanva
             glowRadius
         );
 
-        glow.addColorStop(0,   "rgba(255,255,255,1)");
+        glow.addColorStop(0,`rgba(255,255,255,${particle.opacity * .75})`);
 
-        glow.addColorStop(.15, "rgba(180,220,255,.45)");
+        glow.addColorStop(.08,`rgba(200,230,255,${particle.opacity * .35})`);
 
-        glow.addColorStop(.45, "rgba(180,220,255,.15)");
+        glow.addColorStop(.20,`rgba(180,220,255,${particle.opacity * .16})`);
 
-        glow.addColorStop(1,   "rgba(255,255,255,0)");
+        glow.addColorStop(.40,`rgba(180,220,255,${particle.opacity * .05})`);
 
-        ctx.save();
+        glow.addColorStop(.65,`rgba(180,220,255,${particle.opacity * .015})`);
+
+        glow.addColorStop(1,"rgba(255,255,255,0)");
 
         ctx.beginPath();
 
         ctx.fillStyle = glow;
+
+        ctx.arc(
+            particle.x,
+            particle.y,
+            glowRadius,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fill();
+
+        const opacity = particle.opacity * depthOpacity;
+
+        ctx.beginPath();
+
+        ctx.fillStyle = `rgba(180,220,255,${opacity * .10})`;
 
         ctx.arc(
 
@@ -308,28 +397,6 @@ export default function SpaceCanvas({ phase, operationPhase, debug }: SpaceCanva
             particle.y,
 
             glowRadius,
-
-            0,
-
-            Math.PI * 2
-
-            );
-
-        ctx.fill();
-
-        ctx.restore();
-
-        ctx.beginPath();
-
-        ctx.fillStyle = `rgba(180,220,255,${particle.opacity * .55})`;
-
-        ctx.arc(
-
-            particle.x,
-
-            particle.y,
-
-            particle.size * 2.2,
 
             0,
 
@@ -353,7 +420,7 @@ export default function SpaceCanvas({ phase, operationPhase, debug }: SpaceCanva
 
             particle.y,
 
-            particle.size *(0.9 + particle.opacity * .2),
+            particle.size * scale * 0.22,
 
             0,
 
@@ -363,7 +430,50 @@ export default function SpaceCanvas({ phase, operationPhase, debug }: SpaceCanva
 
         ctx.fill();
 
+        //--------------------------------
+        // Flare
+        //--------------------------------
+
+        ctx.lineCap = "round";
+
+        const flareSize =
+            particle.size * scale * (0.8 + opacity * .35);
+
+        ctx.beginPath();
+
+        ctx.strokeStyle =
+        `rgba(255,255,255,${opacity * .8})`;
+
+        ctx.lineWidth = 0.6;
+
+        ctx.moveTo(
+            particle.x - flareSize,
+            particle.y
+        );
+
+        ctx.lineTo(
+        particle.x + flareSize,
+        particle.y
+        );
+
+        ctx.stroke();
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+        particle.x,
+        particle.y - flareSize
+        );
+
+        ctx.lineTo(
+        particle.x,
+        particle.y + flareSize
+        );
+
+        ctx.stroke();
+
         };
+
 
     const drawParticle = (
 
@@ -389,52 +499,48 @@ export default function SpaceCanvas({ phase, operationPhase, debug }: SpaceCanva
 
         }
 
-        ctx.lineCap = "round";
+    };
 
-        ctx.beginPath();
 
-        ctx.strokeStyle = `rgba(255,255,255,${particle.opacity * .8})`;
+    const respawnParticle = (
+    particle: Particle,
+    canvas: CanvasBounds
+    ) => {
 
-        ctx.lineWidth = 1.2;
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
 
-        ctx.moveTo(
+    const angle =
+        Math.random() * Math.PI * 2;
 
-        particle.x - particle.size * ( 2 + particle.opacity * 2),
+    const radius =
+        250 + Math.random() * 360;
 
-        particle.y
+    particle.x =
+        centerX +
+        Math.cos(angle) * radius;
 
-        );
+    particle.y =
+        centerY +
+        Math.sin(angle) * radius;
 
-        ctx.lineTo(
+    const dx =
+        particle.x - centerX;
 
-        particle.x + particle.size * ( 2 + particle.opacity * 2),
+    const dy =
+        particle.y - centerY;
 
-        particle.y
+    const distance =
+        Math.sqrt(dx * dx + dy * dy);
 
-        );
+    const speed =
+        0.08 * particle.depth;
 
-        ctx.stroke();
+    particle.dx =
+        (dx / distance) * speed;
 
-        ctx.beginPath();
-
-        ctx.moveTo(
-
-            particle.x,
-
-            particle.y - particle.size * ( 2 + particle.opacity * 2),
-
-        );
-
-        ctx.lineTo(
-
-            particle.x,
-
-            particle.y + particle.size * ( 2 + particle.opacity * 2),
-
-        );
-
-        ctx.stroke();
-
+    particle.dy =
+        (dy / distance) * speed;
     };
 
 
@@ -470,24 +576,19 @@ export default function SpaceCanvas({ phase, operationPhase, debug }: SpaceCanva
 
         particle.y += particle.dy;
 
-        if(
-
+       if (
             particle.x < 0 ||
-
             particle.x > canvas.width ||
-
             particle.y < 0 ||
-
             particle.y > canvas.height
+        ) {
 
-        ){
-
-            particle.x = Math.random() * canvas.width;
-
-            particle.y = Math.random() * canvas.height;
+            respawnParticle(
+                particle,
+                canvas
+            );
 
         }
-
     };
 
     const animate = () => {

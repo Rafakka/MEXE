@@ -6,7 +6,7 @@
 
     inset:0;
 
-    z-index:9999;
+    z-index:0;
 
     overflow:hidden;
 
@@ -14,10 +14,10 @@
 
     opacity:0;
 
-    background:rgba(255,0,0,.2);
+    background:transparent;
 
     transition:
-        opacity 1.5s ease;
+        opacity 4s ease;
 
 }
 
@@ -35,6 +35,11 @@
 
     opacity:1;
 
+}
+
+.canvasLayer.activated{
+
+    opacity:.45,
 }
 
 .canvasLayer.processing{
