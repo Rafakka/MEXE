@@ -2,6 +2,6 @@
 
 > Image transformation laboratory.
 
-![MEXE demo](docs/demo v0.11.gif)
+<img src="./docs/demo v0.11.gif" width="100%">
 
 MEXE is a visual image transformation laboratory built with React and TypeScript.
