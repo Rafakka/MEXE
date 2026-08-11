@@ -914,6 +914,21 @@
 }
 
 
+@keyframes coreReset {
+
+    from {
+        opacity: 1;
+        filter: blur(0);
+    }
+
+    to {
+        opacity: 0;
+        filter: blur(6px);
+    }
+
+}
+
+
 /*-------BaseClass--------*/
 
 .revealing{}
@@ -1829,6 +1844,17 @@
 
 }
 
+.core.resetting {
+
+    animation:
+        coreReset
+        1.5s
+        ease-in-out
+        forwards;
+
+    pointer-events:none;
+
+}
 
 /*---------------
  *

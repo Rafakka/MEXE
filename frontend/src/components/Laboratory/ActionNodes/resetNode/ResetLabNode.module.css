@@ -47,6 +47,18 @@
 
 }
 
+@keyframes nodeHide {
+    from {
+        opacity: 1;
+        filter: blur(0);
+    }
+
+    to {
+        opacity: 0;
+        filter: blur(6px);
+    }
+}
+
 /*--------BASE--------*/
 
 :root{
@@ -233,6 +245,18 @@
 .hidden{
 
     opacity:0;
+
+    pointer-events:none;
+
+}
+
+.resetting{
+
+   animation:
+        nodeHide
+        1.5s
+        ease-in-out
+        forwards;
 
     pointer-events:none;
 

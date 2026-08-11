@@ -2,6 +2,13 @@
 
 import {postBlob} from "../api/http";
 import { ENDPOINTS } from "../api/endpoints";
+import type {ImageMetadata} from "../types/imageType";
+import {getImageMetadata} from "../../src/features/laboratory/utils/getImageMetadata";
+
+type BlendResult = {
+    url:string;
+    metadata: ImageMetadata;
+};
 
 export async function blend(
 
@@ -9,7 +16,7 @@ export async function blend(
 
     secondFile: File
 
-): Promise<string> {
+): Promise<BlendResult> {
 
     const formData = new FormData();
 
@@ -32,11 +39,14 @@ export async function blend(
 
     const url = URL.createObjectURL(blob);
 
-    console.log(url);
+    const metadata = await getImageMetadata(blob);
 
-    return url;
+    console.log(metadata);
 
-    //return URL.createObjectURL(blob);
+    return {
+        url,
+        metadata
+    };
 
 }
 

@@ -554,25 +554,19 @@
 
 .completed{}
 
+.visible{}
+
 .panel.visible{
 
     animation:
 
         panelReveal
-        3s
+        .8s
         cubic-bezier(.22,.61,.36,1)
-        7s
         forwards;
 
     pointer-events:auto;
 
-}
-
-.visible{
-
-    opacity:1;
-
-    pointer-events:auto;
 }
 
 .hidden{

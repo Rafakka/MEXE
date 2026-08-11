@@ -40,6 +40,8 @@ export default function Laboratory() {
 
         resultVisible,
 
+        resultMetadata,
+
         notification,
 
     } = useSelector(
@@ -87,6 +89,7 @@ export default function Laboratory() {
         phase === "processing",
 
     };
+
         return (
 
         <Layout phase={phase} operationPhase={operationPhase}>
@@ -152,6 +155,7 @@ export default function Laboratory() {
         visible={phase === "result" &&
             operationPhase === "completed" &&
             resultVisible}
+        resetting={isResetting}
         />
 
         <ReactionPanel
@@ -161,6 +165,7 @@ export default function Laboratory() {
             operationPhase === "completed" &&
             resultVisible}
         resultUrl={resultImage}
+        metadata={resultMetadata}
         resetting={isResetting}
         />
 
@@ -182,8 +187,7 @@ export default function Laboratory() {
             operationPhase === "completed" &&
             resultVisible}
         resetting={isResetting}
-        onClick={() => {
-        }}
+        resultUrl={resultImage}
         />
 
     </section>

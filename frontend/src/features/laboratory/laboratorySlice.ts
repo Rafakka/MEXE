@@ -6,6 +6,12 @@ import type { LaboratoryPhase } from "./laboratoryPhase";
 
 import type {PayloadAction} from "@reduxjs/toolkit";
 
+import type {ImageMetadata} from "../../types/imageType";
+
+type MergeResult = {
+    url: string;
+    metadata: ImageMetadata;
+};
 
 export type NotificationType =
 
@@ -38,6 +44,8 @@ export interface LaboratoryState {
     sampleArrivals: number;
 
     resultImage: string | null;
+
+    resultMetadata: ImageMetadata | null;
 
     resultVisible: boolean;
 
@@ -81,6 +89,8 @@ const initialState: LaboratoryState = {
     sampleArrivals: 0,
 
     resultImage: null,
+
+    resultMetadata: null,
 
     resultVisible: false,
 
@@ -159,9 +169,13 @@ const laboratorySlice = createSlice({
 
     },
 
-    mergeCompleted(state, action: PayloadAction<string>){
+    mergeCompleted(state, action: PayloadAction<MergeResult>){
 
-        state.resultImage = action.payload;
+        state.operationPhase = "completed";
+
+        state.resultImage = action.payload.url;
+
+        state.resultMetadata = action.payload.metadata;
 
         state.notification = {
 
@@ -199,6 +213,8 @@ const laboratorySlice = createSlice({
         state.resultImage = null;
 
         state.resultVisible = false;
+
+        state.resultMetadata = null;
 
         state.sampleArrivals = 0;
     },

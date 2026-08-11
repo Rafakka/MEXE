@@ -26,8 +26,8 @@ export default function ResetLabNode({
             type="button"
             className={`
                 ${styles.node}
-                ${visible ? styles.visible : styles.hidden,
-                resetting ? styles.resetting : ""}
+                ${visible ? styles.visible : styles.hidden}
+                ${resetting ? styles.resetting : ""}
                 ${styles[phase]}
                 ${styles[operationPhase]}
 

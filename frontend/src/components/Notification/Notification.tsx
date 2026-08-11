@@ -12,6 +12,7 @@ interface NotificationProps {
     phase: LaboratoryPhase,
     operationPhase: OperationPhase,
     visible: boolean,
+    resetting: boolean,
 
 }
 
@@ -21,6 +22,7 @@ export default function Notification({
     phase,
     operationPhase,
     visible,
+    resetting,
 
 }: NotificationProps) {
 
@@ -36,7 +38,17 @@ export default function Notification({
         styles[operationPhase],
         styles[notification.type],
         visible ? styles.visible : styles.hidden,
+        resetting ? styles.resetting: "",
+
     ].join(" ");
+
+    console.log({
+    visible,
+    resetting,
+    phase,
+    operationPhase
+    });
+
 
     return (
 

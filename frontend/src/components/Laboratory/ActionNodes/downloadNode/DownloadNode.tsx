@@ -9,7 +9,7 @@ type DownloadNodeProps = {
     operationPhase: OperationPhase;
     visible: boolean,
     resetting: boolean,
-    onClick: () => void;
+    resultUrl: string | null;
 
 };
 
@@ -18,21 +18,34 @@ export default function DownLoadNode({
     operationPhase,
     visible,
     resetting,
-    onClick
+    resultUrl,
 }: DownloadNodeProps) {
 
-    return (
+    const handleDownload = () => {
 
+    if (!resultUrl) return;
+
+    const link = document.createElement("a");
+
+    link.href = resultUrl;
+
+    link.download = "mexe-result.png";
+
+    link.click();
+
+    };
+
+    return (
         <button
-            type="button"
+        type="button"
            className={`
                 ${styles.node}
-                ${visible ? styles.visible: styles.hidden,
-                resetting ? styles.resetting: ""}
+                ${visible ? styles.visible: styles.hidden}
+                ${resetting ? styles.resetting: ""}
                 ${styles[phase]}
                 ${styles[operationPhase]}
         `}
-            onClick={onClick}
+            onClick={handleDownload}
             aria-label="Download File"
         >
 

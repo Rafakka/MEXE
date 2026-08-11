@@ -13,30 +13,6 @@
 
 }
 
-@keyframes notificationFloat{
-
-    0%{
-        transform:translateX(-80%) translateY(0);
-    }
-
-    25%{
-        transform:translateX(-80%) translateY(-2px);
-    }
-
-    50%{
-        transform:translateX(-80%) translateY(1px);
-    }
-
-    75%{
-        transform:translateX(-80%) translateY(-1px);
-    }
-
-    100%{
-        transform:translateX(-80%) translateY(0);
-    }
-
-}
-
 @keyframes textFloat{
 
     0%,100%{
@@ -52,22 +28,25 @@
 }
 
 
-@keyframes notificationFadeOut{
+@keyframes notificationFadeOut {
 
-    from{
-
+    from {
         opacity:1;
         filter:blur(0);
 
+        transform:
+            translateX(-80%)
+            translateY(0);
     }
 
-    to{
-
+    to {
         opacity:0;
         filter:blur(8px);
 
+        transform:
+            translateX(-80%)
+            translateY(0);
     }
-
 }
 
 @keyframes beaconFlash{
@@ -158,12 +137,7 @@
     backdrop-filter:blur(20px);
 
     opacity:0;
-
     pointer-events:none;
-
-    transition:
-        opacity .9s ease,
-        filter .9s ease;
 
     filter:blur(8px);
 
@@ -178,10 +152,8 @@
     pointer-events:auto;
 
     animation:
+
         notificationFloat 4s ease-in-out infinite;
-
-    pointer-events:auto;
-
 }
 
 .notification.hidden{
@@ -189,11 +161,6 @@
     opacity:0;
 
     pointer-events:none;
-
-    transition:
-        opacity .9s ease,
-        filter .9s ease;
-
 }
 
 .notification h2,
@@ -203,9 +170,15 @@
 
 }
 
-.notification.hide{
+.notification.resetting{
 
-    animation:notificationFadeOut 1s ease forwards;
+    animation:
+    notificationFadeOut
+    1.5s
+    ease-in-out
+    forwards;
+
+    pointer-events:none;
 
 }
 

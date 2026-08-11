@@ -3,16 +3,20 @@
 import styles from "./ReactionPanel.module.css";
 import type {LaboratoryPhase} from "../../../features/laboratory/laboratoryPhase";
 import type {OperationPhase} from "../../../features/laboratory/operationPhase";
+import type {ImageMetadata} from "../../../types/imageType";
 
 type ReactionPanelProps = {
     phase: LaboratoryPhase;
     visible: boolean;
     operationPhase: OperationPhase;
     resultUrl?: string | null;
-    resetting:boolean;
+    resetting:  boolean;
+    metadata?: ImageMetadata | null;
 };
 
-export default function ReactionPanel({phase, operationPhase, visible, resultUrl, resetting }:ReactionPanelProps){
+export default function ReactionPanel({phase, operationPhase, visible, resultUrl, resetting, metadata }:ReactionPanelProps){
+
+    console.log("REACTION PANEL METADATA:", metadata);
 
     return(
 
@@ -48,13 +52,30 @@ export default function ReactionPanel({phase, operationPhase, visible, resultUrl
                 )}
             </div>
 
-            <div className={styles.metadata}>
-                <span>1024 x 7268</span>
-                <span>Png</span>
-                <span>RGB</span>
-                <span>1.2 MB</span>
-            </div>
+    <div className={styles.metadata}>
 
+    {metadata?.width !== undefined &&
+     metadata?.height !== undefined && (
+        <span>
+            {metadata.width} × {metadata.height}
+        </span>
+    )}
+
+    {metadata?.type && (
+        <span>
+            {metadata.type
+                .replace("image/", "")
+                .toUpperCase()}
+        </span>
+    )}
+
+    {metadata?.size !== undefined && (
+        <span>
+            {(metadata.size / 1024 / 1024).toFixed(2)} MB
+        </span>
+    )}
+
+    </div>
             <div className={styles.scanner}></div>
 
             <div className={styles.borderFlow}>
