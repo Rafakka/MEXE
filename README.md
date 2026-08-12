@@ -1,5 +1,9 @@
 # M.E.X.E.
 
+> Image transformation laboratory.
+
+<img src="./docs/demo v0.11.gif" width="100%">
+
 **M.E.X.E.** is an image manipulation program with an intuitive interface, where processes are presented through a **visual and transformative experience**.
 
 The goal of MEXE is to transform images in the **simplest, most interesting, and intuitive way possible**, while remaining lightweight, practical, and easy to use.
@@ -28,12 +32,6 @@ MEXE aims to balance three characteristics:
 > **Lightweight. Simple. Beautiful.**
 
 The architecture should remain as simple as possible, while the interface transforms technical operations into an understandable visual experience.
-
-> Image transformation laboratory.
-
-<img src="./docs/demo v0.11.gif" width="100%">
-
-MEXE is a visual image transformation laboratory built with React and TypeScript.
 
 ## Running Locally
 
