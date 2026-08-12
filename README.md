@@ -53,10 +53,6 @@ git clone https://github.com/Rafakka/MEXE.git
 cd MEXE
 ```
 
-# Project Structure
-
-Aqui eu faria uma estrutura **de alto nível**, sem listar cada arquivo. O objetivo do README é permitir que alguém entenda o projeto em 30 segundos.
-
 ## Project Structure
 
 ```text
@@ -100,9 +96,6 @@ MEXE/
 
 # Current Architecture
 
-Eu colocaria uma seção curta antes do roadmap:
-## Current Architecture
-
 MEXE currently consists of two main services:
 
 ```text
@@ -125,10 +118,6 @@ MEXE currently consists of two main services:
                        ▼
                 Image Processing
 ```
-
-# Roadmap
-
-Aqui eu **não colocaria ainda uma promessa de Kubernetes**, porque o projeto ainda está evoluindo. Eu faria um roadmap que mostra onde estamos e para onde estamos indo:
 
 ## Roadmap
 
