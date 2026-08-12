@@ -56,6 +56,20 @@ export default function Laboratory() {
 
     const [secondFile, setSecondFile] = useState<File | null >(null);
 
+    const handleAxisRevealEnd = () => {
+
+    if (!firstFile || !secondFile) {
+        return;
+    }
+
+    dispatch(
+        startProcessing(
+            firstFile,
+            secondFile
+            )
+        );
+    };
+
     const handleFirstSample = (file:File | null) => {
 
         if (!file) return;
@@ -125,6 +139,7 @@ export default function Laboratory() {
 
           <ReactionField
             operationPhase={operationPhase}
+            onAxisRevealEnd={handleAxisRevealEnd}
             />
 
           <Core

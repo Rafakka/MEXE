@@ -1,22 +1,16 @@
 
 
-import type {AppDispatch, RootState} from "../../store/store";
-
-import {selectSamplesReady} from "../../components/Laboratory/laboratorySelectors";
+import type {AppDispatch} from "../../store/store";
 
 import {
 
     activatedExperiment,
-
-    startupCompleted,
 
     mergeStarted,
 
     mergeCompleted,
 
     mergeFailed,
-
-    revealingStarted,
 
     processingRunning,
 
@@ -27,8 +21,6 @@ import {
 } from "./laboratorySlice";
 
 import {
-
-    STARTUP_DURATION,
 
     RESET_DURATION,
 

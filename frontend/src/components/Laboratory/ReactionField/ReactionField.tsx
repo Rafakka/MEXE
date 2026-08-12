@@ -1,22 +1,24 @@
 
 
-import styles from "./ReactionField.module.css";
 import { useDispatch } from "react-redux";
-import type {AppDispatch} from "../../../store/store";
+import type { AppDispatch } from "../../../store/store";
+import styles from "./ReactionField.module.css";
 import type {OperationPhase} from "../../../features/laboratory/operationPhase";
-import {startProcessing} from "../../../features/laboratory/laboratoryThunks";
 import {collapseStarted, completedStarted} from "../../../features/laboratory/laboratorySlice";
 
 type ReactionProps = {
 
     operationPhase: OperationPhase;
+    onAxisRevealEnd: () => void;
+
 }
 
 export default function ReactionField({
 
     operationPhase,
+    onAxisRevealEnd
 
-}: ReactionProps) {
+    }: ReactionProps) {
 
     const dispatch = useDispatch<AppDispatch>();
 
@@ -48,7 +50,7 @@ export default function ReactionField({
 
         console.log("RUNNING");
 
-        dispatch(startProcessing());
+        onAxisRevealEnd();
 
     };
 
