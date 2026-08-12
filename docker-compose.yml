@@ -1,0 +1,18 @@
+
+services:
+
+  backend:
+    build:
+      context: ./backend
+    container_name: mexe-backend
+    expose:
+      - "8000"
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: mexe-frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend

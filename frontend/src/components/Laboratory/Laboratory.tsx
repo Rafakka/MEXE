@@ -99,7 +99,6 @@ export default function Laboratory() {
         <Scene>
 
           <ReactionField
-            phase={phase}
             operationPhase={operationPhase}
             />
 

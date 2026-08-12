@@ -1,4 +1,4 @@
-
+import { ENDPOINTS } from "../api/endpoints";
 
 export async function blendImages(
     imageA: File,
@@ -15,7 +15,7 @@ export async function blendImages(
     formData.append("height", height.toString());
 
     const response = await fetch(
-        "http://localhost:8000/blend",
+        ENDPOINTS.BLEND,
         {
             method: "POST",
             body: formData,

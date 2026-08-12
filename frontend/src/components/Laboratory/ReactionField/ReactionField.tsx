@@ -3,20 +3,16 @@
 import styles from "./ReactionField.module.css";
 import { useDispatch } from "react-redux";
 import type {AppDispatch} from "../../../store/store";
-import type {LaboratoryPhase} from "../../../features/laboratory/laboratoryPhase";
 import type {OperationPhase} from "../../../features/laboratory/operationPhase";
 import {startProcessing} from "../../../features/laboratory/laboratoryThunks";
 import {collapseStarted, completedStarted} from "../../../features/laboratory/laboratorySlice";
 
 type ReactionProps = {
 
-    phase: LaboratoryPhase;
     operationPhase: OperationPhase;
 }
 
 export default function ReactionField({
-
-    phase,
 
     operationPhase,
 
@@ -110,10 +106,6 @@ export default function ReactionField({
             }
         };
 
-    const operationClass =
-        operationPhase !== "idle"
-            ? styles[operationPhase]
-            : "";
 
     return (
 

@@ -1,5 +1,4 @@
 
-import type { BlendResponse } from "./contracts/blend";
 import type { ErrorResponse } from "./contracts/error";
 import type { HealthResponse } from "./contracts/health";
 
@@ -11,7 +10,7 @@ export interface ApiResponseMap<T> {
 export const BLEND_RESPONSES = {
     200: {
         description: "Image successfully blended.",
-    } satisfies Omit<ApiResponseMap<BlendResponse>, "model">,
+    } satisfies Omit<ApiResponseMap<unknown>, "model">,
 
     415: {
         description: "Unsupported image format.",
