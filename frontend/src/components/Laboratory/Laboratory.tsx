@@ -10,13 +10,15 @@ import Notification from "../Notification/Notification";
 import ResetLabNode from "../Laboratory/ActionNodes/resetNode/ResetLabNode";
 import DownloadNode from "../Laboratory/ActionNodes/downloadNode/DownloadNode";
 import {useSelector, useDispatch} from "react-redux";
-import {useState, useEffect} from "react";
+import {useState, useRef} from "react";
 import type {RootState, AppDispatch} from "../../store/store";
 import {
         clearLaboratory,
         clearNotification,
         loadFirstSample,
         loadSecondSample,
+        startupCompleted,
+        revealingStarted
 
     } from "../../features/laboratory/laboratorySlice";
 
@@ -50,6 +52,7 @@ export default function Laboratory() {
 
     );
 
+
     const [isResetting, setIsResetting] = useState(false);
 
     const [firstFile, setFirstFile] = useState<File | null>(null);
@@ -70,6 +73,25 @@ export default function Laboratory() {
         );
     };
 
+    const hiddenSamples = useRef(
+    new Set<"left" | "right">()
+    );
+
+    const handleSampleHideComplete = (
+    side: "left" | "right"
+    ) => {
+
+        hiddenSamples.current.add(side);
+
+        if (
+        hiddenSamples.current.has("left") &&
+        hiddenSamples.current.has("right")
+        ) {
+        dispatch(revealingStarted());
+        }
+
+    };
+
     const handleFirstSample = (file:File | null) => {
 
         if (!file) return;
@@ -79,14 +101,18 @@ export default function Laboratory() {
         dispatch(loadFirstSample());
     };
 
-    const handleSecondSample = (file:File | null) => {
-        if(!file) return;
+    const handleSecondSample = (file: File | null) => {
+
+        if (!file) return;
+
+        hiddenSamples.current.clear();
 
         setSecondFile(file);
 
         dispatch(loadSecondSample());
-    };
 
+        dispatch(startupCompleted());
+    };
 
     const handleCoreClick = () => {
 
@@ -101,32 +127,16 @@ export default function Laboratory() {
         setIsResetting(true);
     };
 
+
     const view = {
 
     areSamplesVisible:
-        phase === "activated" ||
-        phase === "synchronizing",
+        phase === "activated",
 
     isProcessing:
         phase === "processing",
 
     };
-
-
-    useEffect(() => {
-
-        if (!firstFile || !secondFile) {
-        return;
-        }
-
-        dispatch(
-            startProcessing(
-                firstFile,
-                secondFile
-            )
-        );
-
-    }, [firstFile, secondFile, dispatch]);
 
 
         return (
@@ -160,6 +170,7 @@ export default function Laboratory() {
             visible={view.areSamplesVisible}
             phase={phase}
             floating={!samples.firstLoaded && !view.isProcessing}
+            onHideComplete={handleSampleHideComplete}
             >
             <SampleNode
             phase={phase}
@@ -175,6 +186,7 @@ export default function Laboratory() {
             visible={view.areSamplesVisible}
             phase={phase}
             floating={!samples.secondLoaded && !view.isProcessing}
+            onHideComplete={handleSampleHideComplete}
             >
             <SampleNode
             phase={phase}

@@ -26,15 +26,8 @@ export default function ReactionField({
     event: React.AnimationEvent<HTMLDivElement>
     ) => {
 
-        console.log("AXIS ANIMATION END");
-
         const name = event.animationName;
 
-        console.log(
-        "EVENT",
-        operationPhase,
-        name
-        );
 
         if (event.target !== event.currentTarget){
 
@@ -47,8 +40,6 @@ export default function ReactionField({
             return;
 
             }
-
-        console.log("RUNNING");
 
         onAxisRevealEnd();
 

@@ -7,6 +7,7 @@ type SampleAnchorProps = {
     floating: boolean;
     phase: LaboratoryPhase;
     children: React.ReactNode;
+    onHideComplete?:(side: "left" | "right") => void;
 };
 
 export default function SampleAnchor({
@@ -15,6 +16,7 @@ export default function SampleAnchor({
     floating,
     phase,
     children,
+    onHideComplete
 }: SampleAnchorProps) {
 
     return (
@@ -41,6 +43,17 @@ export default function SampleAnchor({
                         : ""
                 }
             `}
+            onTransitionEnd={(event) => {
+
+            if (
+                !visible &&
+                event.propertyName === "opacity"
+            ) {
+                onHideComplete?.(side);
+            }
+
+        }}
+
         >
             {children}
         </div>
