@@ -10,7 +10,7 @@ import Notification from "../Notification/Notification";
 import ResetLabNode from "../Laboratory/ActionNodes/resetNode/ResetLabNode";
 import DownloadNode from "../Laboratory/ActionNodes/downloadNode/DownloadNode";
 import {useSelector, useDispatch} from "react-redux";
-import {useState} from "react";
+import {useState, useEffect} from "react";
 import type {RootState, AppDispatch} from "../../store/store";
 import {
         clearLaboratory,
@@ -20,7 +20,7 @@ import {
 
     } from "../../features/laboratory/laboratorySlice";
 
-import { activeLab, tryStartExperiment } from "../../features/laboratory/laboratoryThunks";
+import { activeLab, startProcessing } from "../../features/laboratory/laboratoryThunks";
 
 import styles from "./Laboratory.module.css";
 
@@ -52,22 +52,27 @@ export default function Laboratory() {
 
     const [isResetting, setIsResetting] = useState(false);
 
+    const [firstFile, setFirstFile] = useState<File | null>(null);
+
+    const [secondFile, setSecondFile] = useState<File | null >(null);
+
     const handleFirstSample = (file:File | null) => {
 
         if (!file) return;
 
-        dispatch(loadFirstSample(file));
+        setFirstFile(file);
 
-        dispatch(tryStartExperiment());
+        dispatch(loadFirstSample());
     };
 
     const handleSecondSample = (file:File | null) => {
         if(!file) return;
 
-        dispatch(loadSecondSample(file));
+        setSecondFile(file);
 
-        dispatch(tryStartExperiment());
+        dispatch(loadSecondSample());
     };
+
 
     const handleCoreClick = () => {
 
@@ -75,6 +80,9 @@ export default function Laboratory() {
     };
 
     const handleReset = () => {
+
+        setFirstFile(null);
+        setSecondFile(null);
 
         setIsResetting(true);
     };
@@ -89,6 +97,23 @@ export default function Laboratory() {
         phase === "processing",
 
     };
+
+
+    useEffect(() => {
+
+        if (!firstFile || !secondFile) {
+        return;
+        }
+
+        dispatch(
+            startProcessing(
+                firstFile,
+                secondFile
+            )
+        );
+
+    }, [firstFile, secondFile, dispatch]);
+
 
         return (
 

@@ -31,17 +31,11 @@ export interface LaboratoryState {
 
     samples: {
 
-        firstFile: File | null;
-
-        secondFile: File | null;
-
         firstLoaded: boolean;
 
         secondLoaded: boolean;
 
     };
-
-    sampleArrivals: number;
 
     resultImage: string | null;
 
@@ -75,18 +69,11 @@ const initialState: LaboratoryState = {
 
     samples: {
 
-
-        firstFile: null,
-
-        secondFile: null,
-
         firstLoaded: false,
 
         secondLoaded: false,
 
     },
-
-    sampleArrivals: 0,
 
     resultImage: null,
 
@@ -117,24 +104,16 @@ const laboratorySlice = createSlice({
         state.startupFinished = false;
     },
 
-    loadFirstSample(state, action:PayloadAction<File>) {
-
-        state.samples.firstFile = action.payload;
+    loadFirstSample(state) {
 
         state.samples.firstLoaded = true;
 
     },
 
-    loadSecondSample(state, action:PayloadAction<File>) {
-
-        state.samples.secondFile = action.payload;
+    loadSecondSample(state) {
 
         state.samples.secondLoaded = true;
 
-    },
-
-    sampleArrived(state){
-        state.sampleArrivals++;
     },
 
     acceleratingStarted(state){
@@ -206,17 +185,12 @@ const laboratorySlice = createSlice({
 
         state.samples.secondLoaded = false;
 
-        state.samples.firstFile = null;
-
-        state.samples.secondFile = null;
-
         state.resultImage = null;
 
         state.resultVisible = false;
 
         state.resultMetadata = null;
 
-        state.sampleArrivals = 0;
     },
 
     clearNotification (state) {
@@ -257,7 +231,6 @@ export const {
     loadFirstSample,
     loadSecondSample,
 
-    sampleArrived,
     startupCompleted,
     completedStarted,
     mergeStarted,

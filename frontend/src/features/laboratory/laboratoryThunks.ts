@@ -39,39 +39,6 @@ import {delay} from "../../features/laboratory/utils/delay";
 
 import { mexeApi } from "../../api/mexeApi";
 
-    export const waitForSamples =
-    () => async (
-
-    dispatch: AppDispatch,
-
-    getState: ()=> RootState
-
-    ) => {
-
-        console.log("WAIT FOR SAMPLES");
-
-    const {
-
-        sampleArrivals
-
-    } = getState().laboratory;
-
-        if (sampleArrivals < 2) {
-
-        console.log("WAITING...");
-
-        return;
-        }
-
-        console.log("BOTH ARRIVED");
-
-        dispatch(revealingStarted());
-
-        console.log("REVEALING STARTED", performance.now());
-
-
-    };
-
     export const activeLab = () =>
 
         async (
@@ -82,42 +49,14 @@ import { mexeApi } from "../../api/mexeApi";
 
         };
 
-    export const tryStartExperiment =
-        () => async (
-            dispatch: AppDispatch,
-            getState: () => RootState
-        ) => {
 
-        if (!selectSamplesReady(getState())) {
-        return;
-        }
+    export const startProcessing = (
 
-        return dispatch(runExperiment());
+        firstFile: File,
 
-        };
+        secondFile: File
 
-    export const runExperiment = () =>
-
-        async (
-            dispatch: AppDispatch,
-            getState: () => RootState
-        ) => {
-
-            const ready = selectSamplesReady(getState());
-
-            if (!ready) {
-                return;
-            }
-
-            await delay(STARTUP_DURATION);
-
-            dispatch(startupCompleted());
-
-            return;
-        };
-
-
-    export const startProcessing = () => async (
+    ) => async (
 
         dispatch: AppDispatch
     ) => {
@@ -126,7 +65,7 @@ import { mexeApi } from "../../api/mexeApi";
 
         dispatch(mergeStarted());
 
-        const success = await dispatch(performMerge());
+        const success = await dispatch(performMerge(firstFile, secondFile));
 
         if(!success) {
 
@@ -134,30 +73,16 @@ import { mexeApi } from "../../api/mexeApi";
         }
     };
 
-    export const performMerge =
-        () => async (
+    export const performMerge = (
+        firstFile: File,
+        secondFile: File
+    ) => async (
 
-    dispatch: AppDispatch,
-
-    getState: () => RootState
+    dispatch: AppDispatch
 
     ) => {
 
     try {
-
-        const {
-
-            firstFile,
-
-            secondFile
-
-        } = getState().laboratory.samples;
-
-        if (!firstFile || !secondFile) {
-
-            throw new Error("Samples not loaded");
-
-        }
 
         console.log(">>> API START");
 
@@ -173,11 +98,7 @@ import { mexeApi } from "../../api/mexeApi";
 
         dispatch(mergeCompleted(result));
 
-        console.log("OP BEFORE", getState().laboratory.operationPhase);
-
         dispatch(acceleratingStarted());
-
-        console.log("OP AFTER", getState().laboratory.operationPhase);
 
         return true;
 
