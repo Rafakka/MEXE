@@ -1,7 +1,5 @@
 # M.E.X.E.
 
-> Image transformation laboratory.
-
 <img src="./docs/demo v0.11.gif" width="100%">
 
 **M.E.X.E.** is an image manipulation program with an intuitive interface, where processes are presented through a **visual and transformative experience**.
