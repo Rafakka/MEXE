@@ -24,3 +24,26 @@ def test_request_health_when_down(client, monkeypatch):
     response = client.get("/health")
 
     assert response.status_code == 503
+
+def test_request_ready_info(client):
+
+    response = client.get("/ready")
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "UP"
+
+def test_request_ready_when_down(client, monkeypatch):
+
+    def failing_check():
+        return HealthStatus.DOWN
+
+    monkeypatch.setattr(
+        routes.health_checker,
+        "check",
+        failing_check
+    )
+
+    response = client.get("/ready")
+
+    assert response.status_code == 503
+

@@ -82,3 +82,22 @@ def health() -> HealthResponse:
     return HealthResponse (
             status=status
             )
+
+@router.get(
+    "/ready",
+    response_model=HealthResponse,
+    responses=HEALTH_RESPONSES,
+)
+def ready() -> HealthResponse:
+
+    status = health_checker.check()
+
+    if status == HealthStatus.DOWN:
+        raise HTTPException(
+            status_code=503,
+            detail="Service not ready",
+        )
+
+    return HealthResponse(
+        status=status
+    )
