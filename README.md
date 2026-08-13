@@ -131,10 +131,20 @@ MEXE currently consists of two main services:
 - [x] Nginx reverse proxy
 - [x] Stateless image processing architecture
 
+### Cloud Native Foundation
+
+- [x] Containerization
+- [x] Docker Compose
+- [x] Backend health endpoint
+- [x] Backend readiness endpoint
+- [x] Frontend health/integration check
+- [x] Docker HEALTHCHECK
+- [x] Failure propagation
+- [x] Recovery detection
+- [x] Automated health tests
+
 ### Next
 
-- [ ] Improve project documentation
-- [ ] Add application health checks
 - [ ] Improve environment-based configuration
 - [ ] Harden Docker Compose configuration
 - [ ] Expand automated test coverage
