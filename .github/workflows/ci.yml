@@ -65,6 +65,10 @@ jobs:
       contents: read
       packages: write
 
+    env:
+      REGISTRY: ghcr.io
+      IMAGE_OWNER: rafakka
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -76,22 +80,22 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build backend image
+     - name: Build backend image
         run: |
-          docker build \
-            -t ghcr.io/${{ github.repository_owner }}/mexe-backend:${{ github.sha }} \
-            ./backend
+        docker build \
+        -t $REGISTRY/$IMAGE_OWNER/mexe-backend:${{ github.sha }} \
+        ./backend
 
-      - name: Build frontend image
+    - name: Build frontend image
         run: |
-          docker build \
-            -t ghcr.io/${{ github.repository_owner }}/mexe-frontend:${{ github.sha }} \
-            ./frontend
+        docker build \
+      -t $REGISTRY/$IMAGE_OWNER/mexe-frontend:${{ github.sha }} \
+      ./frontend
 
-      - name: Push backend image
+    - name: Push backend image
         run: |
-          docker push ghcr.io/${{ github.repository_owner }}/mexe-backend:${{ github.sha }}
+        docker push $REGISTRY/$IMAGE_OWNER/mexe-backend:${{ github.sha }}
 
-      - name: Push frontend image
+    - name: Push frontend image
         run: |
-          docker push ghcr.io/${{ github.repository_owner }}/mexe-frontend:${{ github.sha }}
+        docker push $REGISTRY/$IMAGE_OWNER/mexe-frontend:${{ github.sha }}
