@@ -54,16 +54,24 @@ jobs:
         working-directory: frontend
         run: npm run build
 
-  docker-build:
+  docker-publish:
     needs:
       - backend-tests
       - frontend-build
 
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+      packages: write
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Build Docker images
-        run: docker compose build
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
