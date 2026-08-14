@@ -181,19 +181,19 @@ MEXE Cloud-Native Roadmap
 │   ├── Failure propagation          ✓
 │   └── Recovery                     ✓
 │
-├── 4. CI/CD                         ← NEXT
-│   ├── Automated tests
-│   ├── Frontend build
-│   ├── Docker build
-│   └── Pipeline
+├── 4. CI/CD                         
+│   ├── Automated tests              ✓
+│   ├── Frontend build               ✓
+│   ├── Docker build                 ✓
+│   └── Pipeline                     ✓
 │
 ├── 5. Container Registry
-│   └── GHCR
+│   └── GHCR                         ✓ 
 │
-├── 6. Cloud Deployment
+├── 6. Cloud Deployment              ✓ 
 │   └── First real deployment
 │
-├── 7. Observability
+├── 7. Observability                 ← NEXT
 │   ├── Logs
 │   ├── Metrics
 │   └── Tracing
