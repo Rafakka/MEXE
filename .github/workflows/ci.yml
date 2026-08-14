@@ -99,3 +99,18 @@ jobs:
       - name: Push frontend image
         run: |
           docker push $REGISTRY/$IMAGE_OWNER/mexe-frontend:${{ github.sha }}
+  deploy:
+    needs:
+      - docker-publish
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set MEXE_VERSION
+        run: echo "MEXE_VERSION=${{ github.sha }}" >> "$GITHUB_ENV"
+
+      - name: Show deployment version
+        run: echo "Deploying MEXE version $MEXE_VERSION"
