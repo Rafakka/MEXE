@@ -115,6 +115,20 @@ MEXE currently consists of two main services:
                 Image Processing
 ```
 
+# Health/Readiness
+
+```text
+
+Health & Readiness
+├── /health
+├── /ready
+├── /api/ready
+└── Docker HEALTHCHECK
+
+```
+
+The backend exposes independent health and readiness endpoints. The frontend uses the Nginx reverse proxy to verify backend readiness, allowing dependency failures to propagate to the frontend's container health state.
+
 ## Roadmap
 
 ### Current
@@ -131,24 +145,74 @@ MEXE currently consists of two main services:
 - [x] Nginx reverse proxy
 - [x] Stateless image processing architecture
 
-### Next
+### Cloud Native Foundation
 
-- [ ] Improve project documentation
-- [ ] Add application health checks
-- [ ] Improve environment-based configuration
-- [ ] Harden Docker Compose configuration
-- [ ] Expand automated test coverage
-- [ ] Add continuous integration with GitHub Actions
-- [ ] Build and publish versioned container images
-- [ ] Deploy MEXE to a cloud environment
-- [ ] Add production observability
-- [ ] Improve failure handling and recovery
+- [x] Containerization
+- [x] Docker Compose
+- [x] Backend health endpoint
+- [x] Backend readiness endpoint
+- [x] Frontend health/integration check
+- [x] Docker HEALTHCHECK
+- [x] Failure propagation
+- [x] Recovery detection
+- [x] Automated health tests
 
-### Future
+### Development Guidance Roadmap
 
-- [ ] Automated deployment pipeline
-- [ ] Horizontal scalability
-- [ ] Container orchestration
-- [ ] Cloud-native infrastructure
-- [ ] Further architectural evolution based on real-world usage
-
+````text
+MEXE Cloud-Native Roadmap
+│
+├── 1. Application Foundation
+│   ├── Domain architecture          ✓
+│   ├── Tests                        ✓
+│   ├── API                          ✓
+│   └── Stateless design             ✓
+│
+├── 2. Containerization
+│   ├── Docker                       ✓
+│   ├── Docker Compose               ✓
+│   └── Nginx reverse proxy          ✓
+│
+├── 3. Operational Health
+│   ├── /health                      ✓
+│   ├── /ready                       ✓
+│   ├── /api/ready                   ✓
+│   ├── Docker healthchecks          ✓
+│   ├── Failure propagation          ✓
+│   └── Recovery                     ✓
+│
+├── 4. CI/CD                         ← NEXT
+│   ├── Automated tests
+│   ├── Frontend build
+│   ├── Docker build
+│   └── Pipeline
+│
+├── 5. Container Registry
+│   └── GHCR
+│
+├── 6. Cloud Deployment
+│   └── First real deployment
+│
+├── 7. Observability
+│   ├── Logs
+│   ├── Metrics
+│   └── Tracing
+│
+├── 8. Resilience
+│   ├── Timeouts
+│   ├── Failure handling
+│   └── Resource limits
+│
+├── 9. Kubernetes
+│   ├── Deployment
+│   ├── Service
+│   ├── Probes
+│   ├── Config
+│   └── Scaling
+│
+└── 10. Distributed Evolution
+    ├── Multiple instances
+    ├── Stateless scaling
+    ├── Load balancing
+    └── Cloud-native architecture
+````
