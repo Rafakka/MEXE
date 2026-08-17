@@ -6,4 +6,4 @@ services:
   frontend:
     image: ghcr.io/rafakka/mexe-frontend:${MEXE_VERSION:?MEXE_VERSION must be set}
     ports:
-      - "8080:80"
+      - "80:80"
