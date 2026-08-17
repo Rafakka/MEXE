@@ -1,0 +1,26 @@
+stages:
+  - test
+  - build
+
+backend-tests:
+  stage: test
+  image: python:3.14
+
+  before_script:
+    - cd backend
+    - python -m pip install --upgrade pip
+    - pip install -r requirements.txt
+
+  script:
+    - python -m pytest
+
+frontend-build:
+  stage: build
+  image: node:22
+
+  before_script:
+    - cd frontend
+    - npm ci
+
+  script:
+    - npm run build
