@@ -15,7 +15,7 @@ backend-tests:
     - python -m pytest
 
 frontend-build:
-  stage: build
+  stage: test
   image: node:22
 
   before_script:
@@ -24,3 +24,33 @@ frontend-build:
 
   script:
     - npm run build
+
+docker-backend:
+  stage: build
+  image: docker:27-cli
+
+  services:
+    - name: docker:27-dind
+      alias: docker
+
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+
+  script:
+    - docker build -t mexe-backend:test ./backend
+
+docker-frontend:
+  stage: build
+  image: docker:27-cli
+
+  services:
+    - name: docker:27-dind
+      alias: docker
+
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+
+  script:
+    - docker build -t mexe-frontend:test ./frontend
