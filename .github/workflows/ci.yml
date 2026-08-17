@@ -1,6 +1,7 @@
 name: MEXE CI
 
 on:
+
   push:
     branches:
       - main
@@ -52,8 +53,8 @@ on:
       - name: Build frontend
         working-directory: frontend
         run: npm run build
-
-   docker-publish:
+        
+    docker-publish:
     needs:
       - backend-tests
       - frontend-build
