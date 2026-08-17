@@ -37,8 +37,13 @@ docker-backend:
     DOCKER_HOST: tcp://docker:2375
     DOCKER_TLS_CERTDIR: ""
 
+  before_script:
+    - docker info
+    - docker run --privileged --rm tonistiigi/binfmt --install all
+    - docker buildx create --use --name mexe-builder
+
   script:
-    - docker build -t mexe-backend:test ./backend
+    - docker buildx build --platform linux/amd64,linux/arm64 --tag mexe-backend:test --push=false ./backend
 
 docker-frontend:
   stage: build
@@ -52,5 +57,10 @@ docker-frontend:
     DOCKER_HOST: tcp://docker:2375
     DOCKER_TLS_CERTDIR: ""
 
+  before_script:
+    - docker info
+    - docker run --privileged --rm tonistiigi/binfmt --install all
+    - docker buildx create --use --name mexe-builder
+
   script:
-    - docker build -t mexe-frontend:test ./frontend
+    - docker buildx build --platform linux/amd64,linux/arm64 --tag mexe-frontend:test --push=false ./frontend
