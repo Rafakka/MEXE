@@ -54,7 +54,7 @@ jobs:
         working-directory: frontend
         run: npm run build
 
- docker-publish:
+  docker-publish:
     needs:
       - backend-tests
       - frontend-build
