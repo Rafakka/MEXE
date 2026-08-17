@@ -98,7 +98,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/mexe-frontend:${{ github.sha }}
- deploy:
+  deploy:
     needs:
       - docker-publish
 
