@@ -1,6 +1,7 @@
 stages:
   - test
   - build
+  - publish
 
 backend-tests:
   stage: test
@@ -64,3 +65,25 @@ docker-frontend:
 
   script:
     - docker buildx build --platform linux/amd64,linux/arm64 --tag mexe-frontend:test --push=false ./frontend
+
+publish-images:
+  stage: publish
+  image: docker:27-cli
+
+  services:
+    - name: docker:27-dind
+      alias: docker
+
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+
+  before_script:
+    - docker info
+    - docker run --privileged --rm tonistiigi/binfmt --install all
+    - docker buildx create --use --name mexe-builder
+    - echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
+
+  script:
+    - docker buildx build --platform linux/amd64,linux/arm64 --tag ghcr.io/rafakka/mexe-backend:$CI_COMMIT_SHA --push ./backend
+    - docker buildx build --platform linux/amd64,linux/arm64 --tag ghcr.io/rafakka/mexe-frontend:$CI_COMMIT_SHA --push ./frontend
