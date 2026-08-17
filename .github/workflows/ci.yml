@@ -1,7 +1,6 @@
 name: MEXE CI
 
 on:
-
   push:
     branches:
       - main
@@ -9,7 +8,8 @@ on:
   pull_request:
     branches:
       - main
-  jobs:
+
+jobs:
   backend-tests:
     runs-on: ubuntu-latest
 
@@ -21,7 +21,7 @@ on:
         uses: actions/setup-python@v6
         with:
           python-version: "3.14"
-          
+
       - name: Install dependencies
         working-directory: backend
         run: |
@@ -53,8 +53,8 @@ on:
       - name: Build frontend
         working-directory: frontend
         run: npm run build
-        
-    docker-publish:
+
+  docker-publish:
     needs:
       - backend-tests
       - frontend-build
@@ -83,10 +83,9 @@ on:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      
+
       - name: Build and push backend image
         uses: docker/build-push-action@v6
         with:
@@ -96,7 +95,7 @@ on:
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/mexe-backend:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          
+
       - name: Build and push frontend image
         uses: docker/build-push-action@v6
         with:
@@ -105,7 +104,9 @@ on:
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/mexe-frontend:${{ github.sha }}
           cache-from: type=gha
-          cache-to: type=gha,mode=max  deploy:
+          cache-to: type=gha,mode=max
+
+  deploy:
     needs:
       - docker-publish
 
