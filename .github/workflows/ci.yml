@@ -54,7 +54,7 @@ jobs:
         working-directory: frontend
         run: npm run build
 
-  docker-publish:
+ docker-publish:
     needs:
       - backend-tests
       - frontend-build
@@ -83,7 +83,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-     - name: Build and push backend image
+      - name: Build and push backend image
         uses: docker/build-push-action@v6
         with:
           context: ./backend
@@ -91,15 +91,14 @@ jobs:
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/mexe-backend:${{ github.sha }}
 
-    - name: Build and push frontend image
+      - name: Build and push frontend image
         uses: docker/build-push-action@v6
         with:
           context: ./frontend
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/mexe-frontend:${{ github.sha }}
-
-        deploy:
+ deploy:
     needs:
       - docker-publish
 
