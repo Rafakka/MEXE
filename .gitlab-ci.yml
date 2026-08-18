@@ -130,7 +130,10 @@ deploy:
           "docker compose -f docker-compose.prod.yml pull",
           "docker compose -f docker-compose.prod.yml up -d",
           "docker compose -f docker-compose.prod.yml ps",
-          "curl -f http://localhost/api/health"
+          "echo \"Waiting for MEXE health check...\"",
+          "for i in $(seq 1 30); do if curl -fsS http://localhost/api/health; then echo \"MEXE is healthy!\"; exit 0; fi; echo \"Health check failed. Attempt $i/30\"; sleep 2; done",
+          "echo \"MEXE failed health check\"",
+          "exit 1"
         ]' \
         --query 'Command.CommandId' \
         --output text \
