@@ -89,7 +89,7 @@ publish-images:
     - docker buildx build --platform linux/amd64,linux/arm64 --tag ghcr.io/rafakka/mexe-backend:$CI_COMMIT_SHA --push ./backend
     - docker buildx build --platform linux/amd64,linux/arm64 --tag ghcr.io/rafakka/mexe-frontend:$CI_COMMIT_SHA --push ./frontend
 
-ssm-test:
+deploy:
   stage: deploy
 
   id_tokens:
@@ -101,12 +101,12 @@ ssm-test:
     entrypoint: [""]
 
   script:
-    - echo "Testing GitLab → AWS OIDC → SSM"
+    - echo "Starting MEXE deployment"
 
     - >
       CREDS=$(aws sts assume-role-with-web-identity
       --role-arn "arn:aws:iam::719514706307:role/MEXE-SSM-Deploy"
-      --role-session-name "gitlab-mexe-test"
+      --role-session-name "gitlab-mexe-deploy"
       --web-identity-token "$GITLAB_OIDC_TOKEN"
       --duration-seconds 900
       --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]'
@@ -119,8 +119,31 @@ ssm-test:
     - aws sts get-caller-identity
 
     - >
-      aws ssm send-command
+      COMMAND_ID=$(aws ssm send-command
       --instance-ids "i-0fb696d4212f059e7"
       --document-name "AWS-RunShellScript"
-      --parameters 'commands=["echo MEXE-GITLAB-SSM-OK","hostname"]'
+      --parameters 'commands=[
+        "set -e",
+        "cd ~/mexe",
+        "sed -i \"s/^MEXE_VERSION=.*/MEXE_VERSION='$CI_COMMIT_SHA'/\" .env",
+        "echo MEXE_VERSION=$CI_COMMIT_SHA",
+        "docker compose -f docker-compose.prod.yml pull",
+        "docker compose -f docker-compose.prod.yml up -d",
+        "docker compose -f docker-compose.prod.yml ps",
+        "curl -f http://localhost/api/health"
+      ]'
+      --query 'Command.CommandId'
+      --output text
+      --region "$AWS_DEFAULT_REGION")
+
+    - echo "SSM Command ID: $COMMAND_ID"
+
+    - echo "Waiting for deployment..."
+
+    - >
+      aws ssm wait command-executed
+      --command-id "$COMMAND_ID"
+      --instance-id "i-0fb696d4212f059e7"
       --region "$AWS_DEFAULT_REGION"
+
+    - echo "MEXE deployment completed successfully"
