@@ -136,9 +136,9 @@ deploy:
       --output text
       --region "$AWS_DEFAULT_REGION")
 
-    - echo "SSM Command ID: $COMMAND_ID"
+      - echo "SSM Command ID: $COMMAND_ID"
 
-    - echo "Waiting for deployment..."
+      - echo "Waiting for deployment..."
 
     - >
       aws ssm wait command-executed
