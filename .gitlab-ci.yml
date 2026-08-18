@@ -103,47 +103,47 @@ deploy:
   script:
     - echo "Starting MEXE deployment"
 
-    - >
-      CREDS=$(aws sts assume-role-with-web-identity
-      --role-arn "arn:aws:iam::719514706307:role/MEXE-SSM-Deploy"
-      --role-session-name "gitlab-mexe-deploy"
-      --web-identity-token "$GITLAB_OIDC_TOKEN"
-      --duration-seconds 900
-      --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]'
-      --output text)
+    - |
+      CREDS=$(aws sts assume-role-with-web-identity \
+        --role-arn "arn:aws:iam::719514706307:role/MEXE-SSM-Deploy" \
+        --role-session-name "gitlab-mexe-deploy" \
+        --web-identity-token "$GITLAB_OIDC_TOKEN" \
+        --duration-seconds 900 \
+        --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]' \
+        --output text)
 
-    - export AWS_ACCESS_KEY_ID=$(echo "$CREDS" | awk '{print $1}')
-    - export AWS_SECRET_ACCESS_KEY=$(echo "$CREDS" | awk '{print $2}')
-    - export AWS_SESSION_TOKEN=$(echo "$CREDS" | awk '{print $3}')
+      export AWS_ACCESS_KEY_ID=$(echo "$CREDS" | awk '{print $1}')
+      export AWS_SECRET_ACCESS_KEY=$(echo "$CREDS" | awk '{print $2}')
+      export AWS_SESSION_TOKEN=$(echo "$CREDS" | awk '{print $3}')
 
     - aws sts get-caller-identity
 
-    - >
-      COMMAND_ID=$(aws ssm send-command
-      --instance-ids "i-0fb696d4212f059e7"
-      --document-name "AWS-RunShellScript"
-      --parameters 'commands=[
-        "set -e",
-        "cd ~/mexe",
-        "sed -i \"s/^MEXE_VERSION=.*/MEXE_VERSION='$CI_COMMIT_SHA'/\" .env",
-        "echo MEXE_VERSION=$CI_COMMIT_SHA",
-        "docker compose -f docker-compose.prod.yml pull",
-        "docker compose -f docker-compose.prod.yml up -d",
-        "docker compose -f docker-compose.prod.yml ps",
-        "curl -f http://localhost/api/health"
-      ]'
-      --query 'Command.CommandId'
-      --output text
-      --region "$AWS_DEFAULT_REGION")
+    - |
+      COMMAND_ID=$(aws ssm send-command \
+        --instance-ids "i-0fb696d4212f059e7" \
+        --document-name "AWS-RunShellScript" \
+        --parameters 'commands=[
+          "set -e",
+          "cd ~/mexe",
+          "sed -i \"s/^MEXE_VERSION=.*/MEXE_VERSION='$CI_COMMIT_SHA'/\" .env",
+          "echo MEXE_VERSION=$CI_COMMIT_SHA",
+          "docker compose -f docker-compose.prod.yml pull",
+          "docker compose -f docker-compose.prod.yml up -d",
+          "docker compose -f docker-compose.prod.yml ps",
+          "curl -f http://localhost/api/health"
+        ]' \
+        --query 'Command.CommandId' \
+        --output text \
+        --region "$AWS_DEFAULT_REGION")
 
-      - echo "SSM Command ID: $COMMAND_ID"
+      echo "SSM Command ID: $COMMAND_ID"
 
-      - echo "Waiting for deployment..."
+    - echo "Waiting for deployment..."
 
-    - >
-      aws ssm wait command-executed
-      --command-id "$COMMAND_ID"
-      --instance-id "i-0fb696d4212f059e7"
-      --region "$AWS_DEFAULT_REGION"
+    - |
+      aws ssm wait command-executed \
+        --command-id "$COMMAND_ID" \
+        --instance-id "i-0fb696d4212f059e7" \
+        --region "$AWS_DEFAULT_REGION"
 
     - echo "MEXE deployment completed successfully"
