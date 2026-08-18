@@ -124,7 +124,7 @@ deploy:
         --document-name "AWS-RunShellScript" \
         --parameters 'commands=[
           "set -e",
-          "cd ~/mexe",
+          "cd /home/ubuntu/mexe",
           "sed -i \"s/^MEXE_VERSION=.*/MEXE_VERSION='$CI_COMMIT_SHA'/\" .env",
           "echo MEXE_VERSION=$CI_COMMIT_SHA",
           "docker compose -f docker-compose.prod.yml pull",
