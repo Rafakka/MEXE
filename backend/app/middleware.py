@@ -3,9 +3,22 @@ import time
 import uuid
 
 from fastapi import Request
+from pythonjsonlogger.json import JsonFormatter
 
 
 logger = logging.getLogger("mexe")
+logger.setLevel(logging.INFO)
+
+handler = logging.StreamHandler()
+
+formatter = JsonFormatter(
+    "%(asctime)s %(levelname)s %(name)s %(message)s"
+)
+
+handler.setFormatter(formatter)
+
+if not logger.handlers:
+    logger.addHandler(handler)
 
 
 async def request_observability_middleware(request: Request, call_next):

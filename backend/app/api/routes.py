@@ -1,5 +1,11 @@
+import logging
 
-from fastapi import APIRouter, File, UploadFile, Form, HTTPException
+from fastapi.responses import PlainTextResponse
+
+from app.observability.metrics import metrics
+from app.observability.decorators import measure_time
+
+from fastapi import APIRouter, File, UploadFile, Form, HTTPException, Request
 
 from app.infra.validators.input_validator import InputValidator
 from app.infra.image_decoder import ImageDecoder
@@ -11,6 +17,8 @@ from app.api.contracts.responses import BLEND_RESPONSES, HEALTH_RESPONSES
 from app.api.contracts.health_response import HealthResponse
 from app.domain.health_checker import HealthChecker
 from app.domain.health_status import HealthStatus
+
+logger = logging.getLogger("mexe")
 
 router = APIRouter()
 
@@ -29,12 +37,24 @@ health_checker = HealthChecker()
              response_description="Blended image in the chosen format",
              responses=BLEND_RESPONSES
              )
-async def blend(
+
+@measure_time("blend_processing_duration_seconds")
+async def blend(request:Request,
         implicit_image_a: UploadFile = File(..., description="First image to blend"),
         implicit_image_b: UploadFile = File(..., description="Second image to blend"),
         width: int = Form(...,title="Outuput width",description="Target width in pixels", examples=[1024]),
         height: int = Form(...,title="Outuput height",description="Target height in pixels", examples=[1024])
         ):
+
+    request_id = request.state.request_id
+
+    logger.info(
+            "image_processing_started",
+            extra={
+                "request_id": request_id,
+                }
+            )
+
 
     await input_validator.validate(implicit_image_a)
     await input_validator.validate(implicit_image_b)
@@ -55,8 +75,16 @@ async def blend(
 
     blended = blend_processor.blend(
             image1,
-            image2
+            image2,
+            request_id
             )
+
+    logger.info(
+    "image_processing_completed",
+    extra={
+        "request_id": request_id,
+        },
+    )
 
     return await image_encoder.encode(
             blended
@@ -67,7 +95,7 @@ async def blend(
                 summary="Check service health",
                 description="Return the current operational status of the service",
             response_model=HealthResponse,
-                responses=HEALTH_RESPONSES
+            responses=HEALTH_RESPONSES
             )
 def health() -> HealthResponse:
 
@@ -101,3 +129,8 @@ def ready() -> HealthResponse:
     return HealthResponse(
         status=status
     )
+
+@router.get("/metrics", response_class=PlainTextResponse)
+
+def metrics_endpoints():
+    return metrics.prometheus_snapshot()
