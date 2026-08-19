@@ -5,6 +5,10 @@ import uuid
 from fastapi import Request
 from pythonjsonlogger.json import JsonFormatter
 
+from app.observability.context import (
+        request_id_context,
+        operation_context,
+        )
 
 logger = logging.getLogger("mexe")
 logger.setLevel(logging.INFO)
@@ -25,6 +29,20 @@ async def request_observability_middleware(request: Request, call_next):
     request_id = request.headers.get("X-Request-ID") or str(uuid.uuid4())
 
     request.state.request_id = request_id
+
+    request_id_context.set(request_id)
+
+    operation = request.url.path.removeprefix("/")
+
+    operation_context.set(operation)
+
+    logger.info(
+    "request_context",
+    extra={
+        "request_id": request_id_context.get(),
+        "operation": operation_context.get(),
+        },
+    )
 
     start = time.perf_counter()
 

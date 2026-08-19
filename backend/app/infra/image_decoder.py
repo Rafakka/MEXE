@@ -1,4 +1,6 @@
+import logging
 
+from app.observability.decorators import measure_time
 
 from fastapi import UploadFile
 
@@ -6,12 +8,11 @@ from PIL import Image
 
 from io import BytesIO
 
-import logging
-
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("mexe")
 
 class ImageDecoder:
 
+    @measure_time("mexe_decoder_duration_seconds")
     async def decode(
             self,
             image: UploadFile

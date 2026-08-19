@@ -5,10 +5,13 @@ from app.core.settings import SUPPORTED_IMAGE_TYPES
 
 import logging
 
-logger = logging.getLogger(__name__)    
+logger = logging.getLogger("mexe")
+
+from app.observability.decorators import measure_time
 
 class InputValidator:
 
+    @measure_time("mexe_input_validator_duration_seconds")
     async def validate(
         self,
         image: UploadFile

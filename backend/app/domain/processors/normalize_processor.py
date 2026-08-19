@@ -1,18 +1,19 @@
-
+import logging
 
 from PIL import Image
 
-import logging
+from app.observability.decorators import measure_time
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("mexe")
 
-class NormalizeProcessor: 
+class NormalizeProcessor:
 
-    def normalize(self,
+    @measure_time("mexe_normalize_duration_seconds")
+    def normalize(
+            self,
             image: Image.Image,
-                  target_size: tuple[int,int]
-
-                  ) -> Image.Image:
+            target_size: tuple[int,int]
+            ) -> Image.Image:
 
         logger.info(
                 "Normalizing Image (%dx%d) to (%dx%d)",
@@ -21,7 +22,7 @@ class NormalizeProcessor:
                 target_size[0],
                 target_size[1],
                 )
-        
+
         image = image.convert("RGBA")
         image = image.resize(target_size)
 

@@ -1,16 +1,19 @@
 
+import logging
+
+from app.observability.decorators import measure_time
+
 from PIL import Image
 from io import BytesIO
 from fastapi.responses import StreamingResponse
 from app.core.settings import MEDIA_TYPES
 
-import logging
-
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("mexe")
 
 
 class ImageEncoder:
 
+    @measure_time("mexe_encoder_duration_seconds")
     async def encode(
             self,
             image:Image.Image,
@@ -30,7 +33,7 @@ class ImageEncoder:
                 )
 
         output.seek(0)
-        
+
         logger.info(
                 "Imaged Encoded succefully(%dx%d)",
                 image.width,

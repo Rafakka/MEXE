@@ -2,8 +2,12 @@ import inspect
 import functools
 import time
 
-from app.observability.metrics import metrics
+import logging
 
+from app.observability.metrics import metrics
+from app.observability.context import operation_context
+
+logger = logging.getLogger("mexe")
 
 def measure_time(metric_name):
 
@@ -20,7 +24,14 @@ def measure_time(metric_name):
 
                 finally:
                     duration_seconds = time.perf_counter() - start
+                    operation = operation_context.get()
 
+                    logger.info(
+                        "metric_context",
+                        extra={
+                        "operation": operation,
+                        },
+                    )
                     metrics.observe(
                         metric_name,
                         duration_seconds,
@@ -37,6 +48,15 @@ def measure_time(metric_name):
 
             finally:
                 duration_seconds = time.perf_counter() - start
+                operation = operation_context.get()
+
+                logger.info(
+                        "metric_context",
+                        extra={
+                        "operation": operation,
+                        },
+                    )
+
 
                 metrics.observe(
                     metric_name,
