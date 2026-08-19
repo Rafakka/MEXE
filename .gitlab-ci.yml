@@ -128,7 +128,7 @@ deploy:
           "cp .env .env.previous",
           "echo \"Previous version saved:\"",
           "cat .env",
-          "sed -i \"s/^MEXE_VERSION=.*/MEXE_VERSION='$CI_COMMIT_SHA'/\" .env",
+          "sed -i \"s/^MEXE_VERSION=.*/MEXE_VERSION=rollback-test-does-not-exist/\" .env",
           "echo \"Deploying MEXE_VERSION=$CI_COMMIT_SHA\"",
 
           "DEPLOY_OK=1",
