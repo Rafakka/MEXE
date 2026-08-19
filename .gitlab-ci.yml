@@ -125,20 +125,42 @@ deploy:
         --parameters 'commands=[
           "set -e",
           "cd /home/ubuntu/mexe",
+          "cp .env .env.previous",
+          "echo \"Previous version saved:\"",
+          "cat .env",
           "sed -i \"s/^MEXE_VERSION=.*/MEXE_VERSION='$CI_COMMIT_SHA'/\" .env",
-          "echo MEXE_VERSION=$CI_COMMIT_SHA",
-          "docker compose -f docker-compose.prod.yml pull",
-          "docker compose -f docker-compose.prod.yml up -d",
+          "echo \"Deploying MEXE_VERSION=$CI_COMMIT_SHA\"",
+
+          "DEPLOY_OK=1",
+          "docker compose -f docker-compose.prod.yml pull || DEPLOY_OK=0",
+          "docker compose -f docker-compose.prod.yml up -d || DEPLOY_OK=0",
           "docker compose -f docker-compose.prod.yml ps",
-          "echo \"Waiting for MEXE health check...\"",
-          "for i in $(seq 1 30); do if curl -fsS http://localhost/api/health; then echo \"MEXE is healthy!\"; exit 0; fi; echo \"Health check failed. Attempt $i/30\"; sleep 2; done",
-          "echo \"MEXE failed health check\"",
-          "exit 1"
+
+          "if [ \"$DEPLOY_OK\" = \"1\" ]; then echo \"Waiting for MEXE health check...\"; HEALTHY=0; for i in $(seq 1 30); do if curl -fsS http://localhost/api/health; then HEALTHY=1; break; fi; echo \"Health check failed. Attempt $i/30\"; sleep 2; done; if [ \"$HEALTHY\" != \"1\" ]; then DEPLOY_OK=0; fi; fi",
+
+          "if [ \"$DEPLOY_OK\" = \"1\" ]; then echo \"=== MEXE DEPLOY SUCCESSFUL ===\"; exit 0; fi",
+
+          "echo \"=== NEW VERSION FAILED ===\"",
+          "echo \"Rolling back to previous version...\"",
+          "cp .env.previous .env",
+          "echo \"Rollback version:\"",
+          "cat .env",
+
+          "ROLLBACK_OK=1",
+          "docker compose -f docker-compose.prod.yml pull || ROLLBACK_OK=0",
+          "docker compose -f docker-compose.prod.yml up -d || ROLLBACK_OK=0",
+          "docker compose -f docker-compose.prod.yml ps",
+
+          "if [ \"$ROLLBACK_OK\" = \"1\" ]; then echo \"Waiting for rollback health check...\"; HEALTHY=0; for i in $(seq 1 30); do if curl -fsS http://localhost/api/health; then HEALTHY=1; break; fi; echo \"Rollback health check failed. Attempt $i/30\"; sleep 2; done; if [ \"$HEALTHY\" != \"1\" ]; then ROLLBACK_OK=0; fi; fi",
+
+          "if [ \"$ROLLBACK_OK\" = \"1\" ]; then echo \"=== ROLLBACK SUCCESSFUL ===\"; exit 1; fi",
+
+          "echo \"=== ROLLBACK FAILED ===\"",
+          "exit 2"
         ]' \
         --query 'Command.CommandId' \
         --output text \
         --region "$AWS_DEFAULT_REGION")
-
       echo "SSM Command ID: $COMMAND_ID"
 
     - echo "Waiting for deployment..."
