@@ -2,6 +2,7 @@
 from fastapi import FastAPI
 from app.api.routes import router
 from fastapi.middleware.cors import CORSMiddleware
+from app.middleware import request_observability_middleware
 
 from app.exceptions.handlers import generic_exception_handler
 
@@ -50,6 +51,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.middleware("http")(request_observability_middleware)
 
 app.add_exception_handler(
         Exception,
