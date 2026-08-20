@@ -13,7 +13,7 @@ logger = logging.getLogger("mexe")
 
 class ImageEncoder:
 
-    @measure_time("mexe_encoder_duration_seconds", stage="encode")
+    @measure_time("mexe_processing_duration_seconds", stage="encode")
     async def encode(
             self,
             image:Image.Image,

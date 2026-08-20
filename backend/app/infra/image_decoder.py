@@ -12,7 +12,7 @@ logger = logging.getLogger("mexe")
 
 class ImageDecoder:
 
-    @measure_time("mexe_decoder_duration_seconds", stage="decode")
+    @measure_time("mexe_processing_duration_seconds", stage="decode")
     async def decode(
             self,
             image: UploadFile

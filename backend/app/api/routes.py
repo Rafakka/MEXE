@@ -36,7 +36,7 @@ health_checker = HealthChecker()
              responses=BLEND_RESPONSES
              )
 
-@measure_time("mexe_blend_processing_duration_seconds", stage="final")
+@measure_time("mexe_processing_duration_seconds", stage="final")
 async def blend(request:Request,
         implicit_image_a: UploadFile = File(..., description="First image to blend"),
         implicit_image_b: UploadFile = File(..., description="Second image to blend"),

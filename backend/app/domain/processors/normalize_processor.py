@@ -8,7 +8,7 @@ logger = logging.getLogger("mexe")
 
 class NormalizeProcessor:
 
-    @measure_time("mexe_normalize_duration_seconds", stage="normalize")
+    @measure_time("mexe_processing_duration_seconds", stage="normalize")
     def normalize(
             self,
             image: Image.Image,

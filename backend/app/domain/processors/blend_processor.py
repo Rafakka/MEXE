@@ -12,7 +12,7 @@ logger = logging.getLogger("mexe")
 
 class BlendProcessor:
 
-    @measure_time("mexe_blend_duration_seconds", stage="blend")
+    @measure_time("mexe_processing_duration_seconds", stage="blend")
     def blend(
             self,
             image1: Image.Image,
