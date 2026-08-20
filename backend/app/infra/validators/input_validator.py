@@ -11,7 +11,7 @@ from app.observability.decorators import measure_time
 
 class InputValidator:
 
-    @measure_time("mexe_input_validator_duration_seconds")
+    @measure_time("mexe_input_validator_duration_seconds",stage="validate")
     async def validate(
         self,
         image: UploadFile

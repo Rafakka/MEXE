@@ -30,17 +30,17 @@ async def request_observability_middleware(request: Request, call_next):
 
     request.state.request_id = request_id
 
-    request_id_context.set(request_id)
+    request_id_token = request_id_context.set(request_id)
 
     operation = request.url.path.removeprefix("/")
 
-    operation_context.set(operation)
+    operation_token = operation_context.set(operation)
 
     logger.info(
-    "request_context",
-    extra={
-        "request_id": request_id_context.get(),
-        "operation": operation_context.get(),
+        "request_context",
+        extra={
+            "request_id": request_id_context.get(),
+            "operation": operation_context.get(),
         },
     )
 
@@ -48,6 +48,24 @@ async def request_observability_middleware(request: Request, call_next):
 
     try:
         response = await call_next(request)
+
+        duration_ms = (time.perf_counter() - start) * 1000
+
+        response.headers["X-Request-ID"] = request_id
+
+        logger.info(
+            "request_completed",
+            extra={
+                "request_id": request_id,
+                "method": request.method,
+                "path": request.url.path,
+                "status_code": response.status_code,
+                "duration_ms": round(duration_ms, 2),
+            },
+        )
+
+        return response
+
     except Exception:
         duration_ms = (time.perf_counter() - start) * 1000
 
@@ -63,19 +81,6 @@ async def request_observability_middleware(request: Request, call_next):
 
         raise
 
-    duration_ms = (time.perf_counter() - start) * 1000
-
-    response.headers["X-Request-ID"] = request_id
-
-    logger.info(
-        "request_completed",
-        extra={
-            "request_id": request_id,
-            "method": request.method,
-            "path": request.url.path,
-            "status_code": response.status_code,
-            "duration_ms": round(duration_ms, 2),
-        },
-    )
-
-    return response
+    finally:
+        operation_context.reset(operation_token)
+        request_id_context.reset(request_id_token)

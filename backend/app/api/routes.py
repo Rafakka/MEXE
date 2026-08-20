@@ -1,11 +1,9 @@
 import logging
 
-from fastapi.responses import PlainTextResponse
-
 from app.observability.metrics import metrics
 from app.observability.decorators import measure_time
 
-from fastapi import APIRouter, File, UploadFile, Form, HTTPException, Request
+from fastapi import APIRouter, File, UploadFile, Form, HTTPException, Request, Response
 
 from app.infra.validators.input_validator import InputValidator
 from app.infra.image_decoder import ImageDecoder
@@ -38,7 +36,7 @@ health_checker = HealthChecker()
              responses=BLEND_RESPONSES
              )
 
-@measure_time("mexe_blend_processing_duration_seconds")
+@measure_time("mexe_blend_processing_duration_seconds", stage="final")
 async def blend(request:Request,
         implicit_image_a: UploadFile = File(..., description="First image to blend"),
         implicit_image_b: UploadFile = File(..., description="Second image to blend"),
@@ -130,7 +128,9 @@ def ready() -> HealthResponse:
         status=status
     )
 
-@router.get("/metrics", response_class=PlainTextResponse)
-
-def metrics_endpoints():
-    return metrics.prometheus_snapshot()
+@router.get("/metrics")
+def metrics_endpoint():
+    return Response(
+        content=metrics.prometheus_snapshot(),
+        media_type="text/plain",
+    )

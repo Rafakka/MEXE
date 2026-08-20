@@ -2,14 +2,10 @@ import inspect
 import functools
 import time
 
-import logging
-
 from app.observability.metrics import metrics
 from app.observability.context import operation_context
 
-logger = logging.getLogger("mexe")
-
-def measure_time(metric_name):
+def measure_time(metric_name, stage: str):
 
     def decorator(func):
 
@@ -18,49 +14,95 @@ def measure_time(metric_name):
             @functools.wraps(func)
             async def async_wrapper(*args, **kwargs):
                 start = time.perf_counter()
+                operation = operation_context.get()
 
                 try:
-                    return await func(*args, **kwargs)
+                    result = await func(*args, **kwargs)
+
+                    if operation is not None:
+                        metrics.increment(
+                        "mexe_operations_total",
+                        {
+                            "operation": operation,
+                            "status": "success",
+                        },
+                    )
+
+                    return result
+
+                except Exception:
+                    if operation is not None:
+                        metrics.increment(
+                            "mexe_operations_total",
+                            {
+                                "operation": operation,
+                                "status": "error",
+                            },
+                        )
+                    raise
 
                 finally:
                     duration_seconds = time.perf_counter() - start
-                    operation = operation_context.get()
 
-                    logger.info(
-                        "metric_context",
-                        extra={
-                        "operation": operation,
-                        },
-                    )
+                    labels = {
+                        "stage": stage,
+                    }
+
+                    if operation is not None:
+                        labels["operation"] = operation
+
                     metrics.observe(
                         metric_name,
                         duration_seconds,
-                    )
+                        labels=labels,
+                        )
 
             return async_wrapper
 
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             start = time.perf_counter()
+            operation = operation_context.get()
 
             try:
-                return func(*args, **kwargs)
+                result = func(*args, **kwargs)
 
+                if operation is not None:
+                    metrics.increment(
+                            "mexe_operations_total",
+                            {
+                                "operation": operation,
+                                "status":"success",
+
+                            },
+                        )
+                    return result
+
+            except Exception:
+                if operation is not None:
+                    metrics.increment(
+                            "mexe_operations_total",
+                            {
+                                "operation":operation,
+                                "status":"error",
+                            },
+                        )
+                    raise
             finally:
+
                 duration_seconds = time.perf_counter() - start
-                operation = operation_context.get()
 
-                logger.info(
-                        "metric_context",
-                        extra={
-                        "operation": operation,
-                        },
-                    )
+                labels = {
+                        "stage": stage,
+                        }
 
+                if operation is not None:
+                    labels["operation"] = operation
 
                 metrics.observe(
                     metric_name,
                     duration_seconds,
+                    labels=labels,
                 )
 
         return wrapper
