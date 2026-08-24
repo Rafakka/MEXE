@@ -1,0 +1,25 @@
+discovery.docker "mexe" {
+  host = "unix:///var/run/docker.sock"
+}
+
+discovery.relabel "mexe" {
+  targets = discovery.docker.mexe.targets
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(.*)"
+    target_label  = "service_name"
+  }
+}
+
+loki.source.docker "mexe" {
+  host       = "unix:///var/run/docker.sock"
+  targets    = discovery.relabel.mexe.output
+  forward_to = [loki.write.mexe.receiver]
+}
+
+loki.write "mexe" {
+  endpoint {
+    url = "http://mexe-loki:3100/loki/api/v1/push"
+  }
+}
