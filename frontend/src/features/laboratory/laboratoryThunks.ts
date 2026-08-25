@@ -20,15 +20,6 @@ import {
 
 } from "./laboratorySlice";
 
-import {
-
-    RESET_DURATION,
-
-
-    } from "../../features/laboratory/utils/timers";
-
-import {delay} from "../../features/laboratory/utils/delay";
-
 import { mexeApi } from "../../api/mexeApi";
 
     export const activeLab = () =>
@@ -126,8 +117,6 @@ import { mexeApi } from "../../api/mexeApi";
     dispatch: AppDispatch
 
     ) => {
-
-    await delay(RESET_DURATION);
 
     dispatch(clearLaboratory());
 

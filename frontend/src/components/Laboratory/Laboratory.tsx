@@ -61,19 +61,11 @@ export default function Laboratory() {
 
     const handleAxisRevealEnd = () => {
 
-        console.log("AXIS REVEAL END");
-        console.log("FIRST FILE:", firstFile?.name);
-        console.log("SECOND FILE:", secondFile?.name);
-
         if (!firstFile || !secondFile) {
-
-            console.log("BLOCKED: missing file");
 
             return;
 
         }
-
-        console.log("STARTING PROCESSING");
 
         dispatch(
             startProcessing(
@@ -106,8 +98,6 @@ export default function Laboratory() {
 
         if (!file) return;
 
-        console.log("FIRST FILE SELECTED:", file.name);
-
         setFirstFile(file);
 
         dispatch(loadFirstSample());
@@ -116,10 +106,6 @@ export default function Laboratory() {
     const handleSecondSample = (file: File | null) => {
 
         if (!file) return;
-
-        console.log("SECOND FILE SELECTED:", file.name);
-
-        console.log("FIRST FILE BEFORE SECOND:", firstFile);
 
         hiddenSamples.current.clear();
 
@@ -130,14 +116,30 @@ export default function Laboratory() {
 
     const handleCoreClick = () => {
 
+        if (notification?.type === "error") {
+
+            handleErrorReset();
+
+            return;
+        }
+
         dispatch(activeLab());
+    };
+
+    const handleErrorReset = () => {
+
+        setFirstFile(null);
+        setSecondFile(null);
+
+        dispatch(clearLaboratory());
+        dispatch(clearNotification());
+
     };
 
     const handleReset = () => {
 
         setFirstFile(null);
         setSecondFile(null);
-
         setIsResetting(true);
     };
 
@@ -152,6 +154,7 @@ export default function Laboratory() {
     };
 
     useEffect(() => {
+
     if (!firstFile || !secondFile) {
         return;
     }
@@ -224,9 +227,9 @@ export default function Laboratory() {
         phase={phase}
         notification={notification}
         operationPhase={operationPhase}
-        visible={phase === "result" &&
-            operationPhase === "completed" &&
-            resultVisible}
+        visible={
+        notification?.type === "error" || (notification?.type === "success" && phase === "result" && operationPhase === "completed" && resultVisible)
+        }
         resetting={isResetting}
         />
 
