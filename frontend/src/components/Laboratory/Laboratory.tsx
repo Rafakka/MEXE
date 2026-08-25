@@ -10,7 +10,7 @@ import Notification from "../Notification/Notification";
 import ResetLabNode from "../Laboratory/ActionNodes/resetNode/ResetLabNode";
 import DownloadNode from "../Laboratory/ActionNodes/downloadNode/DownloadNode";
 import {useSelector, useDispatch} from "react-redux";
-import {useState, useRef} from "react";
+import {useState, useRef, useEffect} from "react";
 import type {RootState, AppDispatch} from "../../store/store";
 import {
         clearLaboratory,
@@ -126,8 +126,6 @@ export default function Laboratory() {
         setSecondFile(file);
 
         dispatch(loadSecondSample());
-
-        dispatch(startupCompleted());
     };
 
     const handleCoreClick = () => {
@@ -143,7 +141,6 @@ export default function Laboratory() {
         setIsResetting(true);
     };
 
-
     const view = {
 
     areSamplesVisible:
@@ -154,6 +151,14 @@ export default function Laboratory() {
 
     };
 
+    useEffect(() => {
+    if (!firstFile || !secondFile) {
+        return;
+    }
+
+    dispatch(startupCompleted());
+
+    }, [firstFile, secondFile, dispatch]);
 
         return (
 
