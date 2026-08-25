@@ -23,6 +23,49 @@ The project draws from several software engineering principles:
 
 These concepts are not treated as isolated patterns, but as principles that guide architectural decisions throughout MEXE.
 
+## Observability
+
+MEXE exposes application metrics through /metrics.
+
+Prometheus collects and stores metrics.
+
+Application logs are emitted as structured JSON to stdout.
+Grafana Alloy collects container logs and forwards them to Loki.
+
+Grafana provides dashboards, log exploration and alerting.
+
+```text
+
+                    ┌──────────────┐
+                    │    MEXE      │
+                    └──────┬───────┘
+                           │
+              ┌────────────┴────────────┐
+              │                         │
+           /metrics                   stdout
+              │                         │
+              ▼                         ▼
+        ┌───────────┐              ┌─────────┐
+        │Prometheus │              │  Alloy  │
+        └─────┬─────┘              └────┬────┘
+              │                         │
+              │                         ▼
+              │                      ┌──────┐
+              │                      │ Loki │
+              │                      └───┬──┘
+              │                          │
+              └──────────┬───────────────┘
+                         ▼
+                    ┌─────────┐
+                    │ Grafana │
+                    └─────────┘
+                         │
+                    ┌────┴────┐
+                    ▼         ▼
+                Dashboard   Alerts
+
+```
+
 ## Philosophy
 
 MEXE aims to balance three characteristics:
