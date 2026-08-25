@@ -193,12 +193,12 @@ MEXE Cloud-Native Roadmap
 ├── 6. Cloud Deployment              ✓ 
 │   └── First real deployment
 │
-├── 7. Observability                 ← NEXT
-│   ├── Logs
-│   ├── Metrics
-│   └── Tracing
+├── 7. Observability                 
+│   ├── Logs			     ✓
+│   ├── Metrics 		     ✓
+│   └── Tracing			     ✓
 │
-├── 8. Resilience
+├── 8. Resilience    		← NEXT
 │   ├── Timeouts
 │   ├── Failure handling
 │   └── Resource limits
