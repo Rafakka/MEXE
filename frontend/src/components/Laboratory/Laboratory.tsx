@@ -61,17 +61,27 @@ export default function Laboratory() {
 
     const handleAxisRevealEnd = () => {
 
-    if (!firstFile || !secondFile) {
-        return;
-    }
+        console.log("AXIS REVEAL END");
+        console.log("FIRST FILE:", firstFile?.name);
+        console.log("SECOND FILE:", secondFile?.name);
 
-    dispatch(
-        startProcessing(
-            firstFile,
-            secondFile
-            )
-        );
-    };
+        if (!firstFile || !secondFile) {
+
+            console.log("BLOCKED: missing file");
+
+            return;
+
+        }
+
+        console.log("STARTING PROCESSING");
+
+        dispatch(
+            startProcessing(
+                firstFile,
+                secondFile
+                )
+            );
+        };
 
     const hiddenSamples = useRef(
     new Set<"left" | "right">()
@@ -96,6 +106,8 @@ export default function Laboratory() {
 
         if (!file) return;
 
+        console.log("FIRST FILE SELECTED:", file.name);
+
         setFirstFile(file);
 
         dispatch(loadFirstSample());
@@ -104,6 +116,10 @@ export default function Laboratory() {
     const handleSecondSample = (file: File | null) => {
 
         if (!file) return;
+
+        console.log("SECOND FILE SELECTED:", file.name);
+
+        console.log("FIRST FILE BEFORE SECOND:", firstFile);
 
         hiddenSamples.current.clear();
 

@@ -23,49 +23,6 @@ The project draws from several software engineering principles:
 
 These concepts are not treated as isolated patterns, but as principles that guide architectural decisions throughout MEXE.
 
-## Observability
-
-MEXE exposes application metrics through /metrics.
-
-Prometheus collects and stores metrics.
-
-Application logs are emitted as structured JSON to stdout.
-Grafana Alloy collects container logs and forwards them to Loki.
-
-Grafana provides dashboards, log exploration and alerting.
-
-```text
-
-                    ┌──────────────┐
-                    │    MEXE      │
-                    └──────┬───────┘
-                           │
-              ┌────────────┴────────────┐
-              │                         │
-           /metrics                   stdout
-              │                         │
-              ▼                         ▼
-        ┌───────────┐              ┌─────────┐
-        │Prometheus │              │  Alloy  │
-        └─────┬─────┘              └────┬────┘
-              │                         │
-              │                         ▼
-              │                      ┌──────┐
-              │                      │ Loki │
-              │                      └───┬──┘
-              │                          │
-              └──────────┬───────────────┘
-                         ▼
-                    ┌─────────┐
-                    │ Grafana │
-                    └─────────┘
-                         │
-                    ┌────┴────┐
-                    ▼         ▼
-                Dashboard   Alerts
-
-```
-
 ## Philosophy
 
 MEXE aims to balance three characteristics:
@@ -126,6 +83,19 @@ MEXE/
 │   ├── nginx.conf
 │   └── package.json
 │
+├── prometheus/
+│   └── prometheus.yml
+│
+├── grafana/
+│   ├── dashboards/
+│   └── provisioning/
+│
+├── loki/
+│   └── loki-config.yaml
+│
+├── alloy/
+│   └── config.alloy
+│ 
 ├── docs/
 │   ├── Diagrams/           # Architecture and system diagrams
 │   └── resumo.md           # Laboratory state and behavior documentation
@@ -171,6 +141,50 @@ Health & Readiness
 ```
 
 The backend exposes independent health and readiness endpoints. The frontend uses the Nginx reverse proxy to verify backend readiness, allowing dependency failures to propagate to the frontend's container health state.
+
+## Observability
+
+MEXE exposes application metrics through /metrics.
+
+Prometheus collects and stores metrics.
+
+Application logs are emitted as structured JSON to stdout.
+Grafana Alloy collects container logs and forwards them to Loki.
+
+Grafana provides dashboards, log exploration and alerting.
+
+```text
+
+                    ┌──────────────┐
+                    │    MEXE      │
+                    └──────┬───────┘
+                           │
+              ┌────────────┴────────────┐
+              │                         │
+           /metrics                   stdout
+              │                         │
+              ▼                         ▼
+        ┌───────────┐              ┌─────────┐
+        │Prometheus │              │  Alloy  │
+        └─────┬─────┘              └────┬────┘
+              │                         │
+              │                         ▼
+              │                      ┌──────┐
+              │                      │ Loki │
+              │                      └───┬──┘
+              │                          │
+              └──────────┬───────────────┘
+                         ▼
+                    ┌─────────┐
+                    │ Grafana │
+                    └─────────┘
+                         │
+                    ┌────┴────┐
+                    ▼         ▼
+                Dashboard   Alerts
+
+```
+
 
 ## Roadmap
 
@@ -228,7 +242,8 @@ MEXE Cloud-Native Roadmap
 │   ├── Automated tests              ✓
 │   ├── Frontend build               ✓
 │   ├── Docker build                 ✓
-│   └── Pipeline                     ✓
+│   ├── Pipeline                     ✓
+│   └── Deployment                   ✓
 │
 ├── 5. Container Registry
 │   └── GHCR                         ✓ 
@@ -239,9 +254,9 @@ MEXE Cloud-Native Roadmap
 ├── 7. Observability                 
 │   ├── Logs			     ✓
 │   ├── Metrics 		     ✓
-│   └── Tracing			     ✓
+│   └── Tracing			     ← FUTURO
 │
-├── 8. Resilience    		← NEXT
+├── 8. Resilience    		     ← NEXT
 │   ├── Timeouts
 │   ├── Failure handling
 │   └── Resource limits

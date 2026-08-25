@@ -7,6 +7,8 @@ services:
     container_name: mexe-backend
     expose:
       - "8000"
+    networks:
+      - mexe
 
   frontend:
     build:
@@ -16,3 +18,65 @@ services:
       - "8080:80"
     depends_on:
       - backend
+    networks:
+      - mexe
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: mexe-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks:
+      - mexe
+
+  loki:
+    image: grafana/loki:3.7.0
+    container_name: mexe-loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki/loki-config.yaml:/etc/loki/loki-config.yaml:ro
+    command:
+      - "-config.file=/etc/loki/loki-config.yaml"
+    networks:
+      - mexe
+
+  alloy:
+    image: grafana/alloy:latest
+    container_name: mexe-alloy
+    volumes:
+      - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command:
+      - "run"
+      - "/etc/alloy/config.alloy"
+    depends_on:
+      - loki
+    networks:
+      - mexe
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: mexe-grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/dashboards:/etc/grafana/dashboards:ro
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+      - loki
+    networks:
+      - mexe
+
+volumes:
+  prometheus-data:
+  loki-data:
+  grafana-data:
+
+networks:
+  mexe:
+    driver: bridge
