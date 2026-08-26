@@ -22,7 +22,7 @@ services:
       - mexe
 
   prometheus:
-    image: prom/prometheus:latest
+    image: prom/prometheus:v3.14.0
     container_name: mexe-prometheus
     ports:
       - "9090:9090"
@@ -44,7 +44,7 @@ services:
       - mexe
 
   alloy:
-    image: grafana/alloy:latest
+    image: grafana/alloy:v1.19.1
     container_name: mexe-alloy
     volumes:
       - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
@@ -58,7 +58,7 @@ services:
       - mexe
 
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:13.2.0
     container_name: mexe-grafana
     ports:
       - "3000:3000"

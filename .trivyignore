@@ -1,0 +1,15 @@
+
+# Grafana Alloy v1.19.1
+#
+# These vulnerabilities are reported inside the embedded
+# github.com/docker/docker dependency.
+#
+# Alloy is currently updated and Docker Engine is current.
+# The Docker socket is mounted read-only.
+# No fixed version is currently reported by Trivy.
+#
+# Re-evaluate when Grafana Alloy releases a version containing
+# a fixed Docker/Moby dependency.
+
+CVE-2026-41567
+CVE-2026-42306
