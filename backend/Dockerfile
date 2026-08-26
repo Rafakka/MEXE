@@ -1,17 +1,14 @@
 
 
-FROM python:3.12-slim
+FROM python:3.12-alpine
 
 WORKDIR /app
 
 COPY requirements.txt .
 
-RUN apt-get update \
-    && apt-get install -y --only-upgrade \
-        libssl3t64 \
-        openssl \
-        openssl-provider-legacy \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk update \
+    && apk upgrade \
+    && rm -rf /var/cache/apk/*
 
 RUN pip install --no-cache-dir -r requirements.txt \
     && python -m pip uninstall -y pip
