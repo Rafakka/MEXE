@@ -4,7 +4,6 @@
   "extends": [
     "config:recommended"
   ],
-  "platform": "gitlab",
   "automerge": false,
   "dependencyDashboard": true,
   "packageRules": [
@@ -14,3 +13,4 @@
     }
   ]
 }
+
