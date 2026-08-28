@@ -82,17 +82,21 @@ wait_for_service "Frontend" "http://frontend:80"
 echo ""
 echo "[6/6] Blend API"
 
+OUTPUT_VOLUME="mexe-smoke-output"
 
-OUTPUT_DIR=$(mktemp -d)
-mkdir -p "$OUTPUT_DIR"
-chmod 777 "$OUTPUT_DIR"
-ls -ld "$OUTPUT_DIR"
-RESULT_PATH="$OUTPUT_DIR/result.png"
+docker volume create "$OUTPUT_VOLUME"
+
+RESULT_CONTAINER="mexe-smoke-output-holder"
+
+docker create \
+  --name "$RESULT_CONTAINER" \
+  -v "$OUTPUT_VOLUME:/output" \
+  alpine:latest \
+  sh
 
 docker run --rm \
   --network "$NETWORK" \
-  -v "$(pwd)/tests/fixtures:/fixtures:ro" \
-  -v "$OUTPUT_DIR:/output:rw" \
+  -v "$OUTPUT_VOLUME:/output" \
   curlimages/curl:latest \
   -f \
   -X POST http://mexe-backend:8000/blend \
