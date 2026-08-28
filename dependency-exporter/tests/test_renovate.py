@@ -1,7 +1,10 @@
+from datetime import datetime, timezone
+
 from app.renovate import (
     is_renovate_merge_request,
     parse_renovate_merge_request,
     get_renovate_merge_requests,
+    get_oldest_renovate_mr_age_seconds,
 )
 
 
@@ -106,3 +109,35 @@ def test_get_renovate_merge_requests():
     result = get_renovate_merge_requests(merge_requests)
 
     assert len(result) == 2
+
+def test_get_oldest_renovate_mr_age_seconds():
+    merge_requests = [
+        {
+            "source_branch": "renovate/dependency-a",
+            "created_at": "2026-08-28T04:00:00Z",
+        },
+        {
+            "source_branch": "renovate/dependency-b",
+            "created_at": "2026-08-28T05:00:00Z",
+        },
+        {
+            "source_branch": "feature/documentation",
+            "created_at": "2026-08-28T01:00:00Z",
+        },
+    ]
+
+    now = datetime(
+        2026,
+        8,
+        28,
+        6,
+        0,
+        tzinfo=timezone.utc,
+    )
+
+    result = get_oldest_renovate_mr_age_seconds(
+        merge_requests,
+        now=now,
+    )
+
+    assert result == 7200

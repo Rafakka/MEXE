@@ -9,12 +9,15 @@ from app.metrics import (
     gitlab_api_errors,
     gitlab_api_success,
     renovate_open_mrs,
-    renovate_major_updates,
-    renovate_security_updates,
+    renovate_updates,
+    renovate_conflicts,
+    renovate_oldest_mr_age_seconds,
 )
 from app.renovate import (
     get_renovate_merge_requests,
     parse_renovate_merge_request,
+    get_oldest_renovate_mr_age_seconds,
+    is_renovate_merge_request,
 )
 
 app = FastAPI()
@@ -80,6 +83,12 @@ async def metrics():
 
     renovate_open_mrs.set(len(renovate_mrs))
 
+    oldest_mr_age = get_oldest_renovate_mr_age_seconds(
+    merge_requests
+    )
+
+    renovate_oldest_mr_age_seconds.set(oldest_mr_age)
+
     parsed_updates = [
         parse_renovate_merge_request(merge_request)
         for merge_request in renovate_mrs
@@ -91,15 +100,29 @@ async def metrics():
         if update is not None
     ]
 
-    renovate_major_updates.set(
-        sum(
-            1
-            for update in parsed_updates
-            if update["update_type"] == "major"
+    update_types = {
+    "major": 0,
+    "minor": 0,
+    "patch": 0,
+    "unknown": 0,
+    }
+
+    for update in parsed_updates:
+        update_types[update["update_type"]] += 1
+
+    for update_type, count in update_types.items():
+        renovate_updates.labels(
+            update_type=update_type
+        ).set(count)
+
+    renovate_conflicts.set(
+    sum(
+        1
+        for merge_request in renovate_mrs
+        if merge_request.get("has_conflicts", False)
         )
     )
 
-    renovate_security_updates.set(0)
 
     return Response(
             content=generate_latest(),

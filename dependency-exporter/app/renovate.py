@@ -1,4 +1,5 @@
 import re
+from datetime import datetime, timezone
 
 def is_renovate_merge_request(merge_request: dict) -> bool:
     source_branch = merge_request.get("source_branch", "")
@@ -100,3 +101,32 @@ def get_renovate_merge_requests(
         for merge_request in merge_requests
         if is_renovate_merge_request(merge_request)
     ]
+
+def get_oldest_renovate_mr_age_seconds(
+    merge_requests: list[dict],
+    now: datetime | None = None,
+) -> float:
+
+    renovate_mrs = get_renovate_merge_requests(merge_requests)
+
+    if not renovate_mrs:
+        return 0.0
+
+    if now is None:
+        now = datetime.now(timezone.utc)
+
+    ages = [
+        (
+            now
+            - datetime.fromisoformat(
+                merge_request["created_at"].replace("Z", "+00:00")
+            )
+        ).total_seconds()
+        for merge_request in renovate_mrs
+        if merge_request.get("created_at")
+    ]
+
+    if not ages:
+        return 0.0
+
+    return max(ages)

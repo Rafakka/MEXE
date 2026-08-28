@@ -54,8 +54,6 @@ def test_metrics_with_renovate_merge_requests(mock_fetch):
     body = response.text
 
     assert "mexe_renovate_open_mrs 2.0" in body
-    assert "mexe_renovate_major_updates 1.0" in body
-
 
     mock_fetch.assert_awaited_once()
 
@@ -230,5 +228,137 @@ This MR contains the following updates:
     body = response.text
 
     assert "mexe_renovate_open_mrs 2.0" in body
+
+@patch(
+    "app.main.fetch_open_merge_requests",
+    new_callable=AsyncMock,
+)
+def test_metrics_records_renovate_updates_by_type(mock_fetch):
+    mock_fetch.return_value = [
+        {
+            "source_branch": "renovate/dependency-a",
+            "description": """
+This MR contains the following updates:
+
+| Package | Update | Change |
+|---|---|---|
+| example/package-a | major | `v1.0.0` → `v2.0.0` |
+""",
+        },
+        {
+            "source_branch": "renovate/dependency-b",
+            "description": """
+This MR contains the following updates:
+
+| Package | Update | Change |
+|---|---|---|
+| example/package-b | patch | `v1.2.0` → `v1.2.1` |
+""",
+        },
+        {
+            "source_branch": "renovate/dependency-c",
+            "description": """
+This MR contains the following updates:
+
+| Package | Change | Age | Confidence |
+|---|---|---|---|
+| example/package-c | `1.0.0` → `1.0.1` | age | confidence |
+""",
+        },
+    ]
+
+    response = client.get("/metrics")
+
+    assert response.status_code == 200
+
+    body = response.text
+
+    assert 'mexe_renovate_updates{update_type="major"} 1.0' in body
+    assert 'mexe_renovate_updates{update_type="patch"} 1.0' in body
+    assert 'mexe_renovate_updates{update_type="unknown"} 1.0' in body
+
+@patch(
+    "app.main.fetch_open_merge_requests",
+    new_callable=AsyncMock,
+)
+def test_metrics_records_renovate_conflicts(mock_fetch):
+    mock_fetch.return_value = [
+        {
+            "source_branch": "renovate/dependency-a",
+            "has_conflicts": True,
+            "description": """
+This MR contains the following updates:
+
+| Package | Update | Change |
+|---|---|---|
+| example/package-a | patch | `v1.0.0` → `v1.0.1` |
+""",
+        },
+        {
+            "source_branch": "renovate/dependency-b",
+            "has_conflicts": False,
+            "description": """
+This MR contains the following updates:
+
+| Package | Update | Change |
+|---|---|---|
+| example/package-b | minor | `v1.0.0` → `v1.1.0` |
+""",
+        },
+        {
+            "source_branch": "renovate/dependency-c",
+            "has_conflicts": True,
+            "description": """
+This MR contains the following updates:
+
+| Package | Update | Change |
+|---|---|---|
+| example/package-c | major | `v1.0.0` → `v2.0.0` |
+""",
+        },
+    ]
+
+    response = client.get("/metrics")
+
+    assert response.status_code == 200
+
+    body = response.text
+
+    assert "mexe_renovate_conflicts 2.0" in body
+
+
+@patch(
+    "app.main.fetch_open_merge_requests",
+    new_callable=AsyncMock,
+)
+def test_metrics_records_oldest_renovate_mr_age(mock_fetch):
+    mock_fetch.return_value = [
+        {
+            "source_branch": "renovate/dependency-a",
+            "created_at": "2026-08-28T04:00:00Z",
+            "description": """
+| Package | Update | Change |
+|---|---|---|
+| example/package-a | patch | `v1.0.0` → `v1.0.1` |
+""",
+        },
+        {
+            "source_branch": "renovate/dependency-b",
+            "created_at": "2026-08-28T05:00:00Z",
+            "description": """
+| Package | Update | Change |
+|---|---|---|
+| example/package-b | minor | `v1.0.0` → `v1.1.0` |
+""",
+        },
+    ]
+
+    response = client.get("/metrics")
+
+    assert response.status_code == 200
+
+    body = response.text
+
+    assert "mexe_renovate_oldest_mr_age_seconds" in body
 
 
