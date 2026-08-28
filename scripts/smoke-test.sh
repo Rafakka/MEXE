@@ -84,13 +84,15 @@ echo "[6/6] Blend API"
 
 
 OUTPUT_DIR=$(mktemp -d)
+mkdir -p "$OUTPUT_DIR"
 chmod 777 "$OUTPUT_DIR"
+ls -ld "$OUTPUT_DIR"
 RESULT_PATH="$OUTPUT_DIR/result.png"
 
 docker run --rm \
   --network "$NETWORK" \
   -v "$(pwd)/tests/fixtures:/fixtures:ro" \
-  -v "$OUTPUT_DIR:/output" \
+  -v "$OUTPUT_DIR:/output:rw" \
   curlimages/curl:latest \
   -f \
   -X POST http://mexe-backend:8000/blend \
