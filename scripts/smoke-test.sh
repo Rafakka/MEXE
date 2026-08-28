@@ -4,6 +4,30 @@ set -e
 
 echo "== MEXE Smoke Test v3 =="
 
+wait_for_service() {
+    SERVICE="$1"
+    URL="$2"
+
+    echo "Waiting for $SERVICE..."
+
+    for i in $(seq 1 30); do
+        if docker run --rm \
+            --network "$NETWORK" \
+            curlimages/curl:latest \
+            -fsS "$URL" \
+            >/dev/null 2>&1
+        then
+            echo "$SERVICE is ready."
+            return 0
+        fi
+
+        sleep 1
+    done
+
+    echo "ERROR: $SERVICE did not become ready."
+    return 1
+}
+
 echo ""
 echo "[1/6] Backend"
 
@@ -35,38 +59,22 @@ docker compose exec -T backend \
 echo ""
 echo "[2/6] Prometheus"
 
-    wait_for_prometheus() {
-        echo "Waiting for Prometheus..."
-
-        for i in $(seq 1 30); do
-            if curl -fsS http://localhost:9090/-/ready >/dev/null 2>&1
-            then
-                echo "Prometheus is ready."
-                return 0
-            fi
-
-            sleep 1
-        done
-
-    echo "ERROR: Prometheus did not become ready."
-    docker compose logs prometheus
-    return 1
-}
-
-    wait_for_prometheus
-curl -fsS http://localhost:9090/-/ready
+wait_for_service "Prometheus" "http://prometheus:9090/-/ready"
 
 echo ""
 echo "[3/6] Loki"
-curl -fsS http://localhost:3100/ready
+
+wait_for_service "Loki" "http://loki:3100/ready"
 
 echo ""
 echo "[4/6] Grafana"
-curl -fsS http://localhost:3000/api/health
+
+wait_for_service "Grafana" "http://grafana:3000/api/health"
 
 echo ""
 echo "[5/6] Frontend"
-curl -fsSI http://localhost:8080
+
+wait_for_service "Frontend" "http://frontend:80"
 
 echo ""
 echo "[6/6] Blend API"
