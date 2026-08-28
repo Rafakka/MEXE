@@ -87,6 +87,11 @@ RESULT_CONTAINER="mexe-smoke-output-holder-$$"
 
 docker volume create "$OUTPUT_VOLUME"
 
+docker run --rm \
+  -v "$OUTPUT_VOLUME:/output" \
+  alpine:latest \
+  chmod 777 /output
+
 docker create \
   --name "$RESULT_CONTAINER" \
   -v "$OUTPUT_VOLUME:/output" \
