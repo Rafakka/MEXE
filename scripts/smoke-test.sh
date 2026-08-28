@@ -4,6 +4,9 @@ set -e
 
 echo "== MEXE Smoke Test v3 =="
 
+NETWORK=$(docker inspect mexe-backend \
+  --format '{{range $key, $value := .NetworkSettings.Networks}}{{$key}}{{end}}')
+
 wait_for_service() {
     SERVICE="$1"
     URL="$2"
@@ -79,8 +82,6 @@ wait_for_service "Frontend" "http://frontend:80"
 echo ""
 echo "[6/6] Blend API"
 
-NETWORK=$(docker inspect mexe-backend \
-  --format '{{range $key, $value := .NetworkSettings.Networks}}{{$key}}{{end}}')
 
 OUTPUT_DIR=$(mktemp -d)
 RESULT_PATH="$OUTPUT_DIR/result.png"
