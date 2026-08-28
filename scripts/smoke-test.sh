@@ -6,8 +6,31 @@ echo "== MEXE Smoke Test v3 =="
 
 echo ""
 echo "[1/6] Backend"
+
+    wait_for_backend() {
+    echo "Waiting for backend..."
+
+    for i in $(seq 1 30); do
+        if docker compose exec -T backend \
+            python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" \
+            >/dev/null 2>&1
+        then
+            echo "Backend is ready."
+            return 0
+        fi
+
+        sleep 1
+    done
+
+    echo "ERROR: Backend did not become ready."
+    docker compose logs backend
+    return 1
+    }
+
+    wait_for_backend
+
 docker compose exec -T backend \
-  python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"
+    python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"
 
 echo ""
 echo "[2/6] Prometheus"
