@@ -14,7 +14,7 @@ def measure_time(metric_name, stage: str):
             @functools.wraps(func)
             async def async_wrapper(*args, **kwargs):
                 start = time.perf_counter()
-                operation = operation_context.get()
+                operation = operation_context.get() or "unknown"
 
                 try:
                     result = await func(*args, **kwargs)
@@ -62,7 +62,7 @@ def measure_time(metric_name, stage: str):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             start = time.perf_counter()
-            operation = operation_context.get()
+            operation = operation_context.get() or "unknown"
 
             try:
                 result = func(*args, **kwargs)
