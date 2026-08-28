@@ -3,6 +3,7 @@ workflow:
     - if: '$CI_PIPELINE_SOURCE == "web"'
     - if: '$CI_PIPELINE_SOURCE == "pipeline"'
     - if: '$CI_PIPELINE_SOURCE == "trigger"'
+    - if: '$CI_PIPELINE_SOURCE == "api"'
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - when: never
 
@@ -139,6 +140,10 @@ security-scan:
 
 publish-images:
   stage: publish
+
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+
   image: docker:27-cli
 
   services:
@@ -161,6 +166,9 @@ publish-images:
 
 deploy:
   stage: deploy
+
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
 
   id_tokens:
     GITLAB_OIDC_TOKEN:
