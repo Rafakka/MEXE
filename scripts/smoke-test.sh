@@ -34,6 +34,26 @@ docker compose exec -T backend \
 
 echo ""
 echo "[2/6] Prometheus"
+
+    wait_for_prometheus() {
+        echo "Waiting for Prometheus..."
+
+        for i in $(seq 1 30); do
+            if curl -fsS http://localhost:9090/-/ready >/dev/null 2>&1
+            then
+                echo "Prometheus is ready."
+                return 0
+            fi
+
+            sleep 1
+        done
+
+    echo "ERROR: Prometheus did not become ready."
+    docker compose logs prometheus
+    return 1
+}
+
+    wait_for_prometheus
 curl -fsS http://localhost:9090/-/ready
 
 echo ""
