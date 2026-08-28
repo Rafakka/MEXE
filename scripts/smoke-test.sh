@@ -84,6 +84,7 @@ echo "[6/6] Blend API"
 
 
 OUTPUT_DIR=$(mktemp -d)
+chmod 777 "$OUTPUT_DIR"
 RESULT_PATH="$OUTPUT_DIR/result.png"
 
 docker run --rm \
