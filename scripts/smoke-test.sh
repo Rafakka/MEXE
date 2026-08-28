@@ -82,11 +82,10 @@ wait_for_service "Frontend" "http://frontend:80"
 echo ""
 echo "[6/6] Blend API"
 
-OUTPUT_VOLUME="mexe-smoke-output"
+OUTPUT_VOLUME="mexe-smoke-output-$$"
+RESULT_CONTAINER="mexe-smoke-output-holder-$$"
 
 docker volume create "$OUTPUT_VOLUME"
-
-RESULT_CONTAINER="mexe-smoke-output-holder"
 
 docker create \
   --name "$RESULT_CONTAINER" \
@@ -96,6 +95,7 @@ docker create \
 
 docker run --rm \
   --network "$NETWORK" \
+  -v "$(pwd)/tests/fixtures:/fixtures:ro" \
   -v "$OUTPUT_VOLUME:/output" \
   curlimages/curl:latest \
   -f \
@@ -108,15 +108,12 @@ docker run --rm \
   -o /output/result.png \
   -w "HTTP_STATUS=%{http_code}\nCONTENT_TYPE=%{content_type}\nSIZE=%{size_download}\n"
 
-if [ ! -s "$RESULT_PATH" ]; then
-    echo "ERROR: Blend did not produce a valid output file"
-    rm -rf "$OUTPUT_DIR"
-    exit 1
-fi
+docker cp \
+  "$RESULT_CONTAINER:/output/result.png" \
+  mexe-backend:/tmp/result.png
 
-echo "Blend result: $(stat -c%s "$RESULT_PATH") bytes"
-
-docker cp "$RESULT_PATH" mexe-backend:/tmp/result.png
+docker exec mexe-backend \
+  test -s /tmp/result.png
 
 docker cp scripts/validate-image.py \
   mexe-backend:/tmp/validate-image.py
@@ -124,7 +121,8 @@ docker cp scripts/validate-image.py \
 docker exec mexe-backend \
   python /tmp/validate-image.py /tmp/result.png
 
-rm -rf "$OUTPUT_DIR"
+docker rm "$RESULT_CONTAINER"
+docker volume rm "$OUTPUT_VOLUME"
 
 echo ""
 echo "== SMOKE TEST PASSED =="
