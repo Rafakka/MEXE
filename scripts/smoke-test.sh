@@ -92,12 +92,6 @@ docker run --rm \
   alpine:latest \
   chmod 777 /output
 
-docker create \
-  --name "$RESULT_CONTAINER" \
-  -v "$OUTPUT_VOLUME:/output" \
-  alpine:latest \
-  sh
-
 docker run --rm \
   --network "$NETWORK" \
   -v "$(pwd)/tests/fixtures:/fixtures:ro" \
@@ -113,8 +107,25 @@ docker run --rm \
   -o /output/result.png \
   -w "HTTP_STATUS=%{http_code}\nCONTENT_TYPE=%{content_type}\nSIZE=%{size_download}\n"
 
+docker run --rm \
+  -v "$OUTPUT_VOLUME:/output:ro" \
+  alpine:latest \
+  test -s /output/result.png
+
+docker create \
+  --name "$RESULT_CONTAINER" \
+  -v "$OUTPUT_VOLUME:/output:ro" \
+  alpine:latest \
+  sleep 300
+
 docker cp \
   "$RESULT_CONTAINER:/output/result.png" \
+  /tmp/mexe-smoke-result.png
+
+docker rm "$RESULT_CONTAINER"
+
+docker cp \
+  /tmp/mexe-smoke-result.png \
   mexe-backend:/tmp/result.png
 
 docker exec mexe-backend \
@@ -126,7 +137,8 @@ docker cp scripts/validate-image.py \
 docker exec mexe-backend \
   python /tmp/validate-image.py /tmp/result.png
 
-docker rm "$RESULT_CONTAINER"
+rm -f /tmp/mexe-smoke-result.png
+
 docker volume rm "$OUTPUT_VOLUME"
 
 echo ""
