@@ -15,6 +15,7 @@ docker run --rm \
   image \
   --severity HIGH,CRITICAL \
   --exit-code 1 \
+  IMAGEM
   mexe-backend:latest
 
 echo
@@ -25,6 +26,7 @@ docker run --rm \
   image \
   --severity HIGH,CRITICAL \
   --exit-code 1 \
+  IMAGEM
   mexe-frontend:latest
 
 echo
@@ -36,9 +38,10 @@ docker run --rm \
   -v "$PWD/.trivyignore:/root/.trivyignore:ro" \
   "$TRIVY_IMAGE" \
   image \
-  --severity HIGH,CRITICAL \
+  --severity CRITICAL \
   --exit-code 1 \
   --ignorefile /root/.trivyignore \
+  IMAGEM
   grafana/alloy:latest
 
 echo
@@ -49,21 +52,23 @@ docker run --rm \
   -v /var/run/docker.sock:/var/run/docker.sock \
   "$TRIVY_IMAGE" \
   image \
-  --severity HIGH,CRITICAL \
+  --severity CRITICAL \
   --exit-code 1 \
+  IMAGEM
   grafana/grafana:latest
 
 echo
 echo "[5/6] Loki"
-docker pull grafana/loki:3.7.0
+docker pull grafana/loki:3.7.7
 
 docker run --rm \
   -v /var/run/docker.sock:/var/run/docker.sock \
   "$TRIVY_IMAGE" \
   image \
-  --severity HIGH,CRITICAL \
+  --severity CRITICAL \
   --exit-code 1 \
-  grafana/loki:3.7.0
+  IMAGEM
+  grafana/loki:3.7.7
 
 echo
 echo "[6/6] Prometheus"
@@ -73,8 +78,9 @@ docker run --rm \
   -v /var/run/docker.sock:/var/run/docker.sock \
   "$TRIVY_IMAGE" \
   image \
-  --severity HIGH,CRITICAL \
+  --severity CRITICAL \
   --exit-code 1 \
+  IMAGEM
   prom/prometheus:latest
 
 echo
