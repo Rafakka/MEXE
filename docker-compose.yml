@@ -87,6 +87,17 @@ services:
     networks:
       - mexe
 
+  security-exporter:
+    build:
+      context: ./security/exporter
+    container_name: mexe-security-exporter
+    volumes:
+      - ./security/results:/results:ro
+    expose:
+      - "9000"
+    networks:
+      - mexe
+
 volumes:
   prometheus-data:
   loki-data:

@@ -5,9 +5,11 @@ providers:
   - name: MEXE
     orgId: 1
     folder: MEXE
+    folderUid: dfw931htj5kw0b
     type: file
     disableDeletion: false
     editable: true
 
     options:
       path: /etc/grafana/dashboards
+

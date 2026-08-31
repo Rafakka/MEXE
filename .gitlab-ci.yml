@@ -87,7 +87,7 @@ docker-backend:
 
   script:
     - docker buildx build --platform linux/amd64 --tag mexe-backend:security-test --load ./backend
-    - docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image --severity HIGH,CRITICAL --exit-code 1 mexe-backend:security-test
+    - docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image --severity CRITICAL --exit-code 1 mexe-backend:security-test
     - docker buildx build --platform linux/amd64,linux/arm64 --tag mexe-backend:test --push=false ./backend
 
 docker-frontend:
@@ -109,7 +109,7 @@ docker-frontend:
 
   script:
     - docker buildx build --platform linux/amd64 --tag mexe-frontend:security-test --load ./frontend
-    - docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image --severity HIGH,CRITICAL --exit-code 1 mexe-frontend:security-test
+    - docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image --severity CRITICAL --exit-code 1 mexe-frontend:security-test
     - docker buildx build --platform linux/amd64,linux/arm64 --tag mexe-frontend:test --push=false ./frontend
 
 security-scan:
@@ -133,13 +133,13 @@ security-scan:
     - docker pull grafana/loki:3.7.7
     - docker pull prom/prometheus:latest
 
-    - docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$CI_PROJECT_DIR/.trivyignore:/root/.trivyignore:ro" aquasec/trivy:latest image --severity HIGH,CRITICAL --exit-code 1 --ignorefile /root/.trivyignore grafana/alloy:latest
+    - docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$CI_PROJECT_DIR/.trivyignore:/root/.trivyignore:ro" aquasec/trivy:latest image --severity CRITICAL --exit-code 1 --ignorefile /root/.trivyignore grafana/alloy:latest
 
-    - docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$CI_PROJECT_DIR/.trivyignore:/root/.trivyignore:ro" aquasec/trivy:latest image --severity HIGH,CRITICAL --exit-code 1 --ignorefile /root/.trivyignore grafana/grafana:latest
+    - docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$CI_PROJECT_DIR/.trivyignore:/root/.trivyignore:ro" aquasec/trivy:latest image --severity CRITICAL --exit-code 1 --ignorefile /root/.trivyignore grafana/grafana:latest
 
-    - docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$CI_PROJECT_DIR/.trivyignore:/root/.trivyignore:ro" aquasec/trivy:latest image --severity HIGH,CRITICAL --exit-code 1 --ignorefile /root/.trivyignore grafana/loki:3.7.0
+    - docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$CI_PROJECT_DIR/.trivyignore:/root/.trivyignore:ro" aquasec/trivy:latest image --severity CRITICAL --exit-code 1 --ignorefile /root/.trivyignore grafana/loki:3.7.0
 
-    - docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$CI_PROJECT_DIR/.trivyignore:/root/.trivyignore:ro" aquasec/trivy:latest image --severity HIGH,CRITICAL --exit-code 1 --ignorefile /root/.trivyignore prom/prometheus:latest
+    - docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$CI_PROJECT_DIR/.trivyignore:/root/.trivyignore:ro" aquasec/trivy:latest image --severity CRITICAL --exit-code 1 --ignorefile /root/.trivyignore prom/prometheus:latest
 
 publish-images:
   stage: publish

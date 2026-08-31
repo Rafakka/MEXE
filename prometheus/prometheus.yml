@@ -13,3 +13,8 @@ scrape_configs:
     static_configs:
       - targets:
           - "dependency-exporter:8000"
+
+  - job_name: "mexe-security"
+    static_configs:
+      - targets:
+          - "security-exporter:8000"
