@@ -133,13 +133,13 @@ security-scan:
     - docker pull grafana/loki:3.7.7
     - docker pull prom/prometheus:v3.14.0
 
-    - docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$CI_PROJECT_DIR/.trivyignore:/root/.trivyignore:ro" aquasec/trivy:latest image --severity CRITICAL --exit-code 1 --ignorefile /root/.trivyignore grafana/alloy:latest
+    - docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$CI_PROJECT_DIR/.trivyignore:/root/.trivyignore:ro" aquasec/trivy:latest image --severity CRITICAL --exit-code 1 --ignorefile /root/.trivyignore grafana/alloy:v1.19.1
 
-    - docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$CI_PROJECT_DIR/.trivyignore:/root/.trivyignore:ro" aquasec/trivy:latest image --severity CRITICAL --exit-code 1 --ignorefile /root/.trivyignore grafana/grafana:latest
+    - docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$CI_PROJECT_DIR/.trivyignore:/root/.trivyignore:ro" aquasec/trivy:latest image --severity CRITICAL --exit-code 1 --ignorefile /root/.trivyignore grafana/grafana:13.2.0
 
-    - docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$CI_PROJECT_DIR/.trivyignore:/root/.trivyignore:ro" aquasec/trivy:latest image --severity CRITICAL --exit-code 1 --ignorefile /root/.trivyignore grafana/loki:3.7.0
+    - docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$CI_PROJECT_DIR/.trivyignore:/root/.trivyignore:ro" aquasec/trivy:latest image --severity CRITICAL --exit-code 1 --ignorefile /root/.trivyignore grafana/loki:3.7.7
 
-    - docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$CI_PROJECT_DIR/.trivyignore:/root/.trivyignore:ro" aquasec/trivy:latest image --severity CRITICAL --exit-code 1 --ignorefile /root/.trivyignore prom/prometheus:latest
+    - docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$CI_PROJECT_DIR/.trivyignore:/root/.trivyignore:ro" aquasec/trivy:latest image --severity CRITICAL --exit-code 1 --ignorefile /root/.trivyignore prom/prometheus:v3.14.0
 
 publish-images:
   stage: publish
