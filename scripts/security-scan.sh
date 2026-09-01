@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
 
 set -euo pipefail
+export MSYS_NO_PATHCONV=1
 set -x
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 TRIVY_IMAGE="aquasec/trivy:latest"
+TRIVYIGNORE="$PROJECT_ROOT/.trivyignore"
 
 trap 'echo; echo "❌ Security Scan FAILED"; read -rp "Pressione ENTER para fechar..."' ERR
 
@@ -47,6 +51,7 @@ docker run --rm \
   --exit-code 1 \
   mexe-frontend:latest
 
+
 echo
 echo "[3/6] Alloy"
 
@@ -54,12 +59,12 @@ docker pull grafana/alloy:v1.19.1
 
 docker run --rm \
   -v //var/run/docker.sock:/var/run/docker.sock \
-  -v "$PWD/.trivyignore://root/.trivyignore:ro" \
+  -v "$TRIVYIGNORE:/tmp/trivyignore:ro" \
   "$TRIVY_IMAGE" \
   image \
   --severity CRITICAL \
   --exit-code 1 \
-  --ignorefile //root/.trivyignore \
+  --ignorefile /tmp/trivyignore \
   grafana/alloy:v1.19.1
 
 echo
@@ -69,10 +74,12 @@ docker pull grafana/grafana:13.2.0
 
 docker run --rm \
   -v //var/run/docker.sock:/var/run/docker.sock \
+  -v "$TRIVYIGNORE:/tmp/trivyignore:ro" \
   "$TRIVY_IMAGE" \
   image \
   --severity CRITICAL \
   --exit-code 1 \
+  --ignorefile /tmp/trivyignore \
   grafana/grafana:13.2.0
 
 echo
@@ -82,10 +89,12 @@ docker pull grafana/loki:3.7.7
 
 docker run --rm \
   -v //var/run/docker.sock:/var/run/docker.sock \
+  -v "$TRIVYIGNORE:/tmp/trivyignore:ro" \
   "$TRIVY_IMAGE" \
   image \
   --severity CRITICAL \
   --exit-code 1 \
+  --ignorefile /tmp/trivyignore \
   grafana/loki:3.7.7
 
 echo
@@ -95,10 +104,12 @@ docker pull prom/prometheus:v3.14.0
 
 docker run --rm \
   -v //var/run/docker.sock:/var/run/docker.sock \
+  -v "$TRIVYIGNORE:/tmp/trivyignore:ro" \
   "$TRIVY_IMAGE" \
   image \
   --severity CRITICAL \
   --exit-code 1 \
+  --ignorefile /tmp/trivyignore \
   prom/prometheus:v3.14.0
 
 echo
