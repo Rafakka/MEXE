@@ -128,10 +128,10 @@ security-scan:
     - docker info
 
   script:
-    - docker pull grafana/alloy:latest
-    - docker pull grafana/grafana:latest
+    - docker pull grafana/alloy:v1.19.1
+    - docker pull grafana/grafana:13.2.0
     - docker pull grafana/loki:3.7.7
-    - docker pull prom/prometheus:latest
+    - docker pull prom/prometheus:v3.14.0
 
     - docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$CI_PROJECT_DIR/.trivyignore:/root/.trivyignore:ro" aquasec/trivy:latest image --severity CRITICAL --exit-code 1 --ignorefile /root/.trivyignore grafana/alloy:latest
 
