@@ -220,7 +220,35 @@ const laboratorySlice = createSlice({
         state.phase = "resetting";
     },
 
-        }
+    reconnectingStarted(state) {
+
+    state.operationPhase = "reconnecting";
+
+    state.notification = {
+
+        type: "warning",
+
+        title: "Backend Unavailable",
+
+        message: "Attempting to restore connection..."
+        };
+    },
+
+    backendOffline(state) {
+
+    state.operationPhase = "offline";
+
+    state.notification = {
+
+        type: "error",
+
+        title: "Backend Offline",
+
+        message: "The backend is offline or not responding."
+        };
+    },
+
+}
 
 });
 
@@ -243,6 +271,9 @@ export const {
     processingRunning,
     resultDisplayed,
     resetStarted,
+
+    reconnectingStarted,
+    backendOffline,
 
     clearLaboratory,
     clearNotification,

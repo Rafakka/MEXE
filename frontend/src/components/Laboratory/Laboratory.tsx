@@ -228,9 +228,18 @@ export default function Laboratory() {
         notification={notification}
         operationPhase={operationPhase}
         visible={
-        notification?.type === "error" || (notification?.type === "success" && phase === "result" && operationPhase === "completed" && resultVisible)
+            operationPhase === "reconnecting" ||
+            operationPhase === "offline" ||
+            notification?.type === "error" ||
+            (
+            notification?.type === "success" &&
+            phase === "result" &&
+            operationPhase === "completed" &&
+            resultVisible
+            )
         }
         resetting={isResetting}
+
         />
 
         <ReactionPanel

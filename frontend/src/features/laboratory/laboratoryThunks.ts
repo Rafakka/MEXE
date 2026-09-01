@@ -18,9 +18,19 @@ import {
 
     acceleratingStarted,
 
+    reconnectingStarted,
+
 } from "./laboratorySlice";
 
 import { mexeApi } from "../../api/mexeApi";
+
+// type MergeResult = "success" | "failed" | "reconnecting";
+
+    function isConnectionError(error: unknown): boolean {
+        return (
+            error instanceof Error && /HTTP (502|503|504)/.test(error.message)
+        );
+    };
 
     export const activeLab = () =>
 
@@ -29,9 +39,7 @@ import { mexeApi } from "../../api/mexeApi";
         ) => {
 
             dispatch(activatedExperiment());
-
         };
-
 
     export const startProcessing = (
 
@@ -48,10 +56,9 @@ import { mexeApi } from "../../api/mexeApi";
 
         dispatch(mergeStarted());
 
-        const success = await dispatch(performMerge(firstFile, secondFile));
+        const result = await dispatch(performMerge(firstFile, secondFile));
 
-        if(!success) {
-
+        if(result === "failed") {
             dispatch(clearLaboratory());
         }
     };
@@ -70,11 +77,8 @@ import { mexeApi } from "../../api/mexeApi";
         console.log(">>> API START");
 
         const result = await mexeApi.blend(
-
             firstFile,
-
             secondFile
-
         );
 
         console.log(">>> API END");
@@ -83,7 +87,7 @@ import { mexeApi } from "../../api/mexeApi";
 
         dispatch(acceleratingStarted());
 
-        return true;
+        return "success";
 
     }
 
@@ -91,25 +95,23 @@ import { mexeApi } from "../../api/mexeApi";
 
         console.error(error);
 
+        if (isConnectionError(error)) {
+
+            dispatch(reconnectingStarted());
+
+            return "reconnecting"
+        }
+
         dispatch(
-
             mergeFailed({
-
                 type: "error",
-
                 title: "Merge Error",
-
                 message: "Unable to merge images."
-
                 })
-
             );
-
-            return false;
-
+            return "failed";
         }
     };
-
 
     export const resetExperiment =
     () => async (
@@ -121,7 +123,3 @@ import { mexeApi } from "../../api/mexeApi";
     dispatch(clearLaboratory());
 
     };
-
-
-
-

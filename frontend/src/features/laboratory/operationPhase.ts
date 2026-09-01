@@ -16,4 +16,10 @@ export type OperationPhase =
 
     | "completed"
 
+    | "processing"
+
+    | "reconnecting"
+
+    | "offline"
+
     | "failed";

@@ -23,7 +23,7 @@ export async function blendImages(
     );
 
     if (!response.ok) {
-        throw new Error("Blend failed");
+        throw new Error(`Blend failed: ${response.status}`);
     }
 
     const blob = await response.blob();
