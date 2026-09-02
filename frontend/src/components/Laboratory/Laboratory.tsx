@@ -9,6 +9,7 @@ import ReactionField from "../Laboratory/ReactionField/ReactionField";
 import Notification from "../Notification/Notification";
 import ResetLabNode from "../Laboratory/ActionNodes/resetNode/ResetLabNode";
 import DownloadNode from "../Laboratory/ActionNodes/downloadNode/DownloadNode";
+import ManualNode from "../Laboratory/ActionNodes/manualNode/ManualNode";
 import {useSelector, useDispatch} from "react-redux";
 import {useState, useRef, useEffect} from "react";
 import type {RootState, AppDispatch} from "../../store/store";
@@ -18,11 +19,11 @@ import {
         loadFirstSample,
         loadSecondSample,
         startupCompleted,
-        revealingStarted
+        revealingStarted,
 
     } from "../../features/laboratory/laboratorySlice";
 
-import { activeLab, startProcessing } from "../../features/laboratory/laboratoryThunks";
+import { activeLab, startProcessing, manualRetry } from "../../features/laboratory/laboratoryThunks";
 
 import styles from "./Laboratory.module.css";
 
@@ -141,6 +142,11 @@ export default function Laboratory() {
         setFirstFile(null);
         setSecondFile(null);
         setIsResetting(true);
+    };
+
+    const handleManualRetry = () => {
+
+        dispatch(manualRetry());
     };
 
     const view = {
@@ -272,6 +278,13 @@ export default function Laboratory() {
             resultVisible}
         resetting={isResetting}
         resultUrl={resultImage}
+        />
+
+        <ManualNode
+        phase={phase}
+        operationPhase={operationPhase}
+        visible={operationPhase == "offline"}
+        onClick={handleManualRetry}
         />
 
     </section>

@@ -20,6 +20,10 @@ export type NotificationType =
     | "warning"
     | "error";
 
+export interface LaboratoryRecoveryState {
+    phase: LaboratoryPhase;
+    operationPhase: OperationPhase;
+}
 
 export interface LaboratoryState {
 
@@ -28,6 +32,8 @@ export interface LaboratoryState {
     startupFinished: boolean;
 
     operationPhase: OperationPhase;
+
+    recoveryStateBeforeReconnect: LaboratoryRecoveryState | null;
 
     samples: {
 
@@ -66,6 +72,8 @@ const initialState: LaboratoryState = {
     startupFinished: false,
 
     operationPhase: "idle",
+
+    recoveryStateBeforeReconnect: null,
 
     samples: {
 
@@ -222,14 +230,19 @@ const laboratorySlice = createSlice({
 
     reconnectingStarted(state) {
 
-    state.operationPhase = "reconnecting";
+        if (state.operationPhase !== "reconnecting") {
 
-    state.notification = {
+        state.recoveryStateBeforeReconnect = {
+            phase: state.phase,
+            operationPhase: state.operationPhase,
+            };
+        }
 
+        state.operationPhase = "reconnecting";
+
+        state.notification = {
         type: "warning",
-
         title: "Backend Unavailable",
-
         message: "Attempting to restore connection..."
         };
     },
@@ -248,10 +261,29 @@ const laboratorySlice = createSlice({
         };
     },
 
-}
+   backendRecovered(state) {
 
+    console.log(
+        ">>> Recovering laboratory state:",
+        state.recoveryStateBeforeReconnect
+    );
+
+    if (state.recoveryStateBeforeReconnect) {
+
+        state.phase =
+            state.recoveryStateBeforeReconnect.phase;
+
+        state.operationPhase =
+            state.recoveryStateBeforeReconnect.operationPhase;
+    }
+
+    state.recoveryStateBeforeReconnect = null;
+
+    },
+
+
+    },
 });
-
 
 export const {
 
@@ -273,6 +305,7 @@ export const {
     resetStarted,
 
     reconnectingStarted,
+    backendRecovered,
     backendOffline,
 
     clearLaboratory,

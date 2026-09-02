@@ -5,7 +5,7 @@ import { ENDPOINTS } from "../api/endpoints";
 import type {ImageMetadata} from "../types/imageType";
 import {getImageMetadata} from "../../src/features/laboratory/utils/getImageMetadata";
 
-type BlendResult = {
+export type BlendResult = {
     url:string;
     metadata: ImageMetadata;
 };

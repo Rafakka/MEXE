@@ -2,6 +2,8 @@
 
 import type {AppDispatch} from "../../store/store";
 
+import { recoverConnection} from "../../resilience/connectionRecovery";
+
 import {
 
     activatedExperiment,
@@ -20,11 +22,15 @@ import {
 
     reconnectingStarted,
 
+    backendOffline,
+
+    backendRecovered,
+
 } from "./laboratorySlice";
 
 import { mexeApi } from "../../api/mexeApi";
 
-// type MergeResult = "success" | "failed" | "reconnecting";
+// type MergeResult = "success" | "failed";
 
     function isConnectionError(error: unknown): boolean {
         return (
@@ -42,13 +48,9 @@ import { mexeApi } from "../../api/mexeApi";
         };
 
     export const startProcessing = (
-
         firstFile: File,
-
         secondFile: File
-
     ) => async (
-
         dispatch: AppDispatch
     ) => {
 
@@ -56,20 +58,15 @@ import { mexeApi } from "../../api/mexeApi";
 
         dispatch(mergeStarted());
 
-        const result = await dispatch(performMerge(firstFile, secondFile));
+        await dispatch(performMerge(firstFile, secondFile));
 
-        if(result === "failed") {
-            dispatch(clearLaboratory());
-        }
     };
 
     export const performMerge = (
         firstFile: File,
         secondFile: File
     ) => async (
-
-    dispatch: AppDispatch
-
+        dispatch: AppDispatch
     ) => {
 
     try {
@@ -99,7 +96,25 @@ import { mexeApi } from "../../api/mexeApi";
 
             dispatch(reconnectingStarted());
 
-            return "reconnecting"
+            console.log(">>> STARTING CONNECTION RECOVERY");
+
+            const recovered = await recoverConnection();
+
+            console.log(">>> RECOVERY RESULT:", recovered);
+
+            if (recovered) {
+
+                console.log(">>> Backend recovered");
+
+                dispatch(backendRecovered());
+
+                return;
+
+            }
+
+            dispatch(backendOffline());
+
+            return;
         }
 
         dispatch(
@@ -112,6 +127,28 @@ import { mexeApi } from "../../api/mexeApi";
             return "failed";
         }
     };
+
+    export const manualRetry = () => async (
+    dispatch: AppDispatch
+    ) => {
+
+    dispatch(reconnectingStarted());
+
+    console.log(">>> MANUAL RETRY");
+
+    const recovered = await recoverConnection();
+
+    console.log(">>> MANUAL RETRY RESULT:", recovered);
+
+    if (recovered) {
+        dispatch(backendRecovered());
+        return;
+    }
+
+    dispatch(backendOffline());
+
+    };
+
 
     export const resetExperiment =
     () => async (
