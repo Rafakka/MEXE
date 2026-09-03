@@ -61,13 +61,17 @@
 
 /*--------BASE--------*/
 
-:root{
+:root {
 
-    --core-panel-distance:700px;
-    --action-node-distance:250px;
-    --action-node-offset-y:-120px;
-    --reset-offset-y:-90px;
-    --download-offset-y:90px;
+    --core-panel-distance: 700px;
+
+    --action-node-distance: 150px;
+
+    --reset-offset-y: -120px;
+
+    --recovery-offset-y: 0px;
+
+    --download-offset-y: 120px;
 
 }
 
@@ -79,7 +83,7 @@
 
     left:calc(50% + var(--action-node-distance));
 
-    top:calc(40% + var(--reset-offset-y));
+    top:calc(40% + var(--download-offset-y));
 
     width:40px;
     height:40px;
@@ -136,7 +140,7 @@
 
     bottom:calc(100% + 16px);
 
-    left:80%;
+    left:50%;
 
     transform:translateX(-50%) translateY(6px);
 

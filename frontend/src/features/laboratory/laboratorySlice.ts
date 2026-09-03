@@ -230,7 +230,7 @@ const laboratorySlice = createSlice({
 
     reconnectingStarted(state) {
 
-        if (state.operationPhase !== "reconnecting") {
+        if (state.recoveryStateBeforeReconnect === null) {
 
         state.recoveryStateBeforeReconnect = {
             phase: state.phase,
@@ -277,12 +277,19 @@ const laboratorySlice = createSlice({
             state.recoveryStateBeforeReconnect.operationPhase;
     }
 
+    state.notification = {
+
+        type: "success",
+
+        title: "Backend Online",
+
+        message: "Resuming operation."
+    };
+
     state.recoveryStateBeforeReconnect = null;
 
-    },
-
-
-    },
+        },
+    }
 });
 
 export const {

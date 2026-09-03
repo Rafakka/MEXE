@@ -42,12 +42,17 @@
 
 /*--------BASE--------*/
 
-:root{
+:root {
 
-    --core-panel-distance:700px;
-    --action-node-distance:150px;
-    --action-node-offset-y:100px;
-    --download-offset-y:50px;
+    --core-panel-distance: 700px;
+
+    --action-node-distance: 150px;
+
+    --reset-offset-y: -120px;
+
+    --recovery-offset-y: 0px;
+
+    --download-offset-y: 120px;
 
 }
 

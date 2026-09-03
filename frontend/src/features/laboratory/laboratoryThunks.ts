@@ -28,6 +28,10 @@ import {
 
 } from "./laboratorySlice";
 
+import { memorizeProcess, getMemorizedProcess, forgetProcess } from "../../resilience/resilienceMemory";
+
+import { getProcessHandler } from "../../resilience/processRegistry";
+
 import { mexeApi } from "../../api/mexeApi";
 
 // type MergeResult = "success" | "failed";
@@ -53,6 +57,12 @@ import { mexeApi } from "../../api/mexeApi";
     ) => async (
         dispatch: AppDispatch
     ) => {
+
+        memorizeProcess({
+        type: "blend",
+        phase: "processing",
+        operationPhase: "running",
+        });
 
         dispatch(processingRunning());
 
@@ -83,6 +93,8 @@ import { mexeApi } from "../../api/mexeApi";
         dispatch(mergeCompleted(result));
 
         dispatch(acceleratingStarted());
+
+        forgetProcess();
 
         return "success";
 
@@ -128,7 +140,7 @@ import { mexeApi } from "../../api/mexeApi";
         }
     };
 
-    export const manualRetry = () => async (
+   export const manualRetry = () => async (
     dispatch: AppDispatch
     ) => {
 
@@ -138,15 +150,50 @@ import { mexeApi } from "../../api/mexeApi";
 
     const recovered = await recoverConnection();
 
-    console.log(">>> MANUAL RETRY RESULT:", recovered);
+    console.log(
+        ">>> MANUAL RETRY RESULT:",
+        recovered
+    );
 
     if (recovered) {
+
         dispatch(backendRecovered());
+
+        console.log(">>> Resuming interrupted process");
+
+        await dispatch(resumeProcess());
+
         return;
     }
 
     dispatch(backendOffline());
 
+    };
+
+    export const resumeProcess = () => async () => {
+
+    const process = getMemorizedProcess();
+
+    if (!process) {
+        console.log(">>> No interrupted process to resume");
+        return;
+    }
+
+    console.log(
+        ">>> Resuming process:",
+        process.type
+    );
+
+    const handler = getProcessHandler(process.type);
+
+    if (!handler) {
+        console.error(
+            `>>> No recovery handler registered for process: ${process.type}`
+        );
+        return;
+    }
+
+    await handler();
     };
 
 

@@ -10,6 +10,7 @@ import Notification from "../Notification/Notification";
 import ResetLabNode from "../Laboratory/ActionNodes/resetNode/ResetLabNode";
 import DownloadNode from "../Laboratory/ActionNodes/downloadNode/DownloadNode";
 import ManualNode from "../Laboratory/ActionNodes/manualNode/ManualNode";
+import RecoveryMode from "../Laboratory/ActionNodes/recoveryNode/RecoveryNode";
 import {useSelector, useDispatch} from "react-redux";
 import {useState, useRef, useEffect} from "react";
 import type {RootState, AppDispatch} from "../../store/store";
@@ -23,7 +24,9 @@ import {
 
     } from "../../features/laboratory/laboratorySlice";
 
-import { activeLab, startProcessing, manualRetry } from "../../features/laboratory/laboratoryThunks";
+import { registerProcess, unregisterProcess } from "../../resilience/processRegistry";
+
+import { activeLab, startProcessing, manualRetry, performMerge } from "../../features/laboratory/laboratoryThunks";
 
 import styles from "./Laboratory.module.css";
 
@@ -146,7 +149,13 @@ export default function Laboratory() {
 
     const handleManualRetry = () => {
 
-        dispatch(manualRetry());
+        if (!firstFile || !secondFile) {
+            return;
+        }
+
+        dispatch(
+            manualRetry()
+        );
     };
 
     const view = {
@@ -158,6 +167,29 @@ export default function Laboratory() {
         phase === "processing",
 
     };
+
+    useEffect(() => {
+
+    if (!firstFile || !secondFile) {
+        return;
+    }
+
+    registerProcess("blend", async () => {
+
+        await dispatch(
+            performMerge(
+                firstFile,
+                secondFile
+            )
+        );
+
+    });
+
+    return () => {
+        unregisterProcess("blend");
+    };
+
+    }, [firstFile, secondFile, dispatch]);
 
     useEffect(() => {
 
@@ -262,12 +294,16 @@ export default function Laboratory() {
         <ResetLabNode
         phase={phase}
         operationPhase={operationPhase}
-        visible={phase === "result" &&
+        visible={
+        (
+            phase === "result" &&
             operationPhase === "completed" &&
-            resultVisible}
+            resultVisible
+        ) ||
+        notification?.type === "error"
+        }
         resetting={isResetting}
         onClick={handleReset}
-
         />
 
         <DownloadNode
@@ -283,8 +319,12 @@ export default function Laboratory() {
         <ManualNode
         phase={phase}
         operationPhase={operationPhase}
-        visible={operationPhase == "offline"}
+        visible={operationPhase === "offline"}
         onClick={handleManualRetry}
+        />
+
+        <RecoveryMode
+            visible={operationPhase === "reconnecting"}
         />
 
     </section>
