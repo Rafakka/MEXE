@@ -83,6 +83,8 @@ import { mexeApi } from "../../api/mexeApi";
 
         console.log(">>> API START");
 
+        await mexeApi.ready();
+
         const result = await mexeApi.blend(
             firstFile,
             secondFile

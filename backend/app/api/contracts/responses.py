@@ -9,7 +9,7 @@ OpenApiResponses = dict[int | str, dict[str, Any]]
 BLEND_RESPONSES: OpenApiResponses = {
     200: {
         "description": "Image successfully blended."
-    },    
+    },
     415: {
          "description":"Unsupported image format",
          "model":ErrorResponse
@@ -30,3 +30,14 @@ HEALTH_RESPONSES = {
         "model": HealthResponse
     }
 }
+
+REENTRY_RESPONSES: OpenApiResponses ={
+    422: {
+        "description": "Unprocessable Entity.",
+        "model": ErrorResponse
+        },
+    400: {
+        "description":"Bad Request.",
+        "model": ErrorResponse
+        }
+    }

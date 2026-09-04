@@ -2,7 +2,7 @@
 import { ENDPOINTS } from "../api/endpoints";
 
 const MAX_ATTEMPTS = 3;
-const RETRY_DELAY = 2000;
+const RETRY_DELAY = 1000;
 
 function wait(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));

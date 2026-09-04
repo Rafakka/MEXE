@@ -12,25 +12,38 @@ logger = logging.getLogger("mexe")
 
 class ImageDecoder:
 
-    @measure_time("mexe_processing_duration_seconds", stage="decode")
+    @measure_time(
+        "mexe_processing_duration_seconds",
+        stage="decode"
+    )
     async def decode(
-            self,
-            image: UploadFile
-            ) -> Image.Image:
-
-        logger.info(f"Decoding image '%s' (%s)",
-                    image.filename,
-                    image.content_type
-                    )
-
-        decoded = Image.open(
-                BytesIO(await image.read())
-                )
+        self,
+        image: UploadFile
+    ) -> Image.Image:
 
         logger.info(
-                "Image decoded succesfully (%dx%d)",
-                decoded.width,
-                decoded.height,
-                )
+            "Decoding image '%s' (%s)",
+            image.filename,
+            image.content_type
+        )
+
+        return self.decode_bytes(
+            await image.read()
+        )
+
+    def decode_bytes(
+        self,
+        content: bytes
+    ) -> Image.Image:
+
+        decoded = Image.open(
+            BytesIO(content)
+        )
+
+        logger.info(
+            "Image decoded succesfully (%dx%d)",
+            decoded.width,
+            decoded.height,
+        )
 
         return decoded

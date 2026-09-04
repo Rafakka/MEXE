@@ -324,7 +324,8 @@ export default function Laboratory() {
         />
 
         <RecoveryMode
-            visible={operationPhase === "reconnecting"}
+        operationPhase={operationPhase}
+        visible={operationPhase ==="reconnecting"}
         />
 
     </section>

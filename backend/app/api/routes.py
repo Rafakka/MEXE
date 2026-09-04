@@ -5,28 +5,23 @@ from app.observability.decorators import measure_time
 
 from fastapi import APIRouter, File, UploadFile, Form, HTTPException, Request, Response
 
-from app.infra.validators.input_validator import InputValidator
-from app.infra.image_decoder import ImageDecoder
-from app.domain.processors.normalize_processor import NormalizeProcessor
-from app.domain.processors.blend_processor import BlendProcessor
-from app.infra.image_encoder import ImageEncoder
-
-from app.api.contracts.responses import BLEND_RESPONSES, HEALTH_RESPONSES
+from app.api.contracts.responses import BLEND_RESPONSES, HEALTH_RESPONSES, REENTRY_RESPONSES
 from app.api.contracts.health_response import HealthResponse
+from app.domain.reentry_file_checker import ReentryFile
+from app.domain.file_status import ReentryState
 from app.domain.health_checker import HealthChecker
 from app.domain.health_status import HealthStatus
+
+from app.services.request_id_service import RequestIdService
+from app.services.image_processing_service import ImageProcessingService
 
 logger = logging.getLogger("mexe")
 
 router = APIRouter()
 
-input_validator = InputValidator()
-image_decoder = ImageDecoder()
-normalize_processor = NormalizeProcessor()
-blend_processor = BlendProcessor()
-image_encoder = ImageEncoder()
-
+image_processor_sv = ImageProcessingService()
 health_checker = HealthChecker()
+request_id_service = RequestIdService()
 
 @router.post("/blend",
              tags=["Image Processing"],
@@ -37,6 +32,7 @@ health_checker = HealthChecker()
              )
 
 @measure_time("mexe_processing_duration_seconds", stage="final")
+
 async def blend(request:Request,
         implicit_image_a: UploadFile = File(..., description="First image to blend"),
         implicit_image_b: UploadFile = File(..., description="Second image to blend"),
@@ -44,7 +40,15 @@ async def blend(request:Request,
         height: int = Form(...,title="Outuput height",description="Target height in pixels", examples=[1024])
         ):
 
-    request_id = request.state.request_id
+    request_id = request_id_service.get(request)
+
+    status = health_checker.check()
+
+    if status == HealthStatus.DOWN:
+        raise HTTPException(
+        status_code=503,
+        detail="Service not ready",
+    )
 
     logger.info(
             "image_processing_started",
@@ -53,40 +57,13 @@ async def blend(request:Request,
                 }
             )
 
-
-    await input_validator.validate(implicit_image_a)
-    await input_validator.validate(implicit_image_b)
-
-    image1 = await image_decoder.decode(implicit_image_a)
-    image2 = await image_decoder.decode(implicit_image_b)
-
-    target_size = (width, height)
-
-    image1 = normalize_processor.normalize(
-            image1,
-            target_size
-            )
-    image2 = normalize_processor.normalize (
-            image2,
-            target_size
-            )
-
-    blended = blend_processor.blend(
-            image1,
-            image2,
-            request_id
-            )
-
-    logger.info(
-    "image_processing_completed",
-    extra={
-        "request_id": request_id,
-        },
+    return await image_processor_sv.process_uploads(
+        implicit_image_a,
+        implicit_image_b,
+        width,
+        height,
+        request_id,
     )
-
-    return await image_encoder.encode(
-            blended
-            )
 
 @router.get("/health",
                 tags=["Health"],
@@ -133,4 +110,34 @@ def metrics_endpoint():
     return Response(
         content=metrics.prometheus_snapshot(),
         media_type="text/plain",
+    )
+
+@router.post(
+    "/reentry",
+    responses=REENTRY_RESPONSES,
+)
+async def reentry_endpoint(
+    request: Request,
+    file: UploadFile = File(...),
+):
+
+    request_id = request_id_service.get(request)
+
+    reentry_file = ReentryFile()
+
+    status = reentry_file.check(file.file)
+
+    if status == ReentryState.INVALID:
+        raise HTTPException(
+            status_code=422,
+            detail="Reentry File Invalid",
+        )
+
+    file.file.seek(0)
+
+    operation = reentry_file.prepare(file.file)
+
+    return await image_processor_sv.process(
+        operation,
+        request_id,
     )

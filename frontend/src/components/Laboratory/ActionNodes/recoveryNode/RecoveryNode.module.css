@@ -14,29 +14,25 @@
 }
 
 .node {
-
-    position:absolute;
+    position: absolute;
 
     left: calc(50% + var(--action-node-distance));
-
     top: calc(40% + var(--recovery-offset-y));
 
-    transform: translateX(-50%);
-
-    width: 40px;
-
-    height:40px;
-
     display: flex;
-    gap: 12px;
     align-items: center;
+    justify-content: center;
+    gap: 12px;
 
-    opacity: 0;
+    opacity: 1;
+
     pointer-events: none;
 
-    transition: opacity 300ms ease;
+    z-index:9999;
 
-    z-index:20;
+    background: transparent;
+
+    transition: opacity .35s ease;
 }
 
 .visible {
@@ -48,12 +44,20 @@
 }
 
 .node span {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: currentColor;
+    width: 20px;
+    height: 20px;
 
-    animation: recoveryFlow 1.2s infinite;
+    display: block;
+
+    border-radius: 50%;
+
+    background: white;
+
+    opacity:1;
+
+    transform: none;
+
+    animation: recoveryFlow 1.5s infinite ease-in-out;
 }
 
 .node span:nth-child(1) {
