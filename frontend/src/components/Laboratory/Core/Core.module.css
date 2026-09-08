@@ -1757,7 +1757,7 @@
 /*--------resetting----------*/
 
 
-.resetting .aura{
+.resettingLab .aura{
 
     animation:
 
@@ -1765,14 +1765,31 @@
 
 }
 
-.resetting .rotor{
+
+.resettingProcess .aura{
+
+    animation:
+
+        auraBirth .8s ease forwards;
+
+}
+
+
+.resettingLab .rotor{
+
+    animation-play-state: running;
+
+}
+
+.resettingProcess .rotor{
 
     animation-play-state: running;
 
 }
 
 
-.resetting .halo{
+
+.resettingLab .halo{
 
     animation:
 
@@ -1780,7 +1797,17 @@
 
 }
 
-.resetting .planet{
+
+.resettingProcess .halo{
+
+    animation:
+
+        haloIgnition .6s ease forwards;
+
+}
+
+
+.resettingLab .planet{
 
     animation:
 
@@ -1791,7 +1818,19 @@
 
 }
 
-.resetting .orbit {
+
+.resettingProcess .planet{
+
+    animation:
+
+        planetRebirth
+        .9s
+        cubic-bezier(.22,.61,.36,1)
+        forwards;
+
+}
+
+.resettingProcess .orbit {
 
     animation:
 
@@ -1801,6 +1840,19 @@
         forwards;
 
 }
+
+.resettingLab .orbit {
+
+    animation:
+
+        orbitRebirth
+        .8s
+        ease-out
+        forwards;
+
+}
+
+
 
 /*-------failed---------*/
 
@@ -1844,7 +1896,7 @@
 
 }
 
-.core.resetting {
+.core.resettingLab {
 
     animation:
         coreReset
@@ -1855,6 +1907,20 @@
     pointer-events:none;
 
 }
+
+.core.resettingProcess {
+
+    animation:
+        coreReset
+        1.5s
+        ease-in-out
+        forwards;
+
+    pointer-events:none;
+
+}
+
+
 
 /*---------------
  *

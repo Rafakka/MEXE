@@ -7,13 +7,15 @@ type ManualNodeProps = {
     operationPhase: OperationPhase;
     visible: boolean;
     onClick: () => void;
+    onResetComplete: () => void;
 };
 
 export default function ManualNode({
     phase,
     visible,
     operationPhase,
-    onClick
+    onClick,
+    onResetComplete
 }: ManualNodeProps) {
 
     return (
@@ -21,12 +23,22 @@ export default function ManualNode({
             type="button"
             className={`
                 ${styles.node}
-                ${visible ? styles.visible : styles.hidden}
+                ${visible || phase === "resettingProcess"
+                    ?styles.visible
+                    :styles.hidden}
                 ${styles[phase]}
                 ${styles[operationPhase]}
             `}
             onClick={onClick}
             aria-label="Manual Connection Retry"
-        />
+        onAnimationEnd={(event)=>{
+            if(event.target !== event.currentTarget) return;
+            if(phase !== "resettingProcess") return;
+
+            onResetComplete();
+        }}
+        >
+
+        </button>
     );
 }

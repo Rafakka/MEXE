@@ -189,6 +189,8 @@ const laboratorySlice = createSlice({
 
         state.operationPhase = "idle";
 
+        state.recoveryStateBeforeReconnect = null;
+
         state.samples.firstLoaded = false;
 
         state.samples.secondLoaded = false;
@@ -223,9 +225,14 @@ const laboratorySlice = createSlice({
         state.resultVisible = true;
     },
 
-    resetStarted(state) {
+    resetLabStarted(state) {
 
-        state.phase = "resetting";
+        state.phase = "resettingLab";
+    },
+
+    resetProcessStarted(state){
+
+        state.phase = "resettingProcess";
     },
 
     reconnectingStarted(state) {
@@ -309,7 +316,8 @@ export const {
     revealingStarted,
     processingRunning,
     resultDisplayed,
-    resetStarted,
+    resetLabStarted,
+    resetProcessStarted,
 
     reconnectingStarted,
     backendRecovered,

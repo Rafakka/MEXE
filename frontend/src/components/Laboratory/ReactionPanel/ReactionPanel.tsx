@@ -10,11 +10,10 @@ type ReactionPanelProps = {
     visible: boolean;
     operationPhase: OperationPhase;
     resultUrl?: string | null;
-    resetting:  boolean;
     metadata?: ImageMetadata | null;
 };
 
-export default function ReactionPanel({phase, operationPhase, visible, resultUrl, resetting, metadata }:ReactionPanelProps){
+export default function ReactionPanel({phase, operationPhase, visible, resultUrl, metadata }:ReactionPanelProps){
 
     console.log("REACTION PANEL METADATA:", metadata);
 
@@ -26,7 +25,6 @@ export default function ReactionPanel({phase, operationPhase, visible, resultUrl
                 ${styles[phase]}
                 ${styles[operationPhase]}
                 ${visible ? styles.visible: styles.hidden}
-                ${resetting ? styles.resetting: ""}
             `}
         >
 

@@ -293,7 +293,19 @@
 
 }
 
-.resetting{
+.resettingLab{
+
+   animation:
+        nodeHide
+        1.5s
+        ease-in-out
+        forwards;
+
+    pointer-events:none;
+}
+
+
+.resettingProcess{
 
    animation:
         nodeHide

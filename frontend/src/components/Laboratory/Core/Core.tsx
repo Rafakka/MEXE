@@ -12,13 +12,12 @@ import {resultDisplayed} from "../../../features/laboratory/laboratorySlice";
 type CoreProps = {
         phase: LaboratoryPhase;
         operationPhase: OperationPhase;
-        resetting: boolean;
         onClick: () => void;
         onResetComplete: () => void;
 
     };
 
-export default function Core( {phase, onClick, operationPhase, resetting, onResetComplete }:CoreProps ) {
+export default function Core( {phase, onClick, operationPhase, onResetComplete }:CoreProps ) {
 
     const [hovered, setHovered] = useState(false);
 
@@ -59,7 +58,7 @@ export default function Core( {phase, onClick, operationPhase, resetting, onRese
         return;
     }
 
-    if (!resetting) {
+    if (phase !=="resettingLab") {
         return;
     }
 
@@ -239,7 +238,6 @@ export default function Core( {phase, onClick, operationPhase, resetting, onRese
         ${styles.core}
         ${styles[phase]}
         ${styles[operationPhase]}
-        ${resetting ? styles.resetting : ""}
 
     `}
     onAnimationEnd={handleResetAnimationEnd}

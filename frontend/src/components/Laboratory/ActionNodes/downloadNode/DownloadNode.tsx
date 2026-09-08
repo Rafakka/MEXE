@@ -8,7 +8,6 @@ type DownloadNodeProps = {
     phase: LaboratoryPhase,
     operationPhase: OperationPhase;
     visible: boolean,
-    resetting: boolean,
     resultUrl: string | null;
 
 };
@@ -17,7 +16,6 @@ export default function DownLoadNode({
     phase,
     operationPhase,
     visible,
-    resetting,
     resultUrl,
 }: DownloadNodeProps) {
 
@@ -35,13 +33,20 @@ export default function DownLoadNode({
 
     };
 
+    console.log("DOWNLOAD NODE", {
+    visible,
+    phase,
+    operationPhase
+    });
+
     return (
         <button
         type="button"
            className={`
                 ${styles.node}
-                ${visible ? styles.visible: styles.hidden}
-                ${resetting ? styles.resetting: ""}
+                ${visible || phase === "resettingLab"
+                    ? styles.visible
+                    : styles.hidden}
                 ${styles[phase]}
                 ${styles[operationPhase]}
         `}

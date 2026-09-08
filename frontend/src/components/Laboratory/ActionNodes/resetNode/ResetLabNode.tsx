@@ -9,14 +9,12 @@ type ResetLabNodeProps = {
     operationPhase: OperationPhase
     visible: boolean;
     onClick: () => void;
-    resetting: boolean;
 };
 
 export default function ResetLabNode({
     phase,
     visible,
     operationPhase,
-    resetting,
     onClick
 }: ResetLabNodeProps) {
 
@@ -27,7 +25,6 @@ export default function ResetLabNode({
             className={`
                 ${styles.node}
                 ${visible ? styles.visible : styles.hidden}
-                ${resetting ? styles.resetting : ""}
                 ${styles[phase]}
                 ${styles[operationPhase]}
 

@@ -204,8 +204,7 @@
         cubic-bezier(.22,.61,.36,1)
         forwards;
 
-
-   background:
+    background:
     radial-gradient(
 
     circle at 30% 30%,
@@ -235,7 +234,6 @@
         transform .25s ease,
         box-shadow .25s ease,
         opacity .35s ease;
-
 }
 
 .visible{
@@ -255,7 +253,7 @@
 }
 
 
-.resetting{
+.resettingProcess{
 
    animation:
         nodeHide

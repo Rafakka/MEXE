@@ -14,7 +14,9 @@ export type LaboratoryPhase =
 
         | "result"
 
-        | "resetting";
+        | "resettingProcess"
+
+        | "resettingLab";
 
 
 

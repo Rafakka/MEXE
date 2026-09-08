@@ -21,12 +21,15 @@ import {
         loadSecondSample,
         startupCompleted,
         revealingStarted,
+        resetProcessStarted,
+        resetLabStarted,
+
 
     } from "../../features/laboratory/laboratorySlice";
 
 import { registerProcess, unregisterProcess } from "../../resilience/processRegistry";
 
-import { activeLab, startProcessing, manualRetry, performMerge } from "../../features/laboratory/laboratoryThunks";
+import { activeLab, startProcessing, manualRetry, performMerge,  } from "../../features/laboratory/laboratoryThunks";
 
 import styles from "./Laboratory.module.css";
 
@@ -55,9 +58,6 @@ export default function Laboratory() {
         (state:RootState) => state.laboratory
 
     );
-
-
-    const [isResetting, setIsResetting] = useState(false);
 
     const [firstFile, setFirstFile] = useState<File | null>(null);
 
@@ -122,7 +122,7 @@ export default function Laboratory() {
 
         if (notification?.type === "error") {
 
-            handleErrorReset();
+            handleResetComplete();
 
             return;
         }
@@ -130,7 +130,7 @@ export default function Laboratory() {
         dispatch(activeLab());
     };
 
-    const handleErrorReset = () => {
+    const handleResetComplete = () => {
 
         setFirstFile(null);
         setSecondFile(null);
@@ -144,7 +144,12 @@ export default function Laboratory() {
 
         setFirstFile(null);
         setSecondFile(null);
-        setIsResetting(true);
+
+        if (operationPhase === "offline") {
+            dispatch(resetProcessStarted());
+        } else {
+            dispatch(resetLabStarted());
+        }
     };
 
     const handleManualRetry = () => {
@@ -217,13 +222,7 @@ export default function Laboratory() {
           <Core
           phase={phase}
           operationPhase={operationPhase}
-          resetting={isResetting}
-          onResetComplete={()=> {
-
-              dispatch(clearLaboratory());
-              dispatch(clearNotification());
-              setIsResetting(false);
-          }}
+          onResetComplete={handleResetComplete}
           onClick={handleCoreClick}
             />
 
@@ -276,7 +275,6 @@ export default function Laboratory() {
             resultVisible
             )
         }
-        resetting={isResetting}
 
         />
 
@@ -288,31 +286,29 @@ export default function Laboratory() {
             resultVisible}
         resultUrl={resultImage}
         metadata={resultMetadata}
-        resetting={isResetting}
         />
 
         <ResetLabNode
-        phase={phase}
-        operationPhase={operationPhase}
-        visible={
-        (
-            phase === "result" &&
-            operationPhase === "completed" &&
-            resultVisible
-        ) ||
-        notification?.type === "error"
-        }
-        resetting={isResetting}
-        onClick={handleReset}
-        />
-
+            phase={phase}
+            operationPhase={operationPhase}
+            visible={
+                phase !== "resettingLab" &&
+                phase !== "resettingProcess" &&
+                (
+                    (phase === "result" &&
+                    operationPhase === "completed" &&
+                    resultVisible) ||
+                    notification?.type === "error"
+                    )
+                }
+                onClick={handleReset}
+            />
         <DownloadNode
         phase={phase}
         operationPhase={operationPhase}
         visible={phase === "result" &&
             operationPhase === "completed" &&
             resultVisible}
-        resetting={isResetting}
         resultUrl={resultImage}
         />
 
@@ -321,6 +317,7 @@ export default function Laboratory() {
         operationPhase={operationPhase}
         visible={operationPhase === "offline"}
         onClick={handleManualRetry}
+        onResetComplete={handleResetComplete}
         />
 
         <RecoveryMode
