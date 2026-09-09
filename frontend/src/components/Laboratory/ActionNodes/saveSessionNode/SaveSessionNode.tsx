@@ -8,7 +8,6 @@ type SaveSessionNodeProps = {
     operationPhase: OperationPhase;
     visible: boolean;
     onClick: () => void;
-
 };
 
 export default function SaveSessionNode({
@@ -25,15 +24,19 @@ export default function SaveSessionNode({
             className={`
                 ${styles.node}
                 ${visible
-                    ?styles.visible
-                    :styles.hidden}
+                    ? styles.visible
+                    : styles.hidden}
                 ${styles[phase]}
                 ${styles[operationPhase]}
             `}
-            onClick={onClick}
-            aria-label="Save Session For Reentry"
+            onClick={ () => {
+                console.log(">>> SAVE SESSION NODE CLICKED");
+                onClick();
+            }}
 
+            aria-label="Save Session For Reentry"
         >
+
         </button>
     );
 }

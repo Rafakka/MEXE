@@ -11,6 +11,7 @@ import ResetLabNode from "../Laboratory/ActionNodes/resetNode/ResetLabNode";
 import DownloadNode from "../Laboratory/ActionNodes/downloadNode/DownloadNode";
 import ManualNode from "../Laboratory/ActionNodes/manualNode/ManualNode";
 import RecoveryMode from "../Laboratory/ActionNodes/recoveryNode/RecoveryNode";
+import SaveSessionNode from "../Laboratory/ActionNodes/saveSessionNode/SaveSessionNode";
 import {useSelector, useDispatch} from "react-redux";
 import {useState, useRef, useEffect} from "react";
 import type {RootState, AppDispatch} from "../../store/store";
@@ -32,6 +33,12 @@ import { registerProcess, unregisterProcess } from "../../resilience/processRegi
 import { activeLab, startProcessing, manualRetry, performMerge,  } from "../../features/laboratory/laboratoryThunks";
 
 import styles from "./Laboratory.module.css";
+
+import { saveSession } from "../../services/saveSession";
+
+import  { downloadSession } from "../../services/downloadSession";
+
+import SessionSavedMessage from "../MessageHandler/SessionSavedMessage";
 
 export default function Laboratory() {
 
@@ -62,6 +69,8 @@ export default function Laboratory() {
     const [firstFile, setFirstFile] = useState<File | null>(null);
 
     const [secondFile, setSecondFile] = useState<File | null >(null);
+
+    const [sessionSaved, setSessionSaved] = useState(false);
 
     const handleAxisRevealEnd = () => {
 
@@ -139,6 +148,40 @@ export default function Laboratory() {
         dispatch(clearNotification());
 
     };
+
+    const handleSaveSession = async () => {
+
+        if (operationPhase !== "offline") {
+
+            return;
+
+        }
+
+        if (!firstFile || !secondFile ){
+            return;
+        }
+
+        try {
+            const {file, id} = await saveSession(
+                firstFile,
+                secondFile
+            );
+            downloadSession(file, id);
+            setSessionSaved(true);
+
+            console.log(
+                ">>> Session generated:",
+                file.size,
+                "bytes"
+            );
+
+        } catch (error) {
+                console.error(
+                    ">>> Failed to save session:",
+                    error
+                );
+            }
+        };
 
     const handleReset = () => {
 
@@ -312,6 +355,13 @@ export default function Laboratory() {
         resultUrl={resultImage}
         />
 
+        <SaveSessionNode
+        phase={phase}
+        operationPhase={operationPhase}
+        visible={operationPhase === "offline"}
+        onClick={handleSaveSession}
+        />
+
         <ManualNode
         phase={phase}
         operationPhase={operationPhase}
@@ -325,6 +375,15 @@ export default function Laboratory() {
         visible={operationPhase ==="reconnecting"}
         />
 
+        {sessionSaved && (
+           <SessionSavedMessage
+                onReset={() => {
+                    setSessionSaved(false);
+                    handleReset();
+                }}
+                onContinue={() => setSessionSaved(false)}
+        />
+        )}
     </section>
 
     </Layout>
