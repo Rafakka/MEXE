@@ -10,6 +10,12 @@ from app.api.contracts.resume_model import ResumeModel
 
 class ReentryFile:
 
+    SUPPORTED_VERSION = "1.0"
+
+    SUPPORTED_OPERATIONS = {
+        "blend",
+    }
+
     def check(self, file) -> ReentryState:
 
         try:
@@ -79,14 +85,43 @@ class ReentryFile:
                 raise ValueError(
                     f"Missing field: {field}"
                 )
+        if data["version"] != self.SUPPORTED_VERSION:
+            raise ValueError(
+                    f"Unsupported session version: {data['version']}"
+                    )
+
+        if data["operation"] not in self.SUPPORTED_OPERATIONS:
+            raise ValueError(
+                    f"Unsupported operation: {data['operation']}"
+                    )
 
         dimensions = data["dimensions"]
+
+        if not isinstance(dimensions, dict):
+            raise ValueError("Invalid dimensions")
 
         if "width" not in dimensions:
             raise ValueError("Missing dimensions.width")
 
         if "height" not in dimensions:
             raise ValueError("Missing dimensions.height")
+
+        width = dimensions["width"]
+
+        height = dimensions["height"]
+
+        if not isinstance(width, int) or isinstance(width, bool):
+            raise ValueError("Invalid dimensions.width")
+
+        if not isinstance(height, int) or isinstance(height, bool):
+            raise ValueError("Invalid dimensions.height")
+
+        if width <= 0:
+            raise ValueError("Invalid dimensions.width")
+
+        if height <= 0:
+            raise ValueError("Invalid dimensions.height")
+
 
     def _check_image(self, archive, filename) -> None:
 

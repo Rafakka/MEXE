@@ -29,7 +29,7 @@ def new_image():
 
 @pytest.fixture
 def image1():
-    
+
    image1 = Image.new("RGBA", (250,250), (255,0,0,255))
 
    return image1
@@ -43,7 +43,7 @@ def image2():
 
 @pytest.fixture
 def blend_processor():
-    
+
     blend_processor = BlendProcessor()
 
     return blend_processor
@@ -57,18 +57,18 @@ def input_validator():
 
 @pytest.fixture
 def image_decoder():
-    
+
     image_decoder = ImageDecoder()
 
     return image_decoder
 
 @pytest.fixture
 def image_encoder():
-    
+
     image_encoder = ImageEncoder()
 
     return image_encoder
-   
+
 @pytest.fixture
 def normalize_processor():
 
@@ -79,9 +79,9 @@ def normalize_processor():
 
 @pytest.fixture
 def valid_image_upload():
-    
+
     image = Image.new("RGBA", (250,250), (255,0,0,255))
-    
+
     buffer = BytesIO()
 
     image.save(buffer, format="PNG")
@@ -100,11 +100,11 @@ def valid_image_upload():
             headers=headers
             )
 
-    
+
 
 @pytest.fixture
 def invalid_image_upload():
-    
+
     file_to_test = BytesIO(b"Hello Test")
 
     file_to_test.seek(0)
@@ -114,7 +114,7 @@ def invalid_image_upload():
         "content-type": "text/plain"
     }
         )
-    
+
 
     return UploadFile(
             file = file_to_test,
