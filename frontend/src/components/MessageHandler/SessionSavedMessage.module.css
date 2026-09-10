@@ -16,10 +16,8 @@
 
 .panel {
 
-    color: #151B22;
-
-    width: min(420px, 90vw);
-    padding: 40px;
+    width: min(520px, 88vw);
+    padding: 48px 52px;
 
     display: flex;
     flex-direction: column;
@@ -27,56 +25,133 @@
 
     text-align: center;
 
-    border-radius: 20px;
+    background: rgba(105,180,220,0.25);
 
-    background: rgba(20, 20, 20, 0.95);
-    border: 1px solid rgba(150, 170, 190, 0.18);
+    border: 1px solid rgba(120, 210, 245, 0.45);
+    border-radius: 18px;
+
+    backdrop-filter: blur(18px);
 
     box-shadow:
-        0 20px 60px rgba(0, 0, 0, 0.45);
+        0 20px 60px rgba(0, 0, 0, 0.45),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+
+    color: #DDF6FF;
 }
 
 .panel h2 {
-    color:#E8EDF2;
+    margin: 0 0 14px;
+
+    color: #DDF6FF;
+
+    font-size: 25px;
+    font-weight: 500;
+    letter-spacing: 5px;
+    text-transform: uppercase;
 }
 
-.panel p{
+.panel p {
+    margin: 0;
 
-    color:#9AA6B2;
+    color: #B7D5E2;
+
+    font-size: 15px;
+    line-height: 1.7;
 }
 
 .actions {
     display: flex;
-    gap: 50px;
-    margin-top: 30px;
+    align-items: center;
+    gap: 70px;
+
+    margin-top: 38px;
+
+    position: relative;
+}
+
+.actions::before {
+    content: "";
+
+    position: absolute;
+
+    left: 50%;
+    top: 8px;
+    bottom: 8px;
+
+    width: 1px;
+
+    background: rgba(150, 170, 190, 0.18);
+
+    transform: translateX(-50%);
 }
 
 .actions button {
 
-    color:#65D9FF;
+    font-size: 38px;
 
-    width: 90px;
-    height: 90px;
+    width: 110px;
 
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
 
+    gap: 10px;
+
+    padding: 0;
+
     border: none;
     background: transparent;
 
+    color: #E8EDF2;
+
     cursor: pointer;
 
-    font-size: 36px;
+    transition:
+        transform 0.25s ease,
+        color 0.25s ease;
 }
 
 .actions button span {
-    margin-top: 8px;
-    font-size: 13px;
+    color: #9AA6B2;
+
+    font-size: 12px;
+    font-weight: 500;
+
+    letter-spacing: 2px;
+    text-transform: uppercase;
+
+    transition: color 0.25s ease;
 }
 
 .actions button:hover {
-    transform: scale(1.08);
-    filter: brightness(1.15);
+    transform: translateY(-4px);
+
+    color: #65D9FF;
 }
+
+.actions button:hover span {
+    color: #65D9FF;
+}
+
+.icon {
+    width: 72px;
+    height: 72px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 22px;
+
+    border: 1px solid #65D9FF;
+    border-radius: 50%;
+
+    color: #65D9FF;
+    font-size: 38px;
+
+    box-shadow:
+        0 0 20px rgba(101, 217, 255, 0.18);
+}
+
+
