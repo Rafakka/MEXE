@@ -521,3 +521,64 @@ def test_reentry_processes_real_mx(valid_mx):
     result_image = Image.open(BytesIO(response.content))
 
     assert result_image.size == (1024, 1024)
+
+def test_reentry_without_file():
+
+    client = TestClient(app)
+
+    response = client.post("/reentry")
+
+    assert response.status_code == 422
+
+
+def test_reentry_with_invalid_file():
+
+    client = TestClient(app)
+
+    response = client.post(
+        "/reentry",
+        files={
+            "file": (
+                "invalid.mx",
+                b"this is not a zip",
+                "application/octet-stream",
+            )
+        },
+    )
+
+    assert response.status_code == 422
+    assert response.json()["detail"] == "Reentry File Invalid"
+
+@pytest.mark.asyncio
+async def test_reentry_processing_failure(
+    valid_mx,
+    monkeypatch,
+):
+
+    client = TestClient(
+            app,
+            raise_server_exceptions=False,
+            )
+
+    async def fake_process(*args):
+        raise RuntimeError("Processing failed")
+
+    monkeypatch.setattr(
+        "app.api.routes.image_processor_sv.process",
+        fake_process,
+    )
+
+    response = client.post(
+        "/reentry",
+        files={
+            "file": (
+                "session.mx",
+                valid_mx,
+                "application/octet-stream",
+            )
+        },
+    )
+
+    assert response.status_code == 500
+
+

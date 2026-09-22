@@ -237,6 +237,12 @@ const laboratorySlice = createSlice({
 
     reconnectingStarted(state) {
 
+        console.log(
+        ">>> SNAPSHOT BEFORE RECONNECT:",
+        state.phase,
+        state.operationPhase
+        );
+
         if (state.recoveryStateBeforeReconnect === null) {
 
         state.recoveryStateBeforeReconnect = {
@@ -244,6 +250,11 @@ const laboratorySlice = createSlice({
             operationPhase: state.operationPhase,
             };
         }
+
+         console.log(
+            ">>> SAVED RECOVERY STATE:",
+            state.recoveryStateBeforeReconnect
+        );
 
         state.operationPhase = "reconnecting";
 
@@ -255,6 +266,8 @@ const laboratorySlice = createSlice({
     },
 
     backendOffline(state) {
+
+    console.log(">>> BACKEND OFFLINE");
 
     state.operationPhase = "offline";
 
@@ -275,15 +288,6 @@ const laboratorySlice = createSlice({
         state.recoveryStateBeforeReconnect
     );
 
-    if (state.recoveryStateBeforeReconnect) {
-
-        state.phase =
-            state.recoveryStateBeforeReconnect.phase;
-
-        state.operationPhase =
-            state.recoveryStateBeforeReconnect.operationPhase;
-    }
-
     state.notification = {
 
         type: "success",
@@ -291,11 +295,32 @@ const laboratorySlice = createSlice({
         title: "Backend Online",
 
         message: "Resuming operation."
-    };
+        };
+
+    },
+
+    restoreRecoveredState(state) {
+
+        console.log(
+            ">>> RESTORE:",
+            state.recoveryStateBeforeReconnect
+        );
+
+    if (!state.recoveryStateBeforeReconnect) {
+        state.operationPhase = "idle";
+        return;
+    }
+
+    state.phase =
+        state.recoveryStateBeforeReconnect.phase;
+
+    state.operationPhase =
+        state.recoveryStateBeforeReconnect.operationPhase;
 
     state.recoveryStateBeforeReconnect = null;
 
         },
+
     }
 });
 
@@ -321,6 +346,7 @@ export const {
 
     reconnectingStarted,
     backendRecovered,
+    restoreRecoveredState,
     backendOffline,
 
     clearLaboratory,

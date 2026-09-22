@@ -26,6 +26,8 @@ import {
 
     backendRecovered,
 
+    restoreRecoveredState,
+
 } from "./laboratorySlice";
 
 import { memorizeProcess, getMemorizedProcess, forgetProcess } from "../../resilience/resilienceMemory";
@@ -122,7 +124,9 @@ import { mexeApi } from "../../api/mexeApi";
 
                 dispatch(backendRecovered());
 
-                return;
+                dispatch(restoreRecoveredState());
+
+                return "success";
 
             }
 
@@ -143,32 +147,57 @@ import { mexeApi } from "../../api/mexeApi";
     };
 
    export const manualRetry = () => async (
-    dispatch: AppDispatch
+       dispatch: AppDispatch
     ) => {
 
-    dispatch(reconnectingStarted());
+    console.log(">>> 1. MANUAL RETRY START");
 
-    console.log(">>> MANUAL RETRY");
+    dispatch(reconnectingStarted());
 
     const recovered = await recoverConnection();
 
     console.log(
-        ">>> MANUAL RETRY RESULT:",
+        ">>> 2. CONNECTION RESULT:",
         recovered
     );
 
-    if (recovered) {
+    if (!recovered) {
 
-        dispatch(backendRecovered());
+        console.log(">>> 3. CONNECTION FAILED");
+        dispatch(backendOffline());
+        return "failed";
+    }
 
-        console.log(">>> Resuming interrupted process");
+    console.log(">>> 3. CONNECTION RECOVERED");
 
-        await dispatch(resumeProcess());
+    dispatch(backendRecovered());
 
+    const resumed = await dispatch(resumeProcess());
+
+    console.log(
+        ">>> 4. RESUME RESULT:",
+        resumed
+    );
+
+     if (resumed === "none") {
+        console.log(">>> 5. NO PROCESS");
+
+        dispatch(restoreRecoveredState());
         return;
     }
 
-    dispatch(backendOffline());
+    if (resumed === "failed") {
+        dispatch(backendOffline());
+        return "failed";
+    }
+
+    console.log(">>> 5. RESUME SUCCESS");
+
+    dispatch(restoreRecoveredState());
+
+    console.log(">>> RESUME RESULT:", resumed);
+
+    return resumed;
 
     };
 
@@ -178,7 +207,7 @@ import { mexeApi } from "../../api/mexeApi";
 
     if (!process) {
         console.log(">>> No interrupted process to resume");
-        return;
+        return "none";
     }
 
     console.log(
@@ -192,12 +221,28 @@ import { mexeApi } from "../../api/mexeApi";
         console.error(
             `>>> No recovery handler registered for process: ${process.type}`
         );
-        return;
+
+        return "failed";
     }
 
-    await handler();
-    };
+    try {
 
+        await handler();
+
+        forgetProcess();
+
+        return "success";
+
+    } catch (error) {
+
+        console.error(
+            ">>> Failed to resume interrupted process:",
+            error
+        );
+
+        return "failed";
+        }
+    };
 
     export const resetExperiment =
     () => async (
