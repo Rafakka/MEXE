@@ -2,6 +2,8 @@
 
 import { describe, expect, it, beforeEach } from "vitest";
 
+import type { RecoveryProcess } from "./resilienceMemory";
+
 import {
     memorizeProcess,
     getMemorizedProcess,
@@ -20,7 +22,7 @@ describe("resilience memory", () => {
             type: "blend",
             phase: "processing",
             operationPhase: "running",
-        };
+        } satisfies RecoveryProcess;
 
         memorizeProcess(process);
 
@@ -35,7 +37,7 @@ describe("resilience memory", () => {
         type: "blend",
         phase: "processing",
         operationPhase: "running",
-    };
+    } satisfies RecoveryProcess;
 
     memorizeProcess(process);
 
