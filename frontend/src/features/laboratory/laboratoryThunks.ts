@@ -28,9 +28,23 @@ import {
 
     restoreRecoveredState,
 
+    reentryObjOpened,
+
 } from "./laboratorySlice";
 
-import { memorizeProcess, getMemorizedProcess, forgetProcess } from "../../resilience/resilienceMemory";
+import {
+    memorizeProcess,
+    getMemorizedProcess,
+    forgetProcess
+} from "../../resilience/resilienceMemory";
+
+import {readSessionFile} from "../../resilience/reentryReader";
+
+import { reconstructFiles} from "../../resilience/reconstructor";
+
+import { SessionValidator } from "../../services/sessionValidator";
+
+import { adaptSessionToRecovery } from "../../resilience/reentryAdapter";
 
 import { getProcessHandler } from "../../resilience/processRegistry";
 
@@ -242,6 +256,46 @@ import { mexeApi } from "../../api/mexeApi";
 
         return "failed";
         }
+    };
+
+    export const callReentryObj= () => async (
+
+        dispatch: AppDispatch
+
+    ) => {
+
+        dispatch(reentryObjOpened());
+
+    };
+
+    export const validateAndProcessReentry =
+        (file:Blob) => async (
+            dispatch: AppDispatch
+    ) => {
+
+        const {
+            session,
+            image1,
+            image2,
+        } = await readSessionFile(file);
+
+        const validator = new SessionValidator();
+
+        validator.validateSession(session);
+
+        const recoveryProcess = adaptSessionToRecovery(session);
+
+        memorizeProcess(recoveryProcess);
+
+        const { firstFile, secondFile } = reconstructFiles({session, image1, image2});
+
+        return {
+            session,
+            recoveryProcess,
+            firstFile,
+            secondFile,
+        };
+
     };
 
     export const resetExperiment =

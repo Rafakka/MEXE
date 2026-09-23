@@ -12,6 +12,7 @@ import DownloadNode from "../Laboratory/ActionNodes/downloadNode/DownloadNode";
 import ManualNode from "../Laboratory/ActionNodes/manualNode/ManualNode";
 import RecoveryMode from "../Laboratory/ActionNodes/recoveryNode/RecoveryNode";
 import SaveSessionNode from "../Laboratory/ActionNodes/saveSessionNode/SaveSessionNode";
+import ReentryObjNode from "../Laboratory/ActionNodes/reentryNode/ReentryObjNode";
 import {useSelector, useDispatch} from "react-redux";
 import {useState, useRef, useEffect} from "react";
 import type {RootState, AppDispatch} from "../../store/store";
@@ -25,12 +26,19 @@ import {
         resetProcessStarted,
         resetLabStarted,
 
-
     } from "../../features/laboratory/laboratorySlice";
 
 import { registerProcess, unregisterProcess } from "../../resilience/processRegistry";
 
-import { activeLab, startProcessing, manualRetry, performMerge,  } from "../../features/laboratory/laboratoryThunks";
+import {
+    activeLab,
+    startProcessing,
+    manualRetry,
+    performMerge,
+    validateAndProcessReentry,
+    resumeProcess
+
+    } from "../../features/laboratory/laboratoryThunks";
 
 import styles from "./Laboratory.module.css";
 
@@ -60,6 +68,8 @@ export default function Laboratory() {
 
         notification,
 
+        reentryObjVisible,
+
     } = useSelector(
 
         (state:RootState) => state.laboratory
@@ -71,6 +81,8 @@ export default function Laboratory() {
     const [secondFile, setSecondFile] = useState<File | null >(null);
 
     const [sessionSaved, setSessionSaved] = useState(false);
+
+    const [reentryPending, setReentryPending] = useState(false);
 
     const handleAxisRevealEnd = () => {
 
@@ -206,6 +218,21 @@ export default function Laboratory() {
         );
     };
 
+    const handleReentry = async (file: File | null ) => {
+
+        if (!file) return;
+
+        console.log(">> REENTRY FILE:", file);
+
+        const result = await dispatch(validateAndProcessReentry(file));
+
+        setFirstFile(result.firstFile);
+        setSecondFile(result.secondFile);
+
+        setReentryPending(true)
+
+    };
+
     const view = {
 
     areSamplesVisible:
@@ -248,6 +275,74 @@ export default function Laboratory() {
     dispatch(startupCompleted());
 
     }, [firstFile, secondFile, dispatch]);
+
+
+    useEffect(() => {
+
+    let waitingForOpen = false;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+
+        if (
+            event.ctrlKey &&
+            event.key.toLowerCase() === "r"
+        ) {
+            event.preventDefault();
+
+            waitingForOpen = true;
+
+            return;
+        }
+
+        if (
+            waitingForOpen &&
+            event.key.toLowerCase() === "o"
+        ) {
+            event.preventDefault();
+
+            waitingForOpen = false;
+
+            console.log(">>> OPEN SESSION COMMAND");
+
+            // próximo passo:
+            // abrir a nova lua
+        }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+        window.removeEventListener("keydown", handleKeyDown);
+        };
+
+    }, []);
+
+    useEffect(() => {
+            if (!reentryPending) {
+                return;
+            }
+
+            if (!firstFile || !secondFile) {
+                return;
+            }
+
+            const resume = async() => {
+
+               const result = await dispatch(resumeProcess());
+
+               if (result === "success") {
+
+                    setReentryPending(false);
+                }
+            };
+
+            void resume();
+
+        }, [
+            reentryPending,
+            firstFile,
+            secondFile,
+        ]);
 
         return (
 
@@ -383,7 +478,14 @@ export default function Laboratory() {
                 }}
                 onContinue={() => setSessionSaved(false)}
         />
+
         )}
+
+        <ReentryObjNode
+            visible={reentryObjVisible}
+            onFileSelected={handleReentry}
+        />
+
     </section>
 
     </Layout>

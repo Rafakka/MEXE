@@ -49,6 +49,8 @@ export interface LaboratoryState {
 
     resultVisible: boolean;
 
+    reentryObjVisible: boolean;
+
     notification: LaboratoryNotification | null;
 
 }
@@ -201,6 +203,8 @@ const laboratorySlice = createSlice({
 
         state.resultMetadata = null;
 
+        state.reentryObjVisible = false;
+
     },
 
     clearNotification (state) {
@@ -321,6 +325,14 @@ const laboratorySlice = createSlice({
 
         },
 
+    reentryObjOpened(state){
+        state.reentryObjVisible = true;
+    },
+
+    reentryObjClosed(state){
+        state.reentryObjVisible = false;
+    },
+
     }
 });
 
@@ -348,6 +360,9 @@ export const {
     backendRecovered,
     restoreRecoveredState,
     backendOffline,
+
+    reentryObjOpened,
+    reentryObjClosed,
 
     clearLaboratory,
     clearNotification,

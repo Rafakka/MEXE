@@ -1,7 +1,7 @@
 
 import JSZip from "jszip"
 
-import type { SessionFile } from "./saveSession";
+import type { SessionFile } from "../../src/types/session";
 
 import { SessionValidator } from "./sessionValidator";
 

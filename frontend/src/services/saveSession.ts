@@ -1,24 +1,10 @@
-import type { ImageMetadata } from "../../src/types/imageType";
+
+import type { SessionFile } from "../../src/types/session";
 import { getImageMetadata } from "../../src/features/laboratory/utils/getImageMetadata";
 import { getMemorizedProcess } from "../../src/resilience/resilienceMemory";
 import { SessionValidator } from "./sessionValidator";
 import { saveSessionFiles } from "./saveSessionFiles";
 
-export type SessionFile = {
-    id: string;
-    operation: string;
-    dimensions: {
-        width: number;
-        height: number;
-    };
-    version: string;
-    metadata: {
-        image_1: ImageMetadata;
-        image_2: ImageMetadata;
-        laboratoryPhase: string;
-        operationPhase: string;
-    };
-};
 
 export async function saveSession(
     firstFile: File,
