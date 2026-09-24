@@ -180,19 +180,11 @@
 
 }
 
-/*------IDLE-------*/
+.visible{
 
-.idle,
-.activated{
+    opacity:1;
 
-    pointer-events:none;
-
-    opacity:0;
-}
-
-/*-----RESULT-----*/
-
-.offline{
+    pointer-events:auto;
 
     animation:
 
@@ -231,13 +223,6 @@
         transform .25s ease,
         box-shadow .25s ease,
         opacity .35s ease;
-}
-
-.visible{
-
-    opacity:1;
-
-    pointer-events:auto;
 
 }
 
@@ -247,18 +232,13 @@
 
     pointer-events:none;
 
-}
-
-
-.resettingProcess{
-
-   animation:
+    animation:
         nodeHide
         1.5s
         ease-in-out
         forwards;
 
     pointer-events:none;
-}
 
+}
 

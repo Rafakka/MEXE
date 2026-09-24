@@ -1,6 +1,9 @@
 
 
-export type ProcessHandler = () => Promise<void>;
+export type ProcessHandler = (
+    firstFile: File,
+    secondFile: File,
+) => Promise<void>;
 
 const processRegistry = new Map<string, ProcessHandler>();
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { SessionFile } from "../services/saveSession";
+import type { SessionFile } from "../types/session";
 
 import {
     adaptSessionToRecovery,

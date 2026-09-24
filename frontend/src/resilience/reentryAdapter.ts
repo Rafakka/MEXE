@@ -1,4 +1,4 @@
-import type { SessionFile } from "../../src/services/saveSession";
+import type { SessionFile } from "../types/session";
 import type { RecoveryProcess } from "./resilienceMemory";
 
 export function adaptSessionToRecovery(

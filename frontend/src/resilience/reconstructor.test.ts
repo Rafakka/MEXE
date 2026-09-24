@@ -2,11 +2,13 @@ import { describe, expect, it } from "vitest";
 
 import { reconstructFiles } from "./reconstructor";
 
+import type {SessionFile} from "../types/session";
+
 describe("reconstructor", () => {
 
     it("reconstructs files from session metadata and images", async () => {
 
-        const session = {
+        const session: SessionFile = {
             id: "test-session",
             operation: "blend",
             dimensions: {
@@ -61,7 +63,7 @@ describe("reconstructor", () => {
 
     it("reconstructs image_1 without name", async () => {
 
-        const session = {
+        const session: SessionFile = {
             id: "test-session",
             operation: "blend",
             dimensions: {
@@ -107,7 +109,7 @@ describe("reconstructor", () => {
 
     it("reconstructs image_2 without name", async () => {
 
-        const session = {
+        const session: SessionFile = {
             id: "test-session",
             operation: "blend",
             dimensions: {
@@ -153,7 +155,7 @@ describe("reconstructor", () => {
 
     it("reconstructs images without name", async () => {
 
-        const session = {
+        const session: SessionFile = {
             id: "test-session",
             operation: "blend",
             dimensions: {

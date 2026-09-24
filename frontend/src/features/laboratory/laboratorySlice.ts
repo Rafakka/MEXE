@@ -1,12 +1,14 @@
 import { createSlice } from "@reduxjs/toolkit";
 
- import type { OperationPhase } from "./operationPhase";
+import type { OperationPhase } from "./operationPhase";
+
+import type { LaboratoryOperation } from "./laboratoryOperation";
 
 import type { LaboratoryPhase } from "./laboratoryPhase";
 
-import type {PayloadAction} from "@reduxjs/toolkit";
+import type { PayloadAction } from "@reduxjs/toolkit";
 
-import type {ImageMetadata} from "../../types/imageType";
+import type { ImageMetadata } from "../../types/imageType";
 
 type MergeResult = {
     url: string;
@@ -32,6 +34,8 @@ export interface LaboratoryState {
     startupFinished: boolean;
 
     operationPhase: OperationPhase;
+
+    operation: LaboratoryOperation;
 
     recoveryStateBeforeReconnect: LaboratoryRecoveryState | null;
 
@@ -93,6 +97,10 @@ const initialState: LaboratoryState = {
 
     notification: null,
 
+    reentryObjVisible: false,
+
+    operation:"blend",
+
 } satisfies LaboratoryState;
 
 const laboratorySlice = createSlice({
@@ -112,6 +120,8 @@ const laboratorySlice = createSlice({
         state.phase = "activated";
 
         state.startupFinished = false;
+
+        state.operation = "blend";
     },
 
     loadFirstSample(state) {
@@ -137,6 +147,12 @@ const laboratorySlice = createSlice({
     },
 
     // DOMAIN EVENTS
+
+    operationSelected(
+        state, action: PayloadAction<LaboratoryOperation>
+    ){
+        state.operation = action.payload;
+    },
 
     startupCompleted(state) {
 
@@ -204,6 +220,8 @@ const laboratorySlice = createSlice({
         state.resultMetadata = null;
 
         state.reentryObjVisible = false;
+
+        state.operation = "blend";
 
     },
 
@@ -337,6 +355,8 @@ const laboratorySlice = createSlice({
 });
 
 export const {
+
+    oprationSelected,
 
     activatedExperiment,
     loadFirstSample,

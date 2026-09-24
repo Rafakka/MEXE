@@ -25,6 +25,7 @@ import {
         revealingStarted,
         resetProcessStarted,
         resetLabStarted,
+        reentryObjOpened,
 
     } from "../../features/laboratory/laboratorySlice";
 
@@ -34,9 +35,10 @@ import {
     activeLab,
     startProcessing,
     manualRetry,
-    performMerge,
     validateAndProcessReentry,
-    resumeProcess
+    resumeProcess,
+    performMerge,
+    readyToProcess,
 
     } from "../../features/laboratory/laboratoryThunks";
 
@@ -55,6 +57,8 @@ export default function Laboratory() {
     const {
 
         phase,
+
+        operation,
 
         operationPhase,
 
@@ -84,7 +88,7 @@ export default function Laboratory() {
 
     const [reentryPending, setReentryPending] = useState(false);
 
-    const handleAxisRevealEnd = () => {
+    const handleAxisRevealEnd = async () => {
 
         if (!firstFile || !secondFile) {
 
@@ -92,12 +96,27 @@ export default function Laboratory() {
 
         }
 
-        dispatch(
-            startProcessing(
-                firstFile,
-                secondFile
-                )
+        try {
+
+            await dispatch(
+                readyToProcess(operation)
             );
+
+            await dispatch(
+                startProcessing(
+                    operation,
+                    firstFile,
+                    secondFile
+                    )
+                );
+        } catch(error) {
+
+            console.error(
+                "Failed to start processing:",
+                error
+            );
+
+            }
         };
 
     const hiddenSamples = useRef(
@@ -207,14 +226,17 @@ export default function Laboratory() {
         }
     };
 
-    const handleManualRetry = () => {
+    const handleManualRetry = (
+        firstFile: File,
+        secondFile: File
+    ) => {
 
         if (!firstFile || !secondFile) {
             return;
         }
 
         dispatch(
-            manualRetry()
+            manualRetry(firstFile, secondFile)
         );
     };
 
@@ -224,13 +246,21 @@ export default function Laboratory() {
 
         console.log(">> REENTRY FILE:", file);
 
-        const result = await dispatch(validateAndProcessReentry(file));
+        try {
 
-        setFirstFile(result.firstFile);
-        setSecondFile(result.secondFile);
+            const result = await dispatch(
+                validateAndProcessReentry(file)
+            );
 
-        setReentryPending(true)
+            setFirstFile(result.firstFile);
+            setSecondFile(result.secondFile);
 
+
+            setReentryPending(true)
+
+        } catch (error) {
+                console.error(error);
+            }
     };
 
     const view = {
@@ -243,28 +273,27 @@ export default function Laboratory() {
 
     };
 
-    useEffect(() => {
+   useEffect(() => {
+        registerProcess(
+            "blend",
+            async (firstFile, secondFile) => {
 
-    if (!firstFile || !secondFile) {
-        return;
-    }
+                await dispatch(
+                    performMerge(
+                        firstFile,
+                        secondFile
+                    )
+                );
 
-    registerProcess("blend", async () => {
-
-        await dispatch(
-            performMerge(
-                firstFile,
-                secondFile
-            )
+            }
         );
 
-    });
+        return () => {
+            unregisterProcess("blend");
+        };
 
-    return () => {
-        unregisterProcess("blend");
-    };
+    }, [dispatch]);
 
-    }, [firstFile, secondFile, dispatch]);
 
     useEffect(() => {
 
@@ -302,10 +331,7 @@ export default function Laboratory() {
 
             waitingForOpen = false;
 
-            console.log(">>> OPEN SESSION COMMAND");
-
-            // próximo passo:
-            // abrir a nova lua
+            dispatch(reentryObjOpened());
         }
     };
 
@@ -328,7 +354,7 @@ export default function Laboratory() {
 
             const resume = async() => {
 
-               const result = await dispatch(resumeProcess());
+               const result = await dispatch(resumeProcess(firstFile, secondFile));
 
                if (result === "success") {
 

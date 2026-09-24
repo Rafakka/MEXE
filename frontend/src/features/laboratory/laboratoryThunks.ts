@@ -12,8 +12,6 @@ import {
 
     mergeCompleted,
 
-    mergeFailed,
-
     processingRunning,
 
     clearLaboratory,
@@ -28,14 +26,12 @@ import {
 
     restoreRecoveredState,
 
-    reentryObjOpened,
-
 } from "./laboratorySlice";
 
 import {
     memorizeProcess,
     getMemorizedProcess,
-    forgetProcess
+    forgetProcess,
 } from "../../resilience/resilienceMemory";
 
 import {readSessionFile} from "../../resilience/reentryReader";
@@ -50,7 +46,6 @@ import { getProcessHandler } from "../../resilience/processRegistry";
 
 import { mexeApi } from "../../api/mexeApi";
 
-// type MergeResult = "success" | "failed";
 
     function isConnectionError(error: unknown): boolean {
         return (
@@ -67,15 +62,60 @@ import { mexeApi } from "../../api/mexeApi";
             dispatch(activatedExperiment());
         };
 
+    export const readyToProcess = (
+        operation: string
+        ) => async () => {
+
+        const handler = getProcessHandler(operation);
+
+        if (!handler) {
+            throw new Error(
+                `Unsupported operation: ${operation}`
+            );
+        }
+
+        return {
+            ready: true,
+            operation,
+            };
+        };
+
+    async function executeMerge(
+        firstFile: File,
+        secondFile: File
+    ) {
+        console.log(">>> API START");
+
+        await mexeApi.ready();
+
+        const result = await mexeApi.blend(
+            firstFile,
+            secondFile
+        );
+
+        console.log(">>> API END");
+
+        return result;
+    };
+
     export const startProcessing = (
+        operation: string,
         firstFile: File,
         secondFile: File
     ) => async (
         dispatch: AppDispatch
     ) => {
 
+        const handler = getProcessHandler(operation);
+
+        if (!handler) {
+            throw new Error(
+                `Unsupported operation: ${operation}`
+            );
+        }
+
         memorizeProcess({
-        type: "blend",
+        type: operation,
         phase: "processing",
         operationPhase: "running",
         });
@@ -84,7 +124,10 @@ import { mexeApi } from "../../api/mexeApi";
 
         dispatch(mergeStarted());
 
-        await dispatch(performMerge(firstFile, secondFile));
+        await handler(
+            firstFile, secondFile
+            )
+        );
 
     };
 
@@ -97,16 +140,10 @@ import { mexeApi } from "../../api/mexeApi";
 
     try {
 
-        console.log(">>> API START");
-
-        await mexeApi.ready();
-
-        const result = await mexeApi.blend(
+        const result = await executeMerge(
             firstFile,
             secondFile
         );
-
-        console.log(">>> API END");
 
         dispatch(mergeCompleted(result));
 
@@ -122,45 +159,99 @@ import { mexeApi } from "../../api/mexeApi";
 
         console.error(error);
 
-        if (isConnectionError(error)) {
+        if (!isConnectionError(error)) {
+            throw error;
+        }
 
-            dispatch(reconnectingStarted());
+        dispatch(reconnectingStarted());
 
-            console.log(">>> STARTING CONNECTION RECOVERY");
+        console.log(">>> STARTING CONNECTION RECOVERY");
 
-            const recovered = await recoverConnection();
+        const recovered = await recoverConnection();
 
-            console.log(">>> RECOVERY RESULT:", recovered);
+        console.log(">>> RECOVERY RESULT:", recovered);
 
-            if (recovered) {
+            if (!recovered) {
 
-                console.log(">>> Backend recovered");
+                dispatch(backendOffline());
 
-                dispatch(backendRecovered());
-
-                dispatch(restoreRecoveredState());
-
-                return "success";
+                return "failed";
 
             }
 
-            dispatch(backendOffline());
+            console.log(">>> Backend Recovered");
 
-            return;
+            dispatch(backendRecovered());
+            dispatch(restoreRecoveredState());
+
+            const result = await executeMerge(
+                firstFile,
+                secondFile,
+            );
+
+            dispatch(mergeCompleted(result));
+            dispatch(acceleratingStarted());
+
+            forgetProcess();
+
+            return "success";
+
+        }
+    };
+
+    export const resumeProcess = (
+        firstFile: File,
+        secondFile: File
+        ) => async () => {
+
+        const process = getMemorizedProcess();
+
+        if (!process) {
+            console.log(">>> No interrupted process to resume");
+            return "none";
+            }
+
+        console.log(
+            ">>> Resuming process:",
+            process.type
+        );
+
+        const handler = getProcessHandler(process.type);
+
+        if (!handler) {
+            console.error(
+                `>>> No recovery handler registered for process: ${process.type}`
+            );
+
+            return "failed";
         }
 
-        dispatch(
-            mergeFailed({
-                type: "error",
-                title: "Merge Error",
-                message: "Unable to merge images."
-                })
+        try {
+
+            await handler(
+                firstFile,
+                secondFile
             );
+
+            forgetProcess();
+
+            return "success";
+
+            } catch (error) {
+
+            console.error(
+            ">>> Failed to resume interrupted process:",
+            error
+            );
+
             return "failed";
         }
     };
 
-   export const manualRetry = () => async (
+   export const manualRetry = (
+       firstFile: File,
+       secondFile: File,
+   ) => async (
        dispatch: AppDispatch
     ) => {
 
@@ -186,7 +277,7 @@ import { mexeApi } from "../../api/mexeApi";
 
     dispatch(backendRecovered());
 
-    const resumed = await dispatch(resumeProcess());
+    const resumed = await dispatch(resumeProcess(firstFile, secondFile));
 
     console.log(
         ">>> 4. RESUME RESULT:",
@@ -215,62 +306,10 @@ import { mexeApi } from "../../api/mexeApi";
 
     };
 
-    export const resumeProcess = () => async () => {
-
-    const process = getMemorizedProcess();
-
-    if (!process) {
-        console.log(">>> No interrupted process to resume");
-        return "none";
-    }
-
-    console.log(
-        ">>> Resuming process:",
-        process.type
-    );
-
-    const handler = getProcessHandler(process.type);
-
-    if (!handler) {
-        console.error(
-            `>>> No recovery handler registered for process: ${process.type}`
-        );
-
-        return "failed";
-    }
-
-    try {
-
-        await handler();
-
-        forgetProcess();
-
-        return "success";
-
-    } catch (error) {
-
-        console.error(
-            ">>> Failed to resume interrupted process:",
-            error
-        );
-
-        return "failed";
-        }
-    };
-
-    export const callReentryObj= () => async (
-
-        dispatch: AppDispatch
-
-    ) => {
-
-        dispatch(reentryObjOpened());
-
-    };
 
     export const validateAndProcessReentry =
         (file:Blob) => async (
-            dispatch: AppDispatch
+
     ) => {
 
         const {

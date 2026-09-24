@@ -1,6 +1,6 @@
 import JSZip from "jszip";
 
-import type { SessionFile } from "../../src/services/saveSession";
+import type { SessionFile } from "../types/session";
 
 export type ReadSessionResult = {
     session: SessionFile,

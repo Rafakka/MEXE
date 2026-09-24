@@ -1,6 +1,6 @@
 
 
-import { describe, expect, it, vi, afterEach } from "vitest";
+import { describe, expect, it, afterEach } from "vitest";
 import JSZip from "jszip";
 
 import { validateAndProcessReentry } from "../../src/features/laboratory/laboratoryThunks";
@@ -66,11 +66,9 @@ describe("validateAndProcessReentry", () => {
             type: "blob",
         });
 
-        const mockDispatch = vi.fn();
-
         const result = await validateAndProcessReentry(
             mxFile
-        )(mockDispatch);
+        )();
 
         const memorized = getMemorizedProcess();
 
