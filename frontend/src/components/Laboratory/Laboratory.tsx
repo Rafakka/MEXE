@@ -350,32 +350,48 @@ export default function Laboratory() {
     }, []);
 
     useEffect(() => {
-            if (!reentryPending) {
-                return;
+
+    if (!reentryPending) {
+        return;
+    }
+
+    if (!labContext.firstFile || !labContext.secondFile) {
+        return;
+    }
+
+    const runReentry = async () => {
+
+        console.log(
+            ">>> REENTRY EFFECT:",
+            labContext
+        );
+
+        try {
+
+            const result = await retryOperation(
+                labContext,
+                dispatch
+            );
+
+            if (result === "success") {
+
+                setReentryPending(false);
+
+                dispatch(reentryObjClosed());
             }
 
-            const runReentry = async() => {
+        } catch (error) {
 
-                if (!labContext.firstFile || !labContext.secondFile ) {
-                    return;
-                }
+            console.error(
+                "Failed to execute reentry:",
+                error
+                );
 
-                try {
-                    await retryOperation(
-                        labContext,
-                        dispatch
-                    );
+            }
 
-                } catch(error) {
+        };
 
-                    console.error(
-                        "Failed to execute reentry: ", error
-                    );
-                }
-
-            };
-
-            runReentry();
+        void runReentry();
 
         }, [
             reentryPending,
