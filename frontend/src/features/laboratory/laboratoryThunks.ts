@@ -44,12 +44,13 @@ import { reconstructFiles} from "../../resilience/reconstructor";
 
 import { SessionValidator } from "../../services/sessionValidator";
 
-import { adaptSessionToRecovery } from "../../resilience/reentryAdapter";
-
 import { getProcessHandler } from "../../resilience/processRegistry";
 
 import { mexeApi } from "../../api/mexeApi";
 
+import { adaptSessionToRecovery } from "../../resilience/reentryAdapter";
+
+import {parseLaboratoryOperation } from "../../features/laboratory/utils/typeParser";
 
 
     function isConnectionError(error: unknown): boolean {
@@ -353,15 +354,25 @@ import { mexeApi } from "../../api/mexeApi";
 
         validator.validateSession(session);
 
+        const operation = parseLaboratoryOperation(session.operation);
+
         const recoveryProcess = adaptSessionToRecovery(session);
 
         memorizeProcess(recoveryProcess);
 
-        const { firstFile, secondFile } = reconstructFiles({session, image1, image2});
+        const {
+            firstFile,
+            secondFile,
+        } = reconstructFiles({
+            session,
+            image1,
+            image2
+        });
 
         return {
             session,
             recoveryProcess,
+            operation,
             firstFile,
             secondFile,
         };

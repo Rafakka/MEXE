@@ -28,6 +28,7 @@ import {
         resetLabStarted,
         reentryObjOpened,
         reentryObjClosed,
+        operationSelected,
 
     } from "../../features/laboratory/laboratorySlice";
 
@@ -217,8 +218,13 @@ export default function Laboratory() {
         setSecondFile(null);
 
         if (operationPhase === "offline") {
+
             dispatch(resetProcessStarted());
+
         } else {
+
+            setMode("stateless");
+            setReentryPending(false);
             dispatch(resetLabStarted());
         }
     };
@@ -245,7 +251,7 @@ export default function Laboratory() {
         }
     };
 
-    const handleReentry = async (file: File | null ) => {
+   const handleReentry = async (file: File | null ) => {
 
         if (!file) return;
 
@@ -255,11 +261,15 @@ export default function Laboratory() {
 
             const result = await dispatch(
                 validateAndProcessReentry(file)
-            );
+            )
 
             setFirstFile(result.firstFile);
             setSecondFile(result.secondFile);
+
+            dispatch(operationSelected(result.operation));
+
             setMode("reentry");
+
             setReentryPending(true)
 
         } catch (error) {
@@ -344,28 +354,33 @@ export default function Laboratory() {
                 return;
             }
 
-            if (!firstFile || !secondFile) {
-                return;
-            }
+            const runReentry = async() => {
 
-            const resume = async() => {
-
-               const result = await dispatch(resumeProcess(firstFile, secondFile));
-
-               if (result === "success") {
-
-                    setReentryPending(false);
-
-                    dispatch(reentryObjClosed());
+                if (!labContext.firstFile || !labContext.secondFile ) {
+                    return;
                 }
+
+                try {
+                    await retryOperation(
+                        labContext,
+                        dispatch
+                    );
+
+                } catch(error) {
+
+                    console.error(
+                        "Failed to execute reentry: ", error
+                    );
+                }
+
             };
 
-            void resume();
+            runReentry();
 
         }, [
             reentryPending,
-            firstFile,
-            secondFile,
+            labContext,
+            dispatch,
         ]);
 
         return (

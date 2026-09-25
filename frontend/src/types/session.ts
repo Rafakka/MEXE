@@ -2,10 +2,11 @@
 import type { ImageMetadata } from "./imageType";
 import type { LaboratoryPhase } from "../../src/features/laboratory/laboratoryPhase";
 import type { OperationPhase } from "../../src/features/laboratory/operationPhase";
+import type { LaboratoryOperation } from "../../src/features/laboratory/laboratoryOperation";
 
 export type SessionFile = {
     id: string;
-    operation: string;
+    operation: LaboratoryOperation;
     dimensions: {
         width: number;
         height: number;
