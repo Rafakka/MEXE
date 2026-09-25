@@ -30,6 +30,16 @@ describe("laboratory resilience", () => {
         vi.restoreAllMocks();
     });
 
+    const firstFile = new File(
+        ["image"],
+        "first.png"
+    );
+
+    const secondFile = new File(
+        ["image"],
+        "second.png"
+    );
+
     it("enters offline when the backend returns 503 and recovery fails", async () => {
 
         const testStore = configureStore({
@@ -42,13 +52,12 @@ describe("laboratory resilience", () => {
             .mockResolvedValue(undefined);
 
         vi.spyOn(mexeApi, "blend")
-            .mockRejectedValue(new Error("HTTP 503"));
+            .mockRejectedValue(
+                new Error("HTTP 503")
+            );
 
         vi.mocked(recoverConnection)
             .mockResolvedValue(false);
-
-        const firstFile = new File(["image"], "first.png");
-        const secondFile = new File(["image"], "second.png");
 
         await testStore.dispatch(
             performMerge(firstFile, secondFile)
@@ -63,42 +72,56 @@ describe("laboratory resilience", () => {
 
     it("restores the previous state when the backend recovers", async () => {
 
-        const testStore = configureStore({
-            reducer: {
-                laboratory: laboratoryReducer,
-            },
+    const testStore = configureStore({
+        reducer: {
+            laboratory: laboratoryReducer,
+        },
+    });
+
+    testStore.dispatch({
+        type: "laboratory/mergeStarted",
+    });
+
+    testStore.dispatch({
+        type: "laboratory/processingRunning",
+    });
+
+    vi.spyOn(mexeApi, "ready")
+        .mockResolvedValue(undefined);
+
+    vi.spyOn(mexeApi, "blend")
+        .mockRejectedValueOnce(
+            new Error("HTTP 503")
+        )
+        .mockResolvedValueOnce({
+            url: "result.png",
+            metadata: {},
         });
 
-        testStore.dispatch({
-            type: "laboratory/mergeStarted",
-        });
+    vi.mocked(recoverConnection)
+        .mockResolvedValue(true);
 
-        testStore.dispatch({
-            type: "laboratory/processingRunning",
-        });
+    await testStore.dispatch(
+        performMerge(
+            firstFile,
+            secondFile
+        )
+    );
 
-        vi.spyOn(mexeApi, "ready")
-            .mockResolvedValue(undefined);
+    const state = testStore.getState().laboratory;
 
-        vi.spyOn(mexeApi, "blend")
-            .mockRejectedValue(new Error("HTTP 503"));
+    expect(recoverConnection)
+        .toHaveBeenCalledOnce();
 
-        vi.mocked(recoverConnection)
-            .mockResolvedValue(true);
+    expect(mexeApi.blend)
+        .toHaveBeenCalledTimes(2);
 
-        const firstFile = new File(["image"], "first.png");
-        const secondFile = new File(["image"], "second.png");
+    expect(state.phase)
+        .toBe("processing");
 
-        await testStore.dispatch(
-            performMerge(firstFile, secondFile)
-        );
+    expect(state.operationPhase)
+        .toBe("accelerating");
 
-        const state = testStore.getState().laboratory;
-
-        expect(recoverConnection).toHaveBeenCalledOnce();
-
-        expect(state.phase).toBe("processing");
-        expect(state.operationPhase).toBe("running");
     });
 
     it("resumes the interrupted process after a successful manual retry", async () => {
@@ -123,7 +146,7 @@ describe("laboratory resilience", () => {
             .mockResolvedValue(true);
 
         await testStore.dispatch(
-            manualRetry()
+            manualRetry(firstFile, secondFile)
         );
 
         expect(recoverConnection).toHaveBeenCalledOnce();
@@ -145,7 +168,7 @@ describe("laboratory resilience", () => {
             .mockResolvedValue(false);
 
         await testStore.dispatch(
-            manualRetry()
+            manualRetry(firstFile, secondFile)
         );
 
         const state = testStore.getState().laboratory;
@@ -169,7 +192,7 @@ describe("laboratory resilience", () => {
             .mockResolvedValue(true);
 
         await testStore.dispatch(
-            manualRetry()
+            manualRetry(firstFile, secondFile)
         );
 
         const state = testStore.getState().laboratory;
@@ -201,7 +224,7 @@ describe("laboratory resilience", () => {
             .mockResolvedValue(true);
 
         await testStore.dispatch(
-            manualRetry()
+            manualRetry(firstFile, secondFile)
         );
 
         const state = testStore.getState().laboratory;
@@ -235,7 +258,7 @@ describe("laboratory resilience", () => {
             .mockResolvedValue(true);
 
         await testStore.dispatch(
-            manualRetry()
+            manualRetry(firstFile, secondFile)
         );
 
         const state = testStore.getState().laboratory;
@@ -271,7 +294,7 @@ describe("laboratory resilience", () => {
             .mockResolvedValue(true);
 
         await testStore.dispatch(
-            manualRetry()
+            manualRetry(firstFile, secondFile)
         );
 
         const state = testStore.getState().laboratory;
@@ -309,11 +332,11 @@ describe("laboratory resilience", () => {
             .mockResolvedValue(true);
 
         await testStore.dispatch(
-            manualRetry()
+            manualRetry(firstFile, secondFile)
         );
 
         await testStore.dispatch(
-            manualRetry()
+            manualRetry(firstFile, secondFile)
         );
 
         expect(recoverConnection).toHaveBeenCalledTimes(2);

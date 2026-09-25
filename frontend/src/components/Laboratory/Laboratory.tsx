@@ -16,6 +16,7 @@ import ReentryObjNode from "../Laboratory/ActionNodes/reentryNode/ReentryObjNode
 import {useSelector, useDispatch} from "react-redux";
 import {useState, useRef, useEffect} from "react";
 import type {RootState, AppDispatch} from "../../store/store";
+import type { LaboratoryMode } from "../../features/laboratory/LaboratoryMode";
 import {
         clearLaboratory,
         clearNotification,
@@ -26,19 +27,14 @@ import {
         resetProcessStarted,
         resetLabStarted,
         reentryObjOpened,
+        reentryObjClosed,
 
     } from "../../features/laboratory/laboratorySlice";
 
-import { registerProcess, unregisterProcess } from "../../resilience/processRegistry";
-
 import {
     activeLab,
-    startProcessing,
-    manualRetry,
     validateAndProcessReentry,
     resumeProcess,
-    performMerge,
-    readyToProcess,
 
     } from "../../features/laboratory/laboratoryThunks";
 
@@ -49,6 +45,12 @@ import { saveSession } from "../../services/saveSession";
 import  { downloadSession } from "../../services/downloadSession";
 
 import SessionSavedMessage from "../MessageHandler/SessionSavedMessage";
+
+import { createLabContext } from "./labContext";
+
+import { startOperation, retryOperation } from "./labOpController";
+
+import { registerLaboratoryEffects } from "./labEffectsController";
 
 export default function Laboratory() {
 
@@ -76,9 +78,7 @@ export default function Laboratory() {
 
     } = useSelector(
 
-        (state:RootState) => state.laboratory
-
-    );
+        (state:RootState) => state.laboratory);
 
     const [firstFile, setFirstFile] = useState<File | null>(null);
 
@@ -88,26 +88,22 @@ export default function Laboratory() {
 
     const [reentryPending, setReentryPending] = useState(false);
 
+    const [mode, setMode] = useState<LaboratoryMode>("stateless");
+
+    const labContext = createLabContext (
+        operation,
+        mode,
+        firstFile,
+        secondFile,
+    );
+
     const handleAxisRevealEnd = async () => {
-
-        if (!firstFile || !secondFile) {
-
-            return;
-
-        }
 
         try {
 
-            await dispatch(
-                readyToProcess(operation)
-            );
-
-            await dispatch(
-                startProcessing(
-                    operation,
-                    firstFile,
-                    secondFile
-                    )
+            await startOperation(
+                    labContext,
+                    dispatch
                 );
         } catch(error) {
 
@@ -188,15 +184,16 @@ export default function Laboratory() {
 
         }
 
-        if (!firstFile || !secondFile ){
+        if (!labContext.firstFile || !labContext.secondFile ){
             return;
         }
 
         try {
             const {file, id} = await saveSession(
-                firstFile,
-                secondFile
+                labContext.firstFile,
+                labContext.secondFile
             );
+
             downloadSession(file, id);
             setSessionSaved(true);
 
@@ -226,18 +223,26 @@ export default function Laboratory() {
         }
     };
 
-    const handleManualRetry = (
-        firstFile: File,
-        secondFile: File
-    ) => {
+    const handleManualRetry = async () => {
 
-        if (!firstFile || !secondFile) {
+        if (!labContext.firstFile || !labContext.secondFile) {
             return;
         }
 
-        dispatch(
-            manualRetry(firstFile, secondFile)
-        );
+        try {
+
+            await retryOperation(
+                labContext,
+                dispatch
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Failed to retry operation:",
+                error
+            );
+        }
     };
 
     const handleReentry = async (file: File | null ) => {
@@ -254,8 +259,7 @@ export default function Laboratory() {
 
             setFirstFile(result.firstFile);
             setSecondFile(result.secondFile);
-
-
+            setMode("reentry");
             setReentryPending(true)
 
         } catch (error) {
@@ -266,31 +270,23 @@ export default function Laboratory() {
     const view = {
 
     areSamplesVisible:
-        phase === "activated",
+        phase === "activated" ||
+        (
+            phase === "synchronizing" &&
+                (
+                operationPhase !== "idle" &&
+                operationPhase !== "accelerating"
+            )
+        ),
 
     isProcessing:
         phase === "processing",
 
-    };
+        };
 
    useEffect(() => {
-        registerProcess(
-            "blend",
-            async (firstFile, secondFile) => {
 
-                await dispatch(
-                    performMerge(
-                        firstFile,
-                        secondFile
-                    )
-                );
-
-            }
-        );
-
-        return () => {
-            unregisterProcess("blend");
-        };
+       return registerLaboratoryEffects(dispatch);
 
     }, [dispatch]);
 
@@ -359,6 +355,8 @@ export default function Laboratory() {
                if (result === "success") {
 
                     setReentryPending(false);
+
+                    dispatch(reentryObjClosed());
                 }
             };
 

@@ -356,7 +356,7 @@ const laboratorySlice = createSlice({
 
 export const {
 
-    oprationSelected,
+    operationSelected,
 
     activatedExperiment,
     loadFirstSample,

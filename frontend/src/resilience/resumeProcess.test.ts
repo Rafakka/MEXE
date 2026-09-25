@@ -29,10 +29,20 @@ describe("resumeProcess", () => {
         unregisterProcess("unknown");
     });
 
+    const firstFile = new File(
+    ["image"],
+    "first.png"
+    );
+
+    const secondFile = new File(
+    ["image"],
+    "second.png"
+    );
+
 
     it("returns none when there is no interrupted process", async () => {
 
-        const result = await resumeProcess()();
+        const result = await resumeProcess(firstFile, secondFile)();
 
         expect(result).toBe("none");
 
@@ -47,7 +57,7 @@ describe("resumeProcess", () => {
             operationPhase: "running",
         });
 
-        const result = await resumeProcess()();
+        const result = await resumeProcess(firstFile, secondFile)();
 
         expect(result).toBe("failed");
 
@@ -71,14 +81,14 @@ describe("resumeProcess", () => {
             handler
         );
 
-        const result = await resumeProcess()();
+        const result = await resumeProcess(firstFile, secondFile)();
 
         expect(result).toBe("success");
 
         expect(handler).toHaveBeenCalledOnce();
 
         const resultAfterResume =
-            await resumeProcess()();
+            await resumeProcess(firstFile, secondFile)();
 
         expect(resultAfterResume).toBe("none");
 
@@ -104,14 +114,14 @@ describe("resumeProcess", () => {
             handler
         );
 
-        const result = await resumeProcess()();
+        const result = await resumeProcess(firstFile, secondFile)();
 
         expect(result).toBe("failed");
 
         expect(handler).toHaveBeenCalledOnce();
 
         const resultAfterFailure =
-            await resumeProcess()();
+            await resumeProcess(firstFile, secondFile)();
 
         expect(resultAfterFailure).toBe("failed");
 

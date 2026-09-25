@@ -250,7 +250,6 @@
 
 .synchronizing {}
 
-.result {}
 
 /*--------- BASE -----------*/
 
@@ -272,6 +271,12 @@
         opacity .45s ease,
         transform .45s cubic-bezier(.22,.61,.36,1);
 
+}
+
+.hidden {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
 }
 
 /* ---------- ACTIVATED ---------- */
@@ -396,23 +401,4 @@
         forwards;
 
 }
-
-/*--------RESULT-----------*/
-
-.result.left{
-
-    opacity:0;
-    visibility:hidden;
-    pointer-events:none;
-
-}
-
-.result.right{
-
-    opacity:0;
-    visibility:hidden;
-    pointer-events:none;
-
-}
-
 

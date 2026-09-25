@@ -1,5 +1,5 @@
 
-import styles from "./ReentryObj.module.css";
+import styles from "./ReentryObjNode.module.css";
 
 import { useRef } from "react";
 

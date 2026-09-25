@@ -2,6 +2,8 @@
 
 import type {AppDispatch} from "../../store/store";
 
+import type {LaboratoryOperation} from "../../features/laboratory/laboratoryOperation";
+
 import { recoverConnection} from "../../resilience/connectionRecovery";
 
 import {
@@ -26,6 +28,8 @@ import {
 
     restoreRecoveredState,
 
+    revealingStarted,
+
 } from "./laboratorySlice";
 
 import {
@@ -45,6 +49,7 @@ import { adaptSessionToRecovery } from "../../resilience/reentryAdapter";
 import { getProcessHandler } from "../../resilience/processRegistry";
 
 import { mexeApi } from "../../api/mexeApi";
+
 
 
     function isConnectionError(error: unknown): boolean {
@@ -88,10 +93,16 @@ import { mexeApi } from "../../api/mexeApi";
 
         await mexeApi.ready();
 
+        console.log(">>> API READY SUCCESS");
+
+        console.log(">>> BLEND START");
+
         const result = await mexeApi.blend(
             firstFile,
             secondFile
         );
+
+        console.log(">>> BLEND SUCCESS");
 
         console.log(">>> API END");
 
@@ -108,6 +119,13 @@ import { mexeApi } from "../../api/mexeApi";
 
         const handler = getProcessHandler(operation);
 
+        console.log(
+        ">>> START PROCESSING:",
+        operation,
+        handler,
+        getMemorizedProcess()
+        );
+
         if (!handler) {
             throw new Error(
                 `Unsupported operation: ${operation}`
@@ -120,6 +138,11 @@ import { mexeApi } from "../../api/mexeApi";
         operationPhase: "running",
         });
 
+        console.log(
+        ">>> AFTER memorizeProcess:",
+        getMemorizedProcess()
+        );
+
         dispatch(processingRunning());
 
         dispatch(mergeStarted());
@@ -127,7 +150,6 @@ import { mexeApi } from "../../api/mexeApi";
         await handler(
             firstFile, secondFile
             )
-        );
 
     };
 
@@ -137,6 +159,8 @@ import { mexeApi } from "../../api/mexeApi";
     ) => async (
         dispatch: AppDispatch
     ) => {
+
+        console.log(">>> PERFORM MERGE:", getMemorizedProcess());
 
     try {
 
@@ -158,6 +182,8 @@ import { mexeApi } from "../../api/mexeApi";
     catch (error) {
 
         console.error(error);
+
+        console.log("MERGE FAILED:", getMemorizedProcess());
 
         if (!isConnectionError(error)) {
             throw error;
@@ -212,11 +238,16 @@ import { mexeApi } from "../../api/mexeApi";
             }
 
         console.log(
-            ">>> Resuming process:",
-            process.type
+        ">>> MEMORIZED PROCESS BEFORE RESUME:",
+        process
         );
 
         const handler = getProcessHandler(process.type);
+
+        console.log(
+        ">>> RESUME HANDLER:",
+        handler
+        );
 
         if (!handler) {
             console.error(
@@ -302,7 +333,7 @@ import { mexeApi } from "../../api/mexeApi";
 
     console.log(">>> RESUME RESULT:", resumed);
 
-    return resumed;
+    return "success";
 
     };
 
@@ -336,6 +367,36 @@ import { mexeApi } from "../../api/mexeApi";
         };
 
     };
+
+    export const manualReentry = (
+        operation:LaboratoryOperation,
+        firstFile: File,
+        secondFile: File,
+   ) => async (
+       dispatch: AppDispatch
+    ) => {
+
+    console.log(">>> 1. MANUAL REENTRY START");
+
+    if(operation === "blend") {
+
+            const result = await dispatch(performMerge(firstFile, secondFile)
+        );
+
+        if(!result){
+            return "failed";
+        }
+
+        dispatch(revealingStarted());
+
+        return "success";
+
+    }
+
+    return "failed";
+
+    };
+
 
     export const resetExperiment =
     () => async (
