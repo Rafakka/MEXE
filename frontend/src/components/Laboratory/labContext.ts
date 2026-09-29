@@ -26,5 +26,16 @@ export function createLabContext(
     };
 }
 
+export function resetLabContext(
 
+    state:LabContext
 
+    ): LabContext {
+
+        return {
+            operation:state.operation,
+            mode: "stateless",
+            firstFile: null,
+            secondFile: null,
+    }
+}

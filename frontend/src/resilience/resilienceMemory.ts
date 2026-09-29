@@ -1,9 +1,10 @@
 
 import type {LaboratoryPhase} from "../features/laboratory/laboratoryPhase";
 import type {OperationPhase} from "../features/laboratory/operationPhase";
+import type {LaboratoryOperation} from "../features/laboratory/laboratoryOperation";
 
 export interface RecoveryProcess {
-    type: string;
+    type: LaboratoryOperation;
     phase: LaboratoryPhase;
     operationPhase: OperationPhase;
 }

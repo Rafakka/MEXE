@@ -49,21 +49,6 @@ describe("resumeProcess", () => {
     });
 
 
-    it("returns failed when no recovery handler is registered", async () => {
-
-        memorizeProcess({
-            type: "unknown",
-            phase: "processing",
-            operationPhase: "running",
-        });
-
-        const result = await resumeProcess(firstFile, secondFile)();
-
-        expect(result).toBe("failed");
-
-    });
-
-
     it("resumes the interrupted process successfully", async () => {
 
         const handler = vi.fn(

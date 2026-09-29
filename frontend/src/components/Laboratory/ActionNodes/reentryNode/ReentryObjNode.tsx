@@ -19,7 +19,10 @@ export default function ReentryObjNode({
 
         console.log(">>>CLICK ON Workflow REENTRY");
 
-        inputRef.current?.click();
+        if(inputRef.current) {
+            inputRef.current.value == "";
+            inputRef.current.click();
+        }
     };
 
     return (

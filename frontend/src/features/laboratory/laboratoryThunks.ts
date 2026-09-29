@@ -60,16 +60,14 @@ import {parseLaboratoryOperation } from "../../features/laboratory/utils/typePar
     };
 
     export const activeLab = () =>
-
         async (
             dispatch: AppDispatch
         ) => {
-
             dispatch(activatedExperiment());
         };
 
     export const readyToProcess = (
-        operation: string
+        operation: LaboratoryOperation
         ) => async () => {
 
         const handler = getProcessHandler(operation);
@@ -111,7 +109,7 @@ import {parseLaboratoryOperation } from "../../features/laboratory/utils/typePar
     };
 
     export const startProcessing = (
-        operation: string,
+        operation: LaboratoryOperation,
         firstFile: File,
         secondFile: File
     ) => async (
@@ -154,6 +152,18 @@ import {parseLaboratoryOperation } from "../../features/laboratory/utils/typePar
 
     };
 
+    function completeMerge(
+        dispatch: AppDispatch,
+        result: Awaited<ReturnType<typeof mexeApi.blend>>
+    ) {
+            dispatch(mergeCompleted(result));
+            dispatch(acceleratingStarted());
+
+            forgetProcess();
+
+            return "success";
+        }
+
     export const performMerge = (
         firstFile: File,
         secondFile: File
@@ -170,13 +180,7 @@ import {parseLaboratoryOperation } from "../../features/laboratory/utils/typePar
             secondFile
         );
 
-        dispatch(mergeCompleted(result));
-
-        dispatch(acceleratingStarted());
-
-        forgetProcess();
-
-        return "success";
+        return completeMerge(dispatch, result);
 
     }
 
@@ -216,12 +220,7 @@ import {parseLaboratoryOperation } from "../../features/laboratory/utils/typePar
                 secondFile,
             );
 
-            dispatch(mergeCompleted(result));
-            dispatch(acceleratingStarted());
-
-            forgetProcess();
-
-            return "success";
+            return completeMerge(dispatch, result);
 
         }
     };
@@ -287,7 +286,7 @@ import {parseLaboratoryOperation } from "../../features/laboratory/utils/typePar
        dispatch: AppDispatch
     ) => {
 
-    console.log(">>> 1. MANUAL RETRY START");
+    console.log(">>> 1. MANUAL RETRY START:");
 
     dispatch(reconnectingStarted());
 
@@ -320,7 +319,7 @@ import {parseLaboratoryOperation } from "../../features/laboratory/utils/typePar
         console.log(">>> 5. NO PROCESS");
 
         dispatch(restoreRecoveredState());
-        return;
+        return "none";
     }
 
     if (resumed === "failed") {
@@ -332,8 +331,6 @@ import {parseLaboratoryOperation } from "../../features/laboratory/utils/typePar
 
     dispatch(restoreRecoveredState());
 
-    console.log(">>> RESUME RESULT:", resumed);
-
     return "success";
 
     };
@@ -343,6 +340,8 @@ import {parseLaboratoryOperation } from "../../features/laboratory/utils/typePar
         (file:Blob) => async (
 
     ) => {
+
+        console.log(">>> VALIDATING REENTRY FILE");
 
         const {
             session,
@@ -380,33 +379,39 @@ import {parseLaboratoryOperation } from "../../features/laboratory/utils/typePar
     };
 
     export const manualReentry = (
-        operation:LaboratoryOperation,
+        operation: LaboratoryOperation,
         firstFile: File,
-        secondFile: File,
-   ) => async (
-       dispatch: AppDispatch
-    ) => {
+        secondFile: File
+        ) => async (
+            dispatch: AppDispatch
+        ) => {
 
-    console.log(">>> 1. MANUAL REENTRY START");
+        console.log(">>> 1. MANUAL REENTRY START");
 
-    if(operation === "blend") {
+            if (operation !== "blend") {
+                return "failed";
+            }
 
-            const result = await dispatch(performMerge(firstFile, secondFile)
-        );
+            const result = await dispatch(
+                performMerge(firstFile, secondFile)
+            );
 
-        if(!result){
-            return "failed";
-        }
 
-        dispatch(revealingStarted());
+            if (result !== "success") {
+                return "failed";
+            }
 
-        return "success";
+            console.log(">>> REENTRY SUCCESS", {
+                    result,
+                    operation,
+                    firstFile,
+                    secondFile,
+                    });
 
-    }
+                dispatch(revealingStarted());
 
-    return "failed";
-
-    };
+                    return "success";
+            };
 
 
     export const resetExperiment =

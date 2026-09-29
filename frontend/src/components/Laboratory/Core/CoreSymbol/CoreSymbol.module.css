@@ -265,7 +265,8 @@
         both;
 }
 
-.processing  {
+.processing,
+.reentryOffline {
 
     color:#4ADE80;
 

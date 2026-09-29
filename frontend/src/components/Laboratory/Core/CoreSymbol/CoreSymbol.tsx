@@ -3,6 +3,7 @@
 import styles from "./CoreSymbol.module.css";
 import type {LaboratoryPhase} from "../../../../features/laboratory/laboratoryPhase";
 import type {OperationPhase} from "../../../../features/laboratory/operationPhase";
+import type {LaboratoryMode} from "../../../../features/laboratory/LaboratoryMode";
 
 type CoreSymbolProps = {
 
@@ -11,6 +12,8 @@ type CoreSymbolProps = {
     hovered: boolean;
 
     operationPhase : OperationPhase;
+
+    mode:LaboratoryMode;
 
 };
 
@@ -22,6 +25,8 @@ export default function CoreSymbol({
 
     operationPhase,
 
+    mode,
+
 }: CoreSymbolProps ) {
 
    const active = [
@@ -29,6 +34,10 @@ export default function CoreSymbol({
     "synchronizing",
     "processing",
 ].includes(phase);
+
+    const reentryOffline =
+        mode === "reentry" &&
+        operationPhase === "offline";
 
     return (
 
@@ -43,6 +52,8 @@ export default function CoreSymbol({
     ${styles[phase]}
 
     ${styles[operationPhase]}
+
+    ${reentryOffline ? styles.reentryOffline : ""}
 
     ${phase === "idle" && hovered ? styles.hover : ""}
 

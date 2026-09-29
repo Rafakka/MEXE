@@ -6,18 +6,20 @@ import CoreSymbol from "../Core/CoreSymbol/CoreSymbol";
 import {useEffect, useState, type CSSProperties } from "react";
 import {useSelector, useDispatch} from "react-redux";
 import type {AppDispatch} from "../../../store/store";
+import type {LaboratoryMode} from "../../../features/laboratory/LaboratoryMode";
 import {selectHasErrorNotification} from "../laboratorySelectors";
 import {resultDisplayed} from "../../../features/laboratory/laboratorySlice";
 
 type CoreProps = {
         phase: LaboratoryPhase;
         operationPhase: OperationPhase;
+        mode: LaboratoryMode;
         onClick: () => void;
         onResetComplete: () => void;
 
     };
 
-export default function Core( {phase, onClick, operationPhase, onResetComplete }:CoreProps ) {
+export default function Core( {phase, mode, onClick, operationPhase, onResetComplete }:CoreProps ) {
 
     const [hovered, setHovered] = useState(false);
 
@@ -341,6 +343,7 @@ export default function Core( {phase, onClick, operationPhase, onResetComplete }
 
     <CoreSymbol
       phase={phase}
+      mode={mode}
       hovered={hovered}
       operationPhase={operationPhase}
     />

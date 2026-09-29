@@ -13,6 +13,7 @@ import ManualNode from "../Laboratory/ActionNodes/manualNode/ManualNode";
 import RecoveryMode from "../Laboratory/ActionNodes/recoveryNode/RecoveryNode";
 import SaveSessionNode from "../Laboratory/ActionNodes/saveSessionNode/SaveSessionNode";
 import ReentryObjNode from "../Laboratory/ActionNodes/reentryNode/ReentryObjNode";
+import BackNode from "../Laboratory/ActionNodes/backNode/BackNode";
 import {useSelector, useDispatch} from "react-redux";
 import {useState, useRef, useEffect} from "react";
 import type {RootState, AppDispatch} from "../../store/store";
@@ -34,8 +35,7 @@ import {
 
 import {
     activeLab,
-    validateAndProcessReentry,
-    resumeProcess,
+    validateAndProcessReentry
 
     } from "../../features/laboratory/laboratoryThunks";
 
@@ -89,6 +89,8 @@ export default function Laboratory() {
 
     const [reentryPending, setReentryPending] = useState(false);
 
+    const [backNodeVisible, setBackNodeVisible] = useState(false);
+
     const [mode, setMode] = useState<LaboratoryMode>("stateless");
 
     const labContext = createLabContext (
@@ -100,12 +102,19 @@ export default function Laboratory() {
 
     const handleAxisRevealEnd = async () => {
 
+        if (
+            operationPhase !== "revealing") {
+                 console.log(">>> IGNORING AXIS REVEAL END:", operationPhase);
+            return;
+        }
+
         try {
 
             await startOperation(
                     labContext,
                     dispatch
                 );
+
         } catch(error) {
 
             console.error(
@@ -120,19 +129,32 @@ export default function Laboratory() {
     new Set<"left" | "right">()
     );
 
-    const handleSampleHideComplete = (
+   const handleSampleHideComplete = (
     side: "left" | "right"
     ) => {
 
-        hiddenSamples.current.add(side);
+    console.log(
+        ">>> SAMPLE HIDE COMPLETE",
+        side,
+        {
+            phase,
+            operationPhase,
+        }
+    );
 
-        if (
+    hiddenSamples.current.add(side);
+
+    if (
         hiddenSamples.current.has("left") &&
         hiddenSamples.current.has("right")
-        ) {
+    ) {
+
+        console.log(
+            ">>> DISPATCHING REVEALING STARTED"
+        );
+
         dispatch(revealingStarted());
         }
-
     };
 
     const handleFirstSample = (file:File | null) => {
@@ -156,6 +178,11 @@ export default function Laboratory() {
     };
 
     const handleCoreClick = () => {
+
+        if (reentryObjVisible) {
+
+            return;
+        }
 
         if (notification?.type === "error") {
 
@@ -212,20 +239,32 @@ export default function Laboratory() {
             }
         };
 
-    const handleReset = () => {
+    const cleanLab = () => {
 
         setFirstFile(null);
         setSecondFile(null);
+
+        setMode("stateless");
+        setReentryPending(false);
+
+        dispatch(clearLaboratory());
+        dispatch(clearNotification());
+    }
+
+    const handleReset = () => {
 
         if (operationPhase === "offline") {
 
             dispatch(resetProcessStarted());
 
+            return;
+
         } else {
 
-            setMode("stateless");
-            setReentryPending(false);
             dispatch(resetLabStarted());
+
+            cleanLab();
+
         }
     };
 
@@ -266,6 +305,15 @@ export default function Laboratory() {
             setFirstFile(result.firstFile);
             setSecondFile(result.secondFile);
 
+            console.log(">>> REENTRY VALIDATED", {
+                operation,
+                firstFile,
+                secondFile,
+            });
+
+            setBackNodeVisible(false);
+            dispatch(reentryObjClosed());
+
             dispatch(operationSelected(result.operation));
 
             setMode("reentry");
@@ -276,6 +324,12 @@ export default function Laboratory() {
                 console.error(error);
             }
     };
+
+    const handleReentryBack = () => {
+
+        setBackNodeVisible(false);
+        dispatch(reentryObjClosed());
+    }
 
     const view = {
 
@@ -338,6 +392,7 @@ export default function Laboratory() {
             waitingForOpen = false;
 
             dispatch(reentryObjOpened());
+            setBackNodeVisible(true);
         }
     };
 
@@ -373,7 +428,7 @@ export default function Laboratory() {
                 dispatch
             );
 
-            if (result === "success") {
+            if (result === "success" || result === "failed") {
 
                 setReentryPending(false);
 
@@ -395,7 +450,6 @@ export default function Laboratory() {
 
         }, [
             reentryPending,
-            labContext,
             dispatch,
         ]);
 
@@ -417,6 +471,7 @@ export default function Laboratory() {
           operationPhase={operationPhase}
           onResetComplete={handleResetComplete}
           onClick={handleCoreClick}
+          mode={mode}
             />
 
         <SampleAnchor
@@ -539,6 +594,13 @@ export default function Laboratory() {
         <ReentryObjNode
             visible={reentryObjVisible}
             onFileSelected={handleReentry}
+        />
+
+        <BackNode
+            phase={phase}
+            operationPhase={operationPhase}
+            visible={backNodeVisible}
+            onBack={handleReentryBack}
         />
 
     </section>
