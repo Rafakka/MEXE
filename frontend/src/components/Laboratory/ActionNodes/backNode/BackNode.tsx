@@ -1,41 +1,47 @@
 
 
 import styles from "./BackNode.module.css";
-import type { LaboratoryPhase } from "../../../../features/laboratory/laboratoryPhase";
-import type { OperationPhase } from "../../../../features/laboratory/operationPhase";
 
 type BackNodeProps = {
-    phase: LaboratoryPhase;
-    operationPhase: OperationPhase
     visible: boolean;
+    hiding: boolean;
     onBack: () => void;
+    onHideComplete: () => void;
 };
 
 export default function BackNode({
-    phase,
     visible,
-    operationPhase,
-    onBack
+    hiding,
+    onBack,
+    onHideComplete,
 }: BackNodeProps) {
 
     return (
 
-        <button
-            type="button"
-            className={`
-                ${styles.node}
-                ${styles.back}
-                ${visible ? styles.visible : styles.hidden}
-                ${styles[phase]}
-                ${styles[operationPhase]}
-
-                `}
-            onClick={onBack}
-            aria-label="Back"
-
-        >
-
-        </button>
+    <button
+    type="button"
+    className={`
+        ${styles.node}
+        ${styles.back}
+        ${
+        hiding
+            ? styles.hiding
+            : visible
+                ? styles.visible
+                : styles.hidden
+        }
+    `}
+    onClick={onBack}
+    onAnimationEnd={(event) => {
+        if (
+            hiding &&
+            event.animationName === styles.nodeHide
+        ) {
+            onHideComplete();
+        }
+    }}
+    aria-label="Go back"
+    />
 
     );
 }

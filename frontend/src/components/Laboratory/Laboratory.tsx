@@ -91,6 +91,8 @@ export default function Laboratory() {
 
     const [backNodeVisible, setBackNodeVisible] = useState(false);
 
+    const [hiding, setHiding] = useState(false);
+
     const [mode, setMode] = useState<LaboratoryMode>("stateless");
 
     const labContext = createLabContext (
@@ -325,10 +327,10 @@ export default function Laboratory() {
             }
     };
 
+
     const handleReentryBack = () => {
 
-        setBackNodeVisible(false);
-        dispatch(reentryObjClosed());
+        setHiding(true);
     }
 
     const view = {
@@ -452,6 +454,16 @@ export default function Laboratory() {
             reentryPending,
             dispatch,
         ]);
+
+        const handleBackHideComplete = () => {
+            setBackNodeVisible(false);
+            setHiding(false);
+            dispatch(reentryObjClosed());
+        };
+
+        const handleReentryHideComplete = () => {
+            dispatch(reentryObjClosed());
+        };
 
         return (
 
@@ -593,13 +605,15 @@ export default function Laboratory() {
 
         <ReentryObjNode
             visible={reentryObjVisible}
+            hiding={hiding}
             onFileSelected={handleReentry}
+            onHideComplete={handleReentryHideComplete}
         />
 
         <BackNode
-            phase={phase}
-            operationPhase={operationPhase}
             visible={backNodeVisible}
+            onHideComplete={handleBackHideComplete}
+            hiding={hiding}
             onBack={handleReentryBack}
         />
 

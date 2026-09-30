@@ -4,13 +4,17 @@ import styles from "./ReentryObjNode.module.css";
 import { useRef } from "react";
 
 type ReentryObjNodeProps = {
+    hiding: boolean;
     visible: boolean;
     onFileSelected: (file: File | null) => void;
+    onHideComplete: () => void;
 };
 
 export default function ReentryObjNode({
     visible,
     onFileSelected,
+    hiding,
+    onHideComplete,
 }: ReentryObjNodeProps) {
 
     const inputRef = useRef<HTMLInputElement>(null);
@@ -20,7 +24,7 @@ export default function ReentryObjNode({
         console.log(">>>CLICK ON Workflow REENTRY");
 
         if(inputRef.current) {
-            inputRef.current.value == "";
+            inputRef.current.value = "";
             inputRef.current.click();
         }
     };
@@ -31,11 +35,23 @@ export default function ReentryObjNode({
                 type="button"
                 className={`
                     ${styles.node}
-                    ${visible
-                        ? styles.visible
-                        : styles.hidden}
+                     ${
+                        hiding
+                            ? styles.hiding
+                            : visible
+                                ? styles.visible
+                                : styles.hidden
+                    }
                 `}
                 onClick={handleClick}
+                onAnimationEnd={(event) => {
+                    if (
+                        hiding &&
+                        event.animationName === styles.nodeHide
+                        ) {
+                            onHideComplete();
+                        }
+                }}
                 aria-label="Input File For Workflow Reentry"
             >
             </button>
