@@ -81,9 +81,9 @@
 
     position: absolute;
 
-    left: calc(50% + var(--action-node-distance));
+    left:150px;
 
-    top: calc(40% + var(--recovery-offset-y));
+    top:-100px;
 
     width: 40px;
     height: 40px;
@@ -144,7 +144,7 @@
 
     opacity:0;
 
-    pointer-events:auto;
+    pointer-events:none;
 
     white-space:nowrap;
 
@@ -157,11 +157,6 @@
     letter-spacing:.08em;
 
     text-transform:uppercase;
-
-    transition:
-
-        opacity .25s ease,
-        transform .25s ease;
 
 }
 

@@ -1,43 +1,16 @@
 
 /*------animation--------*/
 
-@keyframes revealNode{
-
-    from{
-
-        opacity:0;
-
+@keyframes revealNode {
+    from {
         transform:
-
             translateY(18px)
             scale(.85);
-
-    }
-
-    to{
-
-        opacity:1;
-
-        transform:
-
-            translateY(0)
-            scale(1);
-
-    }
-
-}
-
-
-
-@keyframes nodeHide {
-    from {
-        opacity: 1;
-        filter: blur(0);
     }
 
     to {
-        opacity: 0;
-        filter: blur(6px);
+        transform:
+            translateY(0) scale(1);
     }
 }
 
@@ -59,7 +32,7 @@
 
 .node {
 
-    opacity:0;
+    opacity:1;
 
     position: absolute;
 
@@ -84,11 +57,9 @@
     z-index:20;
 
     transition:
+        opacity .8s cubic-bezier(.22,.61,.36,1);
 
-        opacity .35s ease,
-
-        transform .35s ease;
-}
+    }
 
 .node:hover{
 
@@ -208,20 +179,11 @@
 
 }
 
-.hidden{
-
-    opacity:0;
-
-    pointer-events:none;
-
-}
 
 .hiding {
+    opacity: 0;
     pointer-events: none;
+    transform: scale(0.2);
+    filter: blur(10px);
 
-    animation:
-        nodeHide
-        .8s
-        cubic-bezier(.22,.61,.36,1)
-        forwards;
 }

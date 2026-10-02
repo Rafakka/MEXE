@@ -111,21 +111,14 @@ scale:1;
         );
 
     border:
-
         2px solid rgba(20,25,35,.75);
 
     transition:
-
         background .35s ease,
-
         border-color .35s ease,
-
         box-shadow .35s ease,
-
-        transform .35s ease;
-
-        opacity: .35s ease;
-
+        transform .35s ease,
+        opacity .35s ease;
 }
 
 .pending:hover{

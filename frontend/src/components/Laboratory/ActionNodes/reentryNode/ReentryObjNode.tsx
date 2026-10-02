@@ -29,6 +29,11 @@ export default function ReentryObjNode({
         }
     };
 
+    console.log(">>> REENTRY NODE RENDER", {
+    visible,
+    hiding,
+    });
+
     return (
         <>
             <button
@@ -44,14 +49,18 @@ export default function ReentryObjNode({
                     }
                 `}
                 onClick={handleClick}
-                onAnimationEnd={(event) => {
-                    if (
-                        hiding &&
-                        event.animationName === styles.nodeHide
-                        ) {
-                            onHideComplete();
-                        }
+                onTransitionEnd={(event) => {
+                console.log(">>> REENTRY TRANSITION END:", {
+                    propertyName: event.propertyName,
+                    hiding,
+                    visible,
+                    });
+
+                if (hiding) {
+                    onHideComplete();
+                    }
                 }}
+
                 aria-label="Input File For Workflow Reentry"
             >
             </button>

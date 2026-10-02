@@ -91,7 +91,11 @@ export default function Laboratory() {
 
     const [backNodeVisible, setBackNodeVisible] = useState(false);
 
-    const [hiding, setHiding] = useState(false);
+    const [backHiding, setBackHiding] = useState(false);
+
+    const [reentryHiding, setReentryHiding] = useState(false);
+
+    const [backLocked, setBackLocked] = useState(false);
 
     const [mode, setMode] = useState<LaboratoryMode>("stateless");
 
@@ -134,6 +138,10 @@ export default function Laboratory() {
    const handleSampleHideComplete = (
     side: "left" | "right"
     ) => {
+
+        if(phase !== "activated") {
+            return;
+        }
 
     console.log(
         ">>> SAMPLE HIDE COMPLETE",
@@ -193,6 +201,8 @@ export default function Laboratory() {
             return;
         }
 
+        setBackNodeVisible(true);
+
         dispatch(activeLab());
     };
 
@@ -248,6 +258,7 @@ export default function Laboratory() {
 
         setMode("stateless");
         setReentryPending(false);
+        setBackLocked(false);
 
         dispatch(clearLaboratory());
         dispatch(clearNotification());
@@ -314,24 +325,39 @@ export default function Laboratory() {
             });
 
             setBackNodeVisible(false);
-            dispatch(reentryObjClosed());
+
+            setReentryHiding(true);
 
             dispatch(operationSelected(result.operation));
 
             setMode("reentry");
-
-            setReentryPending(true)
+            setReentryPending(true);
 
         } catch (error) {
                 console.error(error);
             }
     };
 
+    const handleBack = () => {
 
-    const handleReentryBack = () => {
+        console.log(">>> BACK CLICK", {
+        reentryObjVisible,
+        reentryHiding,
+        backHiding,
+        });
 
-        setHiding(true);
-    }
+        if( backHiding || reentryHiding ) return;
+
+        setBackLocked(true);
+
+        if(reentryObjVisible) {
+            console.log(">>> STARTING REENTRY HIDE");
+            setReentryHiding(true);
+            return;
+        }
+
+        setBackHiding(true);
+    };
 
     const view = {
 
@@ -457,11 +483,33 @@ export default function Laboratory() {
 
         const handleBackHideComplete = () => {
             setBackNodeVisible(false);
-            setHiding(false);
-            dispatch(reentryObjClosed());
-        };
+            setBackLocked(false);
+            setBackHiding(false);
+
+            returnToIdle();
+       };
 
         const handleReentryHideComplete = () => {
+
+            setReentryHiding(false);
+            setBackHiding(false);
+            setBackLocked(false);
+            dispatch(reentryObjClosed());
+
+        };
+
+        const returnToIdle = () => {
+
+            setFirstFile(null);
+            setSecondFile(null);
+
+            setMode("stateless");
+            setReentryPending(false);
+
+            hiddenSamples.current.clear();
+
+            dispatch(clearLaboratory());
+            dispatch(clearNotification());
             dispatch(reentryObjClosed());
         };
 
@@ -484,7 +532,11 @@ export default function Laboratory() {
           onResetComplete={handleResetComplete}
           onClick={handleCoreClick}
           mode={mode}
-            />
+          canInteract={
+              (phase === "idle" && operationPhase === "idle") ||
+                  !!firstFile || !!secondFile
+                }
+        />
 
         <SampleAnchor
             side="left"
@@ -605,7 +657,7 @@ export default function Laboratory() {
 
         <ReentryObjNode
             visible={reentryObjVisible}
-            hiding={hiding}
+            hiding={reentryHiding}
             onFileSelected={handleReentry}
             onHideComplete={handleReentryHideComplete}
         />
@@ -613,8 +665,9 @@ export default function Laboratory() {
         <BackNode
             visible={backNodeVisible}
             onHideComplete={handleBackHideComplete}
-            hiding={hiding}
-            onBack={handleReentryBack}
+            hiding={backHiding}
+            onBack={handleBack}
+            locked={backLocked}
         />
 
     </section>

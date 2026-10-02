@@ -44,7 +44,6 @@ export default function SampleAnchor({
                 }
             `}
             onTransitionEnd={(event) => {
-
             if (
                 !visible &&
                 event.propertyName === "opacity"

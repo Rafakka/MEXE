@@ -16,16 +16,15 @@ type CoreProps = {
         mode: LaboratoryMode;
         onClick: () => void;
         onResetComplete: () => void;
+        canInteract:boolean;
 
     };
 
-export default function Core( {phase, mode, onClick, operationPhase, onResetComplete }:CoreProps ) {
+export default function Core( {phase, mode, onClick, operationPhase, onResetComplete, canInteract }:CoreProps ) {
 
     const [hovered, setHovered] = useState(false);
 
     const dispatch = useDispatch<AppDispatch>();
-
-    const canInteract = phase === "idle" && operationPhase === "idle";
 
     const canHover = canInteract;
 

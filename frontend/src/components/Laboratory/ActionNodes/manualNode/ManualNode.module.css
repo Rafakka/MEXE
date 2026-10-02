@@ -81,9 +81,9 @@
 
     position:absolute;
 
-    left:calc(50% + var(--action-node-distance));
+    left:150px;
 
-    top:calc(40% + var(--download-offset-y));
+    top:100px;
 
     width:40px;
     height:40px;

@@ -5,6 +5,7 @@ import styles from "./BackNode.module.css";
 type BackNodeProps = {
     visible: boolean;
     hiding: boolean;
+    locked: boolean;
     onBack: () => void;
     onHideComplete: () => void;
 };
@@ -14,6 +15,7 @@ export default function BackNode({
     hiding,
     onBack,
     onHideComplete,
+    locked,
 }: BackNodeProps) {
 
     return (
@@ -31,8 +33,17 @@ export default function BackNode({
                 : styles.hidden
         }
     `}
-    onClick={onBack}
+    onClick={() => {
+            console.log(">>> BACK NODE ACTUAL CLICK");
+            onBack();
+        }}
     onAnimationEnd={(event) => {
+            console.log(">>> BACK NODE ANIMATION END", {
+                animationName: event.animationName,
+                hiding,
+                visible,
+            });
+
         if (
             hiding &&
             event.animationName === styles.nodeHide
@@ -41,6 +52,7 @@ export default function BackNode({
         }
     }}
     aria-label="Go back"
+    disabled={locked}
     />
 
     );
