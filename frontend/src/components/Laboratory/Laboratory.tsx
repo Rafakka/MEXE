@@ -655,12 +655,14 @@ export default function Laboratory() {
 
         )}
 
-        <ReentryObjNode
-            visible={reentryObjVisible}
-            hiding={reentryHiding}
-            onFileSelected={handleReentry}
-            onHideComplete={handleReentryHideComplete}
-        />
+       {(reentryObjVisible || reentryHiding) && (
+            <ReentryObjNode
+                visible={reentryObjVisible}
+                hiding={reentryHiding}
+                onFileSelected={handleReentry}
+                onHideComplete={handleReentryHideComplete}
+            />
+        )}
 
         <BackNode
             visible={backNodeVisible}
