@@ -139,9 +139,20 @@ export default function Laboratory() {
     side: "left" | "right"
     ) => {
 
-        if(phase !== "activated") {
+        console.log(">>> SAMPLE HIDE CALLBACK", {
+        side,
+        phase,
+        operationPhase,
+        });
+
+        if(phase !== "activated" &&
+           phase !== "synchronizing"
+          ) {
             return;
         }
+
+        setBackNodeVisible(false);
+        setBackLocked(false);
 
     console.log(
         ">>> SAMPLE HIDE COMPLETE",
@@ -162,6 +173,8 @@ export default function Laboratory() {
         console.log(
             ">>> DISPATCHING REVEALING STARTED"
         );
+
+
 
         dispatch(revealingStarted());
         }
