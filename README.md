@@ -94,6 +94,8 @@ This separation is intentional.
 
 **`phase` describes where the laboratory is in its broader lifecycle, while `operationPhase` describes what the current operation is doing.**
 
+Click here for details on how backend works [Backend](./backend.md)
+
 ### Recovery model
 
 When the backend becomes unavailable, the laboratory does not simply replace its previous state with an `offline` state.
@@ -129,6 +131,8 @@ The recovery mechanism therefore separates three different concerns:
 This distinction prevents a successful network reconnection from being treated as equivalent to a successful process recovery.
 
 ---
+
+Click here for details on how Resilience works. [8.Resilience](./mexe-laboratory-operational-model-en.md)
 
 ## Stateless Processing
 
