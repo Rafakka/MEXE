@@ -94,7 +94,7 @@ This separation is intentional.
 
 **`phase` describes where the laboratory is in its broader lifecycle, while `operationPhase` describes what the current operation is doing.**
 
-Click here for details on how backend works [Backend](./backend.md)
+Click here for details on how backend works [Backend](./docs/backend.md)
 
 ### Recovery model
 
@@ -132,7 +132,7 @@ This distinction prevents a successful network reconnection from being treated a
 
 ---
 
-Click here for details on how Resilience works. [8.Resilience](./mexe-laboratory-operational-model-en.md)
+Click here for details on how Resilience works. [8.Resilience](./docs/mexe-laboratory-operational-model-en.md)
 
 ## Stateless Processing
 
