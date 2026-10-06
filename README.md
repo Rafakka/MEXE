@@ -261,6 +261,8 @@ Grafana Alloy collects container logs and forwards them to Loki.
 
 Grafana provides dashboards, log exploration, and alerting.
 
+For in depth explanations, please read [OBSERVABILITY IN DEPTH](./docs/observability.md)
+
 ```text
                     ┌──────────────┐
                     │    MEXE      │
