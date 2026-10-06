@@ -194,11 +194,17 @@ Nginx acts as the frontend server and reverse proxy for API requests.
 The backend exposes separate health and readiness concepts:
 
 ```text
-Health & Readiness
-├── /health
-├── /ready
-├── /api/ready
-└── Docker HEALTHCHECK
+
+Backend probes
+├── /health    → liveness
+└── /ready     → readiness
+
+Frontend
+└── /api/ready → proxy to backend /ready
+
+Docker
+└── HEALTHCHECK → /health
+
 ```
 
 The distinction allows the system to differentiate between:
@@ -206,7 +212,7 @@ The distinction allows the system to differentiate between:
 - **liveness** — the application is running;
 - **readiness** — the application is currently able to serve requests.
 
-The frontend uses the Nginx reverse proxy to verify backend readiness, allowing dependency failures to propagate into the frontend's operational health state.
+The frontend uses the Nginx reverse proxy to verify backend readiness.
 
 ---
 

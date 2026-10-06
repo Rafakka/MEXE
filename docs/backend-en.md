@@ -53,11 +53,13 @@ Receives a reentry file, validates its contents, retrieves the operation, and fo
 
 #### `/health`
 
-Exposes the current operational status of the service.
+→ Liveness probe.
+→ Indicates that the application process is alive and responding.
 
 #### `/ready`
 
-Indicates whether the service is ready to process requests.
+→ Readiness probe.
+→ Verifies that the application can execute the image-processing operation.
 
 #### `/metrics`
 
