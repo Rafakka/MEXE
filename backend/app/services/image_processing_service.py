@@ -1,6 +1,7 @@
 from app.services.image_preparation_service import ImagePreparationService
 from app.domain.processors.blend_processor import BlendProcessor
 from app.infra.image_encoder import ImageEncoder
+from PIL import Image
 
 
 class ImageProcessingService:
@@ -53,3 +54,10 @@ class ImageProcessingService:
             operation,
             request_id,
         )
+
+    def check_blend(self, image: Image.Image, request_id: str) -> None:
+        self.blend_processor.blend(
+        image,
+        image,
+        request_id
+    )

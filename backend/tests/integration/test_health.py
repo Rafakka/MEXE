@@ -34,13 +34,13 @@ def test_request_ready_info(client):
 
 def test_request_ready_when_down(client, monkeypatch):
 
-    def failing_check():
+    def failing_ready():
         return HealthStatus.DOWN
 
     monkeypatch.setattr(
         routes.health_checker,
-        "check",
-        failing_check
+        "ready",
+        failing_ready
     )
 
     response = client.get("/ready")

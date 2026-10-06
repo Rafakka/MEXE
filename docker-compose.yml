@@ -4,6 +4,7 @@ services:
   backend:
     build:
       context: ./backend
+    restart: unless-stopped
     container_name: mexe-backend
     expose:
       - "8000"

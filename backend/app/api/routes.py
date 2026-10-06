@@ -20,7 +20,7 @@ logger = logging.getLogger("mexe")
 router = APIRouter()
 
 image_processor_sv = ImageProcessingService()
-health_checker = HealthChecker()
+health_checker = HealthChecker(image_processor_sv)
 request_id_service = RequestIdService()
 
 @router.post("/blend",
@@ -93,7 +93,7 @@ def health() -> HealthResponse:
 )
 def ready() -> HealthResponse:
 
-    status = health_checker.check()
+    status = health_checker.ready()
 
     if status == HealthStatus.DOWN:
         raise HTTPException(

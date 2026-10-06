@@ -1,31 +1,32 @@
-
-from app.api import routes
 from app.domain.health_checker import HealthChecker
 from app.domain.health_status import HealthStatus
+from app.services.image_processing_service import ImageProcessingService
 
 
 def test_health_checker_returns_up():
 
-    checker = HealthChecker()
+    service = ImageProcessingService()
+    checker = HealthChecker(service)
 
     result = checker.check()
 
     assert result == HealthStatus.UP
 
+
 def test_health_checker_returns_down(monkeypatch):
 
-    checker = HealthChecker()
+    service = ImageProcessingService()
+    checker = HealthChecker(service)
 
-    def failing_check():
-        raise RuntimeError("Image processing unavaliable")
+    def failing_check_blend(*args, **kwargs):
+        raise RuntimeError("Image processing unavailable")
 
     monkeypatch.setattr(
-            checker,
-            "_check_image_processing",
-            failing_check
-            )
+        service,
+        "check_blend",
+        failing_check_blend
+    )
 
-    result = checker.check()
+    result = checker.ready()
 
     assert result == HealthStatus.DOWN
-
