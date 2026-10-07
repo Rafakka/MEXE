@@ -89,7 +89,7 @@ def health() -> HealthResponse:
 @router.get(
     "/ready",
     response_model=HealthResponse,
-    responses=HEALTH_RESPONSES,
+    responses=READINESS_RESPONSES,
 )
 def ready() -> HealthResponse:
 

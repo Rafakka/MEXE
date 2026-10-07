@@ -31,6 +31,18 @@ HEALTH_RESPONSES = {
     }
 }
 
+READINESS_RESPONSES = {
+    200: {
+        "description": "Service readiness information.",
+        "model": HealthResponse
+    },
+    503: {
+        "description": "Service not ready.",
+        "model": HealthResponse
+    }
+}
+
+
 REENTRY_RESPONSES: OpenApiResponses ={
     422: {
         "description": "Unprocessable Entity.",

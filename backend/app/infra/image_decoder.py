@@ -14,7 +14,7 @@ class ImageDecoder:
 
     @measure_time(
         "mexe_processing_duration_seconds",
-        stage="decode"
+        stage="decode_async"
     )
     async def decode(
         self,
@@ -30,7 +30,10 @@ class ImageDecoder:
         return self.decode_bytes(
             await image.read()
         )
-
+    @measure_time(
+        "mexe_processing_duration_seconds",
+        stage="decode"
+    )
     def decode_bytes(
         self,
         content: bytes
