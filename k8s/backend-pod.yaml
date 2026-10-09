@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mexe-backend
+spec:
+  containers:
+    - name: backend
+      image: mexe-backend_2:latest
+      imagePullPolicy: IfNotPresent
+      ports:
+        - containerPort: 8000

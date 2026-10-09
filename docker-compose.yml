@@ -1,13 +1,29 @@
 
 services:
 
-  backend:
+  backend_1:
     build:
       context: ./backend
     restart: unless-stopped
     container_name: mexe-backend
     expose:
       - "8000"
+    networks:
+      - mexe
+
+  backend_2:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    container_name: mexe-backend_2-1
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/ready')"]
+      interval: 5s
+      timeout: 2s
+      retries: 2
+      start_period: 5s
     networks:
       - mexe
 
@@ -18,7 +34,8 @@ services:
     ports:
       - "8080:80"
     depends_on:
-      - backend
+      - backend_1
+      - backend_2
     networks:
       - mexe
 

@@ -1,0 +1,30 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mexe-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: mexe-backend
+  template:
+    metadata:
+      labels:
+        app: mexe-backend
+    spec:
+      containers:
+        - name: backend
+          image: mexe-backend_2:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 2
