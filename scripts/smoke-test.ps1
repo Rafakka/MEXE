@@ -4,7 +4,7 @@ $ErrorActionPreference = "Stop"
 
 $projectRoot = Split-Path $PSScriptRoot -Parent
 
-$backendUrl = "http://172.20.0.4:32717"
+$frontendUrl = "http://localhost:8080"
 
 function Wait-ForReady {
     param (
@@ -29,35 +29,33 @@ function Wait-ForReady {
 }
 
 
-Write-Host "== MEXE Smoke Test v2 =="
+Write-Host "== MEXE Smoke Test v4 =="
 
-Write-Host "`n[1/5] Backend"
-docker run --rm `
-    --network kind `
-    curlimages/curl:latest `
-    -f `
-    "$backendUrl/health"
+Write-Host "`n[1/7] API Health"
+curl.exe -fsS "$frontendUrl/api/health"
 
-Write-Host "`n[2/5] Prometheus"
+Write-Host "`n[2/7] API Ready"
+curl.exe -fsS "$frontendUrl/api/ready"
+
+Write-Host "`n[3/7] Prometheus"
 Wait-ForReady `
     -Name "Prometheus" `
     -Url "http://localhost:9090/-/ready"
 
-Write-Host "`n[3/5] Loki"
+Write-Host "`n[4/7] Loki"
 Wait-ForReady `
     -Name "Loki" `
     -Url "http://localhost:3100/ready"
 
-Write-Host "`n[4/5] Grafana"
+Write-Host "`n[5/7] Grafana"
 Wait-ForReady `
     -Name "Grafana" `
     -Url "http://localhost:3000/api/health"
 
-Write-Host "`n[5/5] Frontend"
-curl.exe -fsSI http://localhost:8080
+Write-Host "`n[6/7] Frontend"
+curl.exe -fsSI "$frontendUrl"
 
-Write-Host ""
-Write-Host "[6/6] Blend API"
+Write-Host "`n[7/7] Blend API"
 
 $outputDir = Join-Path $env:TEMP "mexe-smoke"
 
@@ -68,19 +66,15 @@ New-Item `
 
 $resultPath = Join-Path $outputDir "result.png"
 
-docker run --rm `
-    --network kind `
-    -v "${projectRoot}/tests/fixtures:/fixtures:ro" `
-    -v "${outputDir}:/output" `
-    curlimages/curl:latest `
+curl.exe `
     -f `
-    -X POST "$backendUrl/blend" `
+    -X POST "$frontendUrl/api/blend" `
     -H "X-Request-ID: smoke-test-v4" `
-    -F "implicit_image_a=@/fixtures/image-a.png" `
-    -F "implicit_image_b=@/fixtures/image-b.png" `
+    -F "implicit_image_a=@${projectRoot}/tests/fixtures/image-a.png" `
+    -F "implicit_image_b=@${projectRoot}/tests/fixtures/image-b.png" `
     -F "width=1024" `
     -F "height=1024" `
-    -o /output/result.png `
+    -o $resultPath `
     -w "HTTP_STATUS=%{http_code}`nCONTENT_TYPE=%{content_type}`nSIZE=%{size_download}`n"
 
 if (-not (Test-Path $resultPath)) {
