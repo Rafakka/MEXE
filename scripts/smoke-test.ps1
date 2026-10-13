@@ -4,27 +4,60 @@ $ErrorActionPreference = "Stop"
 
 $projectRoot = Split-Path $PSScriptRoot -Parent
 
+$backendUrl = "http://172.20.0.4:32717"
+
+function Wait-ForReady {
+    param (
+        [string]$Name,
+        [string]$Url,
+        [int]$TimeoutSeconds = 2
+    )
+
+    $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+
+    do {
+        try {
+            curl.exe -fsS $Url
+            return
+        }
+        catch {
+            Start-Sleep -Milliseconds 200
+        }
+    } while ((Get-Date) -lt $deadline)
+
+    throw "$Name did not become ready within ${TimeoutSeconds}s"
+}
+
+
 Write-Host "== MEXE Smoke Test v2 =="
 
 Write-Host "`n[1/5] Backend"
-docker compose exec -T backend python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"
+docker run --rm `
+    --network kind `
+    curlimages/curl:latest `
+    -f `
+    "$backendUrl/health"
 
-Write-Host "[2/5] Prometheus"
-curl.exe -fsS http://localhost:9090/-/ready
+Write-Host "`n[2/5] Prometheus"
+Wait-ForReady `
+    -Name "Prometheus" `
+    -Url "http://localhost:9090/-/ready"
 
 Write-Host "`n[3/5] Loki"
-curl.exe -fsS http://localhost:3100/ready
+Wait-ForReady `
+    -Name "Loki" `
+    -Url "http://localhost:3100/ready"
 
 Write-Host "`n[4/5] Grafana"
-curl.exe -fsS http://localhost:3000/api/health
+Wait-ForReady `
+    -Name "Grafana" `
+    -Url "http://localhost:3000/api/health"
 
 Write-Host "`n[5/5] Frontend"
 curl.exe -fsSI http://localhost:8080
 
 Write-Host ""
 Write-Host "[6/6] Blend API"
-
-$network = "mexe_mexe"
 
 $outputDir = Join-Path $env:TEMP "mexe-smoke"
 
@@ -36,13 +69,13 @@ New-Item `
 $resultPath = Join-Path $outputDir "result.png"
 
 docker run --rm `
-    --network $network `
+    --network kind `
     -v "${projectRoot}/tests/fixtures:/fixtures:ro" `
     -v "${outputDir}:/output" `
     curlimages/curl:latest `
     -f `
-    -X POST http://mexe-backend:8000/blend `
-    -H "X-Request-ID: smoke-test-v3" `
+    -X POST "$backendUrl/blend" `
+    -H "X-Request-ID: smoke-test-v4" `
     -F "implicit_image_a=@/fixtures/image-a.png" `
     -F "implicit_image_b=@/fixtures/image-b.png" `
     -F "width=1024" `
@@ -62,14 +95,9 @@ if ($size -le 0) {
 
 Write-Host "Blend result: $size bytes"
 
-docker cp $resultPath mexe-backend:/tmp/result.png
-
-docker cp `
+python `
     "${projectRoot}/scripts/validate-image.py" `
-    mexe-backend:/tmp/validate-image.py
-
-docker exec mexe-backend `
-    python /tmp/validate-image.py /tmp/result.png
+    $resultPath
 
 Remove-Item `
     -Recurse `
