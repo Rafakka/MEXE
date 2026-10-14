@@ -10,29 +10,6 @@ services:
     networks:
       - mexe
       - kind
-
-  prometheus:
-    image: prom/prometheus:v3.14.0
-    container_name: mexe-prometheus
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-    networks:
-      - mexe
-
-  loki:
-    image: grafana/loki:3.7.7
-    container_name: mexe-loki
-    ports:
-      - "3100:3100"
-    volumes:
-      - ./loki/loki-config.yaml:/etc/loki/loki-config.yaml:ro
-    command:
-      - "-config.file=/etc/loki/loki-config.yaml"
-    networks:
-      - mexe
-
   alloy:
     image: grafana/alloy:v1.19.1
     container_name: mexe-alloy
@@ -42,10 +19,9 @@ services:
     command:
       - "run"
       - "/etc/alloy/config.alloy"
-    depends_on:
-      - loki
     networks:
       - mexe
+      - kind
 
   grafana:
     image: grafana/grafana:13.2.0
@@ -58,11 +34,9 @@ services:
       - grafana-data:/var/lib/grafana
       - ./grafana/dashboards:/etc/grafana/dashboards:ro
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
-    depends_on:
-      - prometheus
-      - loki
     networks:
       - mexe
+      - kind
 
   dependency-exporter:
     build:
