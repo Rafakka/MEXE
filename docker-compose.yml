@@ -10,18 +10,6 @@ services:
     networks:
       - mexe
       - kind
-  alloy:
-    image: grafana/alloy:v1.19.1
-    container_name: mexe-alloy
-    volumes:
-      - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    command:
-      - "run"
-      - "/etc/alloy/config.alloy"
-    networks:
-      - mexe
-      - kind
 
   grafana:
     image: grafana/grafana:13.2.0
@@ -51,20 +39,7 @@ services:
     networks:
       - mexe
 
-  security-exporter:
-    build:
-      context: ./security/exporter
-    container_name: mexe-security-exporter
-    volumes:
-      - ./security/results:/results:ro
-    expose:
-      - "9000"
-    networks:
-      - mexe
-
 volumes:
-  prometheus-data:
-  loki-data:
   grafana-data:
 
 networks:

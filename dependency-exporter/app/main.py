@@ -54,13 +54,22 @@ async def ready():
 @app.get("/metrics")
 async def metrics():
 
+    return Response(
+            content=generate_latest(),
+            media_type="text/plain"
+            )
+
+async def refresh_metrics():
+
     start =  time.perf_counter()
 
     try:
 
         merge_requests = await fetch_open_merge_requests()
 
-    except Exception:
+    except Exception as exc:
+
+        print(f"GitLab refresh failed: {exc}")
 
         duration = time.perf_counter() - start
 
@@ -123,8 +132,9 @@ async def metrics():
         )
     )
 
+@app.post("/refresh")
+async def refresh():
+    await refresh_metrics()
+    return {"status": "refreshed"}
 
-    return Response(
-            content=generate_latest(),
-            media_type="text/plain",
-        )
+

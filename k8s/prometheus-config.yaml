@@ -13,3 +13,13 @@ data:
         static_configs:
           - targets:
               - "mexe-backend:8000"
+
+      - job_name: "mexe-security"
+        static_configs:
+          - targets:
+              - "security-exporter:8000"
+
+      - job_name: "mexe-dependency"
+        static_configs:
+          - targets:
+            - "mexe-dependency-exporter:8000"

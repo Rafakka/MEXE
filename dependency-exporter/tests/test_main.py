@@ -47,6 +47,9 @@ def test_metrics_with_renovate_merge_requests(mock_fetch):
         },
     ]
 
+    refresh_response = client.post("/refresh")
+    assert refresh_response.status_code == 200
+
     response = client.get("/metrics")
 
     assert response.status_code == 200
@@ -63,6 +66,9 @@ def test_metrics_with_renovate_merge_requests(mock_fetch):
 )
 def test_metrics_when_gitlab_fails(mock_fetch):
     mock_fetch.side_effect = RuntimeError("GitLab unavailable")
+
+    refresh_response = client.post("/refresh")
+    assert refresh_response.status_code == 200
 
     response = client.get("/metrics")
 
@@ -83,6 +89,9 @@ def test_metrics_when_gitlab_token_is_missing(mock_fetch):
     mock_fetch.side_effect = RuntimeError(
         "GITLAB_TOKEN is not configured"
     )
+
+    refresh_response = client.post("/refresh")
+    assert refresh_response.status_code == 200
 
     response = client.get("/metrics")
 
@@ -106,6 +115,9 @@ def test_metrics_records_gitlab_duration():
             }
         ]
 
+        refresh_response = client.post("/refresh")
+        assert refresh_response.status_code == 200
+
         response = client.get("/metrics")
 
     assert response.status_code == 200
@@ -124,6 +136,9 @@ def test_metrics_records_gitlab_duration_when_gitlab_fails():
         new_callable=AsyncMock,
     ) as mock_fetch:
         mock_fetch.side_effect = RuntimeError("GitLab unavailable")
+
+        refresh_response = client.post("/refresh")
+        assert refresh_response.status_code == 200
 
         response = client.get("/metrics")
 
@@ -221,8 +236,10 @@ This MR contains the following updates:
         },
     ]
 
-    response = client.get("/metrics")
+    refresh_response = client.post("/refresh")
+    assert refresh_response.status_code == 200
 
+    response = client.get("/metrics")
     assert response.status_code == 200
 
     body = response.text
@@ -267,8 +284,10 @@ This MR contains the following updates:
         },
     ]
 
-    response = client.get("/metrics")
+    refresh_response = client.post("/refresh")
+    assert refresh_response.status_code == 200
 
+    response = client.get("/metrics")
     assert response.status_code == 200
 
     body = response.text
@@ -318,8 +337,10 @@ This MR contains the following updates:
         },
     ]
 
-    response = client.get("/metrics")
+    refresh_response = client.post("/refresh")
+    assert refresh_response.status_code == 200
 
+    response = client.get("/metrics")
     assert response.status_code == 200
 
     body = response.text
@@ -353,8 +374,10 @@ def test_metrics_records_oldest_renovate_mr_age(mock_fetch):
         },
     ]
 
-    response = client.get("/metrics")
+    refresh_response = client.post("/refresh")
+    assert refresh_response.status_code == 200
 
+    response = client.get("/metrics")
     assert response.status_code == 200
 
     body = response.text

@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: security-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: security-exporter
+  template:
+    metadata:
+      labels:
+        app: security-exporter
+    spec:
+      containers:
+        - name: security-exporter
+          image: mexe-security-exporter:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+
+          volumeMounts:
+            - name: security-results
+              mountPath: /results
+              readOnly: true
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 2
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+
+      volumes:
+        - name: security-results
+          hostPath:
+            path: /mnt/mexe-security-results
+            type: Directory
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: security-exporter
+spec:
+  selector:
+    app: security-exporter
+  ports:
+    - port: 8000
+      targetPort: 8000

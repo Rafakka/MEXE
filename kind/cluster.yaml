@@ -1,0 +1,17 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+
+name: desktop
+
+nodes:
+  - role: control-plane
+
+    extraPortMappings:
+      - containerPort: 32717
+        hostPort: 32717
+        protocol: TCP
+
+    extraMounts:
+      - hostPath: C:\Users\skrafael\Desktop\GIT\MEXE\security\results
+        containerPath: /mnt/mexe-security-results
+        readOnly: true
