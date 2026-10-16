@@ -1,2 +1,13 @@
 
 .env
+
+# Local secrets
+secrets-backup.yaml
+
+# Local Kubernetes backups
+configmaps-backup.yaml
+deployments-backup.yaml
+kubernetes-backup.yaml
+pvc-backup.yaml
+services-backup.yaml
+k8s-current-state.yaml
