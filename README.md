@@ -476,6 +476,8 @@ MEXE Cloud-Native Roadmap
     └── Cloud-native architecture
 ```
 
+For Details on how to Deploy [Deployment](./docs/deploy.md)
+
 ---
 
 # Philosophy
