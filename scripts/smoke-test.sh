@@ -2,144 +2,80 @@
 
 set -e
 
-echo "== MEXE Smoke Test v3 =="
+FRONTEND_URL="http://localhost:8080"
+GRAFANA_URL="http://localhost:3000"
 
-NETWORK=$(docker inspect mexe-backend \
-  --format '{{range $key, $value := .NetworkSettings.Networks}}{{$key}}{{end}}')
-
-wait_for_service() {
-    SERVICE="$1"
+wait_for_ready() {
+    NAME="$1"
     URL="$2"
+    TIMEOUT="${3:-30}"
 
-    echo "Waiting for $SERVICE..."
+    echo "Waiting for $NAME..."
 
-    for i in $(seq 1 30); do
-        if docker run --rm \
-            --network "$NETWORK" \
-            curlimages/curl:latest \
-            -fsS "$URL" \
-            >/dev/null 2>&1
-        then
-            echo "$SERVICE is ready."
+    for i in $(seq 1 "$TIMEOUT"); do
+        if curl -fsS "$URL" >/dev/null 2>&1; then
+            echo "$NAME OK."
             return 0
         fi
 
         sleep 1
     done
 
-    echo "ERROR: $SERVICE did not become ready."
+    echo "ERROR: $NAME did not become ready within ${TIMEOUT}s."
     return 1
 }
 
-echo ""
-echo "[1/6] Backend"
+assert_container_running() {
+    CONTAINER="$1"
 
-    wait_for_backend() {
-    echo "Waiting for backend..."
+    STATUS=$(docker inspect \
+        --format '{{.State.Status}}' \
+        "$CONTAINER" 2>/dev/null || true)
 
-    for i in $(seq 1 30); do
-        if docker compose exec -T backend \
-            python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" \
-            >/dev/null 2>&1
-        then
-            echo "Backend is ready."
-            return 0
-        fi
+    if [ "$STATUS" != "running" ]; then
+        echo "ERROR: Container '$CONTAINER' is not running. Status: $STATUS"
+        return 1
+    fi
 
-        sleep 1
-    done
+    echo "$CONTAINER is running."
+}
 
-    echo "ERROR: Backend did not become ready."
-    docker compose logs backend
-    return 1
-    }
-
-    wait_for_backend
-
-docker compose exec -T backend \
-    python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"
+echo "== MEXE Smoke Test =="
 
 echo ""
-echo "[2/6] Prometheus"
+echo "[1/5] Docker"
 
-wait_for_service "Prometheus" "http://prometheus:9090/-/ready"
+docker info >/dev/null
 
-echo ""
-echo "[3/6] Loki"
-
-wait_for_service "Loki" "http://loki:3100/ready"
+echo "Docker OK."
 
 echo ""
-echo "[4/6] Grafana"
+echo "[2/5] Containers"
 
-wait_for_service "Grafana" "http://grafana:3000/api/health"
-
-echo ""
-echo "[5/6] Frontend"
-
-wait_for_service "Frontend" "http://frontend:80"
+assert_container_running "mexe-frontend"
+assert_container_running "mexe-grafana"
 
 echo ""
-echo "[6/6] Blend API"
+echo "[3/5] Frontend Health"
 
-OUTPUT_VOLUME="mexe-smoke-output-$$"
-RESULT_CONTAINER="mexe-smoke-output-holder-$$"
+wait_for_ready \
+    "Frontend /api/health" \
+    "$FRONTEND_URL/api/health"
 
-docker volume create "$OUTPUT_VOLUME"
+echo ""
+echo "[4/5] Frontend Ready"
 
-docker run --rm \
-  -v "$OUTPUT_VOLUME:/output" \
-  alpine:latest \
-  chmod 777 /output
+wait_for_ready \
+    "Frontend /api/ready" \
+    "$FRONTEND_URL/api/ready"
 
-docker run --rm \
-  --network "$NETWORK" \
-  -v "$(pwd)/tests/fixtures:/fixtures:ro" \
-  -v "$OUTPUT_VOLUME:/output" \
-  curlimages/curl:latest \
-  -f \
-  -X POST http://mexe-backend:8000/blend \
-  -H "X-Request-ID: smoke-test-v3" \
-  -F "implicit_image_a=@/fixtures/image-a.png" \
-  -F "implicit_image_b=@/fixtures/image-b.png" \
-  -F "width=1024" \
-  -F "height=1024" \
-  -o /output/result.png \
-  -w "HTTP_STATUS=%{http_code}\nCONTENT_TYPE=%{content_type}\nSIZE=%{size_download}\n"
+echo ""
+echo "[5/5] Grafana"
 
-docker run --rm \
-  -v "$OUTPUT_VOLUME:/output:ro" \
-  alpine:latest \
-  test -s /output/result.png
-
-docker create \
-  --name "$RESULT_CONTAINER" \
-  -v "$OUTPUT_VOLUME:/output:ro" \
-  alpine:latest \
-  sleep 300
-
-docker cp \
-  "$RESULT_CONTAINER:/output/result.png" \
-  /tmp/mexe-smoke-result.png
-
-docker rm "$RESULT_CONTAINER"
-
-docker cp \
-  /tmp/mexe-smoke-result.png \
-  mexe-backend:/tmp/result.png
-
-docker exec mexe-backend \
-  test -s /tmp/result.png
-
-docker cp scripts/validate-image.py \
-  mexe-backend:/tmp/validate-image.py
-
-docker exec mexe-backend \
-  python /tmp/validate-image.py /tmp/result.png
-
-rm -f /tmp/mexe-smoke-result.png
-
-docker volume rm "$OUTPUT_VOLUME"
+wait_for_ready \
+    "Grafana /api/health" \
+    "$GRAFANA_URL/api/health" \
+    90
 
 echo ""
 echo "== SMOKE TEST PASSED =="

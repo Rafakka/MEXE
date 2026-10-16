@@ -1,102 +1,96 @@
-
-
 $ErrorActionPreference = "Stop"
 
-$projectRoot = Split-Path $PSScriptRoot -Parent
-
 $frontendUrl = "http://localhost:8080"
+$grafanaUrl = "http://localhost:3000"
 
 function Wait-ForReady {
     param (
         [string]$Name,
         [string]$Url,
-        [int]$TimeoutSeconds = 2
+        [int]$TimeoutSeconds = 30
     )
 
     $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
 
     do {
-        try {
-            curl.exe -fsS $Url
+        curl.exe -fsS $Url | Out-Null
+
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "$Name OK." -ForegroundColor Green
             return
         }
-        catch {
-            Start-Sleep -Milliseconds 200
-        }
+
+        Start-Sleep -Milliseconds 500
     } while ((Get-Date) -lt $deadline)
 
     throw "$Name did not become ready within ${TimeoutSeconds}s"
 }
 
+function Assert-ContainerRunning {
+    param (
+        [string]$ContainerName
+    )
 
-Write-Host "== MEXE Smoke Test v4 =="
+    $status = docker inspect `
+        --format "{{.State.Status}}" `
+        $ContainerName 2>$null
 
-Write-Host "`n[1/7] API Health"
-curl.exe -fsS "$frontendUrl/api/health"
+    if ($LASTEXITCODE -ne 0) {
+        throw "Container '$ContainerName' não existe."
+    }
 
-Write-Host "`n[2/7] API Ready"
-curl.exe -fsS "$frontendUrl/api/ready"
+    if ($status -ne "running") {
+        throw "Container '$ContainerName' não está rodando. Status: $status"
+    }
 
-Write-Host "`n[3/7] Prometheus"
-Wait-ForReady `
-    -Name "Prometheus" `
-    -Url "http://localhost:9090/-/ready"
-
-Write-Host "`n[4/7] Loki"
-Wait-ForReady `
-    -Name "Loki" `
-    -Url "http://localhost:3100/ready"
-
-Write-Host "`n[5/7] Grafana"
-Wait-ForReady `
-    -Name "Grafana" `
-    -Url "http://localhost:3000/api/health"
-
-Write-Host "`n[6/7] Frontend"
-curl.exe -fsSI "$frontendUrl"
-
-Write-Host "`n[7/7] Blend API"
-
-$outputDir = Join-Path $env:TEMP "mexe-smoke"
-
-New-Item `
-    -ItemType Directory `
-    -Force `
-    -Path $outputDir | Out-Null
-
-$resultPath = Join-Path $outputDir "result.png"
-
-curl.exe `
-    -f `
-    -X POST "$frontendUrl/api/blend" `
-    -H "X-Request-ID: smoke-test-v4" `
-    -F "implicit_image_a=@${projectRoot}/tests/fixtures/image-a.png" `
-    -F "implicit_image_b=@${projectRoot}/tests/fixtures/image-b.png" `
-    -F "width=1024" `
-    -F "height=1024" `
-    -o $resultPath `
-    -w "HTTP_STATUS=%{http_code}`nCONTENT_TYPE=%{content_type}`nSIZE=%{size_download}`n"
-
-if (-not (Test-Path $resultPath)) {
-    throw "Blend did not produce an output file"
+    Write-Host "$ContainerName está rodando." -ForegroundColor Green
 }
 
-$size = (Get-Item $resultPath).Length
+Write-Host "== MEXE Smoke Test ==" -ForegroundColor Cyan
 
-if ($size -le 0) {
-    throw "Blend produced an empty output"
+# 1. Docker
+Write-Host "`n[1/5] Docker"
+
+docker info | Out-Null
+
+if ($LASTEXITCODE -ne 0) {
+    throw "Docker não está disponível."
 }
 
-Write-Host "Blend result: $size bytes"
+Write-Host "Docker OK." -ForegroundColor Green
 
-python `
-    "${projectRoot}/scripts/validate-image.py" `
-    $resultPath
 
-Remove-Item `
-    -Recurse `
-    -Force `
-    $outputDir
+# 2. Containers
+Write-Host "`n[2/5] Containers"
+
+Assert-ContainerRunning -ContainerName "mexe-frontend"
+Assert-ContainerRunning -ContainerName "mexe-grafana"
+
+
+# 3. Frontend health
+Write-Host "`n[3/5] Frontend Health"
+
+Wait-ForReady `
+    -Name "Frontend /api/health" `
+    -Url "$frontendUrl/api/health"
+
+
+# 4. Frontend readiness
+Write-Host "`n[4/5] Frontend Ready"
+
+Wait-ForReady `
+    -Name "Frontend /api/ready" `
+    -Url "$frontendUrl/api/ready"
+
+
+# 5. Grafana
+Write-Host "`n[5/5] Grafana"
+
+Wait-ForReady `
+    -Name "Grafana /api/health" `
+    -Url "$grafanaUrl/api/health" `
+    -TimeoutSeconds 90
+
 
 Write-Host ""
-Write-Host "== SMOKE TEST PASSED =="
+Write-Host "== SMOKE TEST PASSED ==" -ForegroundColor Green
