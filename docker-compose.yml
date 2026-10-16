@@ -26,19 +26,6 @@ services:
       - mexe
       - kind
 
-  dependency-exporter:
-    build:
-      context: ./dependency-exporter
-    container_name: mexe-dependency-exporter
-    environment:
-      GITLAB_URL: https://gitlab.com
-      GITLAB_PROJECT: logos-group/mexe
-      GITLAB_TOKEN: ${GITLAB_TOKEN:?GITLAB_TOKEN must be set}
-    expose:
-      - "8000"
-    networks:
-      - mexe
-
 volumes:
   grafana-data:
 
