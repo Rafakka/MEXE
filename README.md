@@ -20,7 +20,41 @@ The laboratory models its behavior through explicit phases and transitions. User
 
 This keeps responsibilities explicit and reduces unnecessary coupling between UI components and application behavior.
 
-The application is designed as a **stateless SaaS**, keeping image processing independent from persistent application state between requests. This makes the processing layer suitable for horizontal scaling and distributed deployment.
+MEXE is designed as a **stateless SaaS**, keeping image processing independent from persistent application state between requests. This allows multiple backend replicas to process requests behind a Kubernetes Service.
+
+### Application and Runtime Architecture
+
+The application is composed of independently containerized frontend and backend components.
+
+The frontend is served by **Nginx**, which also acts as a reverse proxy for API requests.
+
+The backend runs as multiple Kubernetes Pods behind a Kubernetes Service:
+
+```text
+
+        Browser
+           │
+           ▼
+      Frontend / Nginx
+           │
+           │ /api/*
+           ▼
+    Kubernetes Service
+    mexe-backend:8000
+            │
+      ├──────────────┐
+      ▼              ▼
+  Backend Pod 1   Backend Pod 2
+      │              │
+      └──────┬───────┘
+             ▼
+       Image Processing
+
+```
+
+The Kubernetes Service provides a stable endpoint for the backend while distributing requests across the available backend Pods.
+
+The backend Pods are therefore replaceable instances of the same stateless processing application rather than independent application states.
 
 ### Architectural principles
 
@@ -161,7 +195,9 @@ This property is important for future distributed evolution, where multiple back
 
 # Current Architecture
 
-MEXE currently consists of a frontend application, a backend application, and an operational observability stack.
+MEXE currently runs as a containerized application with Kubernetes providing the runtime orchestration layer.
+
+The application path is:
 
 ```text
                           Browser
@@ -171,8 +207,8 @@ MEXE currently consists of a frontend application, a backend application, and an
                             │
                             ▼
                        Kubernetes
+                    mexe-backend:8000
                             │
-                       mexe-backend
                        ┌────┴────┐
                        ▼         ▼
                     Pod 1      Pod 2
@@ -184,9 +220,62 @@ MEXE currently consists of a frontend application, a backend application, and an
 
 The frontend and backend are independently containerized.
 
-Nginx acts as the frontend server and reverse proxy for API requests.
+Nginx serves the frontend and acts as the reverse proxy for API requests.
 
----
+The backend is deployed through a Kubernetes Deployment with multiple replicas. The Kubernetes Service provides a stable endpoint and distributes requests between the available backend Pods.
+
+The backend processing layer is stateless between requests, so a Pod can be replaced without requiring application state to be transferred to another Pod.
+
+## Operational Architecture
+
+The application is supported by an operational observability stack running in Kubernetes:
+
+```text
+
+                         Kubernetes
+                              │
+        ┌─────────────────────┼─────────────────────┐
+        │                     │                     │
+        ▼                     ▼                     ▼
+  mexe-backend         security-exporter    dependency-exporter
+   Deployment               │                     │
+   ┌────┴────┐              │                     │
+   ▼         ▼              └─────────┬───────────┘
+ Pod 1     Pod 2                       │
+   │         │                         │
+   └────┬────┘                         │
+        │                              │
+        └──────────────┬───────────────┘
+                       ▼
+                  Prometheus
+                       │
+                       ▼
+                    Grafana
+
+Backend logs
+     │
+     ▼
+    Alloy
+     │
+     ▼
+    Loki
+     │
+     ▼
+  Grafana
+
+```
+
+The current Kubernetes operational components are:
+
+- mexe-backend — image processing API;
+- security-exporter — exposes security scan results as Prometheus metrics;
+- dependency-exporter — exposes dependency and Renovate state as Prometheus metrics;
+- Prometheus — collects application and operational metrics;
+- Alloy — collects container logs;
+- Loki — stores and serves application logs;
+- Grafana — provides dashboards and operational visualization.
+  
+This separation keeps image processing, telemetry collection, and operational state as independent components while avoiding unnecessary coupling between them.
 
 ## Health and Readiness
 
@@ -198,20 +287,66 @@ Backend probes
 ├── /health    → liveness
 └── /ready     → readiness
 
-Frontend
-└── /api/ready → proxy to backend /ready
+````
 
-Docker
-└── HEALTHCHECK → /health
+Liveness
+/health indicates that the backend application process is alive and responding.
+
+It is also used by the container HEALTHCHECK.
+
+```text
+
+/health
+   │
+   ▼
+Application process responding
+
+```
+
+Readiness
+/ready indicates whether the backend is currently able to execute its main image-processing operation.
+
+The readiness check performs a lightweight image-processing validation before reporting the backend as ready.
+
+Kubernetes uses this endpoint as the backend Deployment's readiness probe:
+
+```text
+
+Kubernetes
+    │
+    │ readinessProbe
+    ▼
+/ready
+    │
+    ▼
+Image processing readiness check
+    │
+    ├── ready
+    │     └── Pod receives traffic
+    │
+    └── not ready
+          └── Pod is removed from Service endpoints
 
 ```
 
 The distinction allows the system to differentiate between:
 
-- **liveness** — the application is running;
-- **readiness** — the application is currently able to serve requests.
+- liveness — the application is running and responding;
+- readiness — the application is currently able to serve image-processing requests.
 
-The frontend uses the Nginx reverse proxy to verify backend readiness.
+A backend Pod can therefore remain alive while temporarily being considered not ready to receive traffic.
+
+The frontend exposes the backend readiness check through its Nginx API proxy:
+
+```text
+
+Frontend
+└── /api/ready
+        │
+        ▼
+Backend /ready
+
+```
 
 ---
 
@@ -256,49 +391,37 @@ The goal is to make failure **observable, explicit, recoverable, and bounded**.
 
 ## Observability
 
-MEXE exposes application metrics through `/metrics`.
+MEXE exposes application and operational telemetry through metrics and logs.
 
-Prometheus collects and stores metrics.
+Application metrics are exposed through `/metrics` and collected by Prometheus.
 
-Application logs are emitted as structured JSON to stdout.
+Application logs are emitted to stdout. Grafana Alloy collects container logs and forwards them to Loki.
 
-Grafana Alloy collects container logs and forwards them to Loki.
+Grafana provides dashboards and operational visualization for the collected telemetry.
 
-Grafana provides dashboards, log exploration, and alerting.
-
-For in depth explanations, please read [OBSERVABILITY IN DEPTH](./docs/observability.md)
+The current observability flow is:
 
 ```text
-                    ┌──────────────┐
-                    │    MEXE      │
-                    └──────┬───────┘
-                           │
-              ┌────────────┴────────────┐
-              │                         │
-           /metrics                   stdout
-              │                         │
-              ▼                         ▼
-        ┌───────────┐              ┌─────────┐
-        │ Prometheus│              │  Alloy  │
-        └─────┬─────┘              └────┬────┘
-              │                         │
-              │                         ▼
-              │                      ┌──────┐
-              │                      │ Loki │
-              │                      └───┬──┘
-              │                          │
-              └──────────┬───────────────┘
-                         ▼
-                    ┌─────────┐
-                    │ Grafana │
-                    └─────────┘
-                         │
-                    ┌────┴────┐
-                    ▼         ▼
-                Dashboard   Alerts
+                         MEXE
+                          │
+             ┌────────────┴────────────┐
+             │                         │
+          /metrics                  stdout
+             │                         │
+             ▼                         ▼
+        Prometheus                  Alloy
+             │                         │
+             │                         ▼
+             │                        Loki
+             │                         │
+             └────────────┬────────────┘
+                          ▼
+                       Grafana
 ```
 
 Tracing remains a future capability.
+
+For in depth explanations, please read [OBSERVABILITY IN DEPTH](./docs/observability.md)
 
 ---
 
@@ -362,9 +485,11 @@ MEXE/
 │
 ├── security/               # This folder contains data provided by Trivy scan
 │
+├── k8s/               # This folder contains kubernetes pods configurations
+│
 ├── scripts/               # This folder contains the master bootstrap for deployment and tools from CI/CD
 │
-├── dependency-exporter/   # This is a custom tool that needs a github token, it get metrics form github.
+├── dependency-exporter/   # This is a custom tool that needs a gitlab token, it get metrics form gitlab.
 │                            This is an optional tool.
 │
 ├── infrastructure/
@@ -408,6 +533,7 @@ Make sure you have:
 
 - Docker
 - Docker Compose
+- Kubernetes
 
 ## Running on Powershell
 
@@ -441,69 +567,52 @@ The application can then be accessed through the frontend container.
 # Cloud-Native Roadmap
 
 ```text
-MEXE Cloud-Native Roadmap
+MEXE
 │
-├── 1. Application Foundation
-│   ├── Domain architecture          ✓
-│   ├── Tests                        ✓
-│   ├── API                          ✓
-│   └── Stateless design             ✓
+├── 1. Application
+│   ├── Frontend Laboratory
+│   ├── Backend
+│   └── API
 │
-├── 2. Containerization
-│   ├── Docker                       ✓
-│   ├── Docker Compose               ✓
-│   └── Nginx reverse proxy          ✓
+├── 2. Application Resilience
+│   ├── reconnect
+│   ├── retry
+│   ├── reentry
+│   └── state restoration
 │
-├── 3. Operational Health
-│   ├── /health                      ✓
-│   ├── /ready                       ✓
-│   ├── /api/ready                   ✓
-│   ├── Docker healthchecks          ✓
-│   ├── Failure propagation          ✓
-│   └── Recovery                     ✓
+├── 3. Containers
+│   ├── frontend
+│   └── backend
 │
-├── 4. CI/CD
-│   ├── Automated tests              ✓
-│   ├── Frontend build               ✓
-│   ├── Docker build                 ✓
-│   ├── Pipeline                     ✓
-│   └── Deployment                   ✓
+├── 4. Kubernetes
+│   ├── backend Deployment
+│   ├── backend Service
+│   ├── security-exporter
+│   ├── dependency-exporter
+│   ├── Prometheus
+│   ├── Loki
+│   └── Alloy
 │
-├── 5. Container Registry
-│   └── GHCR                         ✓
+├── 5. Observability
+│   ├── Metrics
+│   ├── Logs
+│   ├── Prometheus
+│   ├── Loki
+│   ├── Grafana
+│   ├── Security metrics
+│   └── Dependency metrics
 │
-├── 6. Cloud Deployment
-│   └── First real deployment        ✓
+├── 6. CI/CD
+│   ├── Tests
+│   ├── Build
+│   ├── Security
+│   └── Publish
 │
-├── 7. Observability
-│   ├── Logs                         ✓
-│   ├── Metrics                      ✓
-│   ├── Dashboards                   ✓
-│   ├── Alerting                     ✓
-│   └── Tracing                      ← FUTURE
-│
-├── 8. Resilience
-│   ├── Timeouts                     ✓
-│   ├── Failure handling             ✓
-│   ├── Recovery detection           ✓
-│   ├── Process recovery             ✓
-│   └── Resource limits              ← NEXT
-│
-├── 9. Kubernetes
-│   ├── Backend Deployment              ✓
-│   ├── Backend Service                 ✓
-│   ├── Backend readness                ✓
-│   ├── Security exporter               ✓
-│   ├── Dependency Exporter             ✓
-│   ├── Prometheus                      ✓
-│   ├── Loki                            ✓
-│   └── Alloy                           ✓
-│
-└── 10. Distributed Evolution          ← NEXT
-    ├── Multiple instances
-    ├── Stateless scaling
-    ├── Load balancing
-    └── Cloud-native architecture
+└── 7. Cloud-Native Evolution
+    ├── resource limits        ← next
+    ├── controlled scaling     ← future
+    ├── rollout/rollback       ← strengthen
+    └── production cloud      ← future
 ```
 
 ---
