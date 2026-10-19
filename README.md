@@ -364,7 +364,8 @@ MEXE/
 │
 ├── scripts/               # This folder contains the master bootstrap for deployment and tools from CI/CD
 │
-├── dependency-exporter/   # This is a custom tool that needs a github token, it get metrics form github. This is an optional tool.
+├── dependency-exporter/   # This is a custom tool that needs a github token, it get metrics form github.
+│                            This is an optional tool.
 │
 ├── infrastructure/
 │   ├── kubernetes/
