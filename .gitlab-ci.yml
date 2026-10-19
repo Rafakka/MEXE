@@ -112,15 +112,6 @@ docker-frontend:
 
 security-scan:
   stage: security
-  image: docker:27-cli
-
-  services:
-    - name: docker:27-dind
-      alias: docker
-
-  variables:
-    DOCKER_HOST: tcp://docker:2375
-    DOCKER_TLS_CERTDIR: ""
 
   before_script:
     - docker info
@@ -145,15 +136,8 @@ publish-images:
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
 
-  image: docker:27-cli
-
-  services:
-    - name: docker:27-dind
-      alias: docker
-
-  variables:
-    DOCKER_HOST: tcp://docker:2375
-    DOCKER_TLS_CERTDIR: ""
+  tags:
+    - mexe-local
 
   before_script:
     - docker info
@@ -164,4 +148,4 @@ publish-images:
   script:
     - docker buildx build --platform linux/amd64,linux/arm64 --tag ghcr.io/rafakka/mexe-backend:$CI_COMMIT_SHA --push ./backend
     - docker buildx build --platform linux/amd64,linux/arm64 --tag ghcr.io/rafakka/mexe-frontend:$CI_COMMIT_SHA --push ./frontend
-
+    - Invoke-WebRequest -Uri "http://localhost:8080/api/admin/dependency-refresh" -Method POST -Headers @{ Authorization = "Bearer $env:DEPENDENCY_REFRESH_TOKEN" }

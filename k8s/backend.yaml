@@ -16,8 +16,20 @@ spec:
         - name: backend
           image: mexe-backend:latest
           imagePullPolicy: IfNotPresent
+
           ports:
             - containerPort: 8000
+
+          env:
+            - name: DEPENDENCY_EXPORTER_URL
+              value: "http://mexe-dependency-exporter:8000"
+
+            - name: DEPENDENCY_REFRESH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: mexe-dependency-refresh
+                  key: DEPENDENCY_REFRESH_TOKEN
+
           readinessProbe:
             httpGet:
               path: /ready
@@ -28,6 +40,7 @@ spec:
             failureThreshold: 2
 
 ---
+
 apiVersion: v1
 kind: Service
 metadata:

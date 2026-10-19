@@ -1,5 +1,7 @@
 import logging
 
+import os
+
 from app.observability.metrics import metrics
 from app.observability.decorators import measure_time
 
@@ -14,6 +16,8 @@ from app.domain.health_status import HealthStatus
 
 from app.services.request_id_service import RequestIdService
 from app.services.image_processing_service import ImageProcessingService
+from.app.services.dependency_refresh_service import DependencyRefreshService
+
 
 logger = logging.getLogger("mexe")
 
@@ -22,6 +26,7 @@ router = APIRouter()
 image_processor_sv = ImageProcessingService()
 health_checker = HealthChecker(image_processor_sv)
 request_id_service = RequestIdService()
+dependency_refresh_service = DependencyRefreshService()
 
 @router.post("/blend",
              tags=["Image Processing"],
@@ -141,3 +146,32 @@ async def reentry_endpoint(
         operation,
         request_id,
     )
+
+@router.post("/admin/dependency-refresh")
+async def dependency_refresh(request: Request):
+    expected_token = os.getenv("DEPENDENCY_REFRESH_TOKEN")
+
+    if not expected_token:
+        raise HTTPException(
+            status_code=503,
+            detail="Dependency refresh authentication is not configured",
+        )
+
+    authorization = request.headers.get("Authorization")
+
+    if authorization != f"Bearer {expected_token}":
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid refresh token",
+        )
+
+    try:
+        await dependency_refresh_service.refresh()
+    except Exception:
+        logger.exception("dependency_refresh_failed")
+        raise HTTPException(
+            status_code=502,
+            detail="Dependency exporter refresh failed",
+        )
+
+    return {"status": "refreshed"}

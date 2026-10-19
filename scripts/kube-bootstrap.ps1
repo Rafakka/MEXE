@@ -16,6 +16,7 @@ $SecurityExporterManifest = Join-Path `
     "optional\security-exporter.yaml"
 
 $SecretName = "mexe-dependency-exporter"
+
 $ClusterName = "desktop"
 
 Write-Host "=== MEXE Kubernetes Bootstrap ===" -ForegroundColor Cyan
@@ -87,10 +88,56 @@ if (-not (Test-Path $ClusterConfig)) {
 }
 
 $ClusterExists = kind get clusters |
-    Select-String "^$ClusterName$"
+    Where-Object { $_ -eq $ClusterName }
 
-if (-not $ClusterExists) {
+$ControlPlaneExists = docker ps -a `
+    --filter "name=$ClusterName-control-plane" `
+    --format "{{.Names}}" |
+    Where-Object { $_ -eq "$ClusterName-control-plane" }
+
+$ShouldCreateCluster = $false
+
+if ($ClusterExists) {
+
+    Write-Host "Cluster '$ClusterName' já existe. Reutilizando..." -ForegroundColor Green
+
+}
+elseif ($ControlPlaneExists) {
+
+    Write-Host "Container '$ClusterName-control-plane' encontrado sem registro Kind." -ForegroundColor Yellow
+    Write-Host "Tentando recuperar o cluster '$ClusterName'..."
+
+    kubectl get nodes | Out-Null
+
+    if ($LASTEXITCODE -eq 0) {
+
+        Write-Host "Cluster '$ClusterName' recuperado com sucesso." -ForegroundColor Green
+
+    }
+    else {
+
+        Write-Host "Container '$ClusterName-control-plane' não é recuperável." -ForegroundColor Yellow
+        Write-Host "Removendo container órfão..." -ForegroundColor Yellow
+
+        docker rm -f "$ClusterName-control-plane"
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "Não foi possível remover o container órfão '$ClusterName-control-plane'."
+        }
+
+        Write-Host "Container órfão removido." -ForegroundColor Green
+
+        $ShouldCreateCluster = $true
+    }
+
+}
+else {
+
     Write-Host "Cluster '$ClusterName' não existe. Criando..."
+    $ShouldCreateCluster = $true
+}
+
+if ($ShouldCreateCluster) {
 
     # Gera configuração temporária do Kind
     $KindConfig = Join-Path $env:TEMP "mexe-kind.yaml"
@@ -98,6 +145,7 @@ if (-not $ClusterExists) {
     $ClusterYaml = Get-Content $ClusterConfig -Raw
 
     if ($SecurityExporterEnabled) {
+
         $SecurityMount = @"
 
     extraMounts:
@@ -128,9 +176,6 @@ if (-not $ClusterExists) {
         -Path $KindConfig `
         -Force `
         -ErrorAction SilentlyContinue
-}
-else {
-    Write-Host "Cluster '$ClusterName' já existe." -ForegroundColor Green
 }
 
 function Ensure-KindImage {

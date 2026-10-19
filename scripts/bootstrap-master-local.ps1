@@ -180,8 +180,8 @@ try {
 
     "all" {
         Start-MexeCompose
-        Invoke-MexeScript -ScriptName "smoke-test.ps1"
         Invoke-MexeScript -ScriptName "kube-bootstrap.ps1"
+        Invoke-MexeScript -ScriptName "smoke-test.ps1"
         Invoke-MexeScript -ScriptName "func-bootstrap.ps1"
         }
     }
