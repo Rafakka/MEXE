@@ -562,6 +562,8 @@ This test checks if you have Docker installed and if the images are available, i
 
 The application can then be accessed through the frontend container.
 
+For more Details about Deployment read [DETAILS](./docs/deploy.md)
+
 ---
 
 # Cloud-Native Roadmap
