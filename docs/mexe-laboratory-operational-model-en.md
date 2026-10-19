@@ -107,6 +107,8 @@ result / failure
 
 Data execution moves **forward within the workflow**. Returning occurs through a result, failure, or explicit recovery mechanisms, rather than through the creation of a reverse execution flow.
 
+The Laboratory treats the backend as the execution boundary. Runtime concerns such as Pod availability, readiness, and traffic distribution are handled outside the Laboratory model.
+
 ---
 
 # 3. LAB CONTEXT
@@ -395,6 +397,10 @@ Its purpose is to preserve the **minimum required to recognize the interrupted p
 Before process execution, memory records the process being executed.
 
 If communication with the backend fails:
+
+The recovery flow described here is application-level recovery. It preserves the user's operation context and determines how the Laboratory can retry or reconstruct the operation.
+
+Infrastructure-level recovery, such as Pod replacement and traffic redistribution, is handled by Kubernetes and remains outside the Laboratory state model.
 
 ```text
 running
