@@ -164,21 +164,20 @@ This property is important for future distributed evolution, where multiple back
 MEXE currently consists of a frontend application, a backend application, and an operational observability stack.
 
 ```text
-                         Browser
+                          Browser
                             │
                             ▼
-                    ┌─────────────┐
-                    │    Nginx    │
-                    │   Frontend  │
-                    └──────┬──────┘
-                           /api/*
+                    Frontend / Nginx
                             │
                             ▼
-                    ┌─────────────┐
-                    │   FastAPI   │
-                    │   Backend   │
-                    └──────┬──────┘
+                       Kubernetes
                             │
+                       mexe-backend
+                       ┌────┴────┐
+                       ▼         ▼
+                    Pod 1      Pod 2
+                       │         │
+                       └────┬────┘
                             ▼
                     Image Processing
 ```
@@ -361,6 +360,16 @@ MEXE/
 │   ├── nginx.conf
 │   └── package.json
 │
+├── security/               # This folder contains data provided by Trivy scan
+│
+├── scripts/               # This folder contains the master bootstrap for deployment and tools from CI/CD
+│
+├── dependency-exporter/   # This is a custom tool that needs a github token, it get metrics form github. This is an optional tool.
+│
+├── infrastructure/
+│   ├── kubernetes/
+│   │   └── baselines/         
+│   
 ├── prometheus/
 │   └── prometheus.yml
 │
@@ -375,8 +384,15 @@ MEXE/
 │   └── config.alloy
 │
 ├── docs/
-│   ├── Diagrams/           # Architecture and system diagrams
-│   └── resumo.md           # Laboratory state and behavior documentation
+│   ├── Diagrams/                                         # Architecture and system diagrams
+│   ├── backend-en.md                                     # Details of backend functioning and architecture 
+│   ├── deploy.md                                         # Explanation how to deploy MEXE
+│   ├── mexe-laboratory-operational-model-en.md           # Details of how MEXE Operation works
+│   ├── mexe-laboratory-state-story-en.md                 # Details of how MEXE visual operation works
+│   └── observability.md                                  # Details of how Observability works on MEXE
+│
+│
+├── cluster.yaml                                         #  
 │
 └── docker-compose.yml
 ```
@@ -392,20 +408,30 @@ Make sure you have:
 - Docker
 - Docker Compose
 
-## Run with Docker Compose
+## Running on Powershell
 
 Clone the repository:
 
 ```bash
 git clone https://github.com/Rafakka/MEXE.git
-cd MEXE
+cd MEXE/scripts
 ```
 
 Start the application:
 
 ```bash
-docker compose up --build
+./bootstrap-master-local.ps1 all
 ```
+This bootstrap has 3 modes with obligatory flag passing:
+
+```
+all   - do all configurations and checks in order to build and run MEXE.
+kube  - do only kubernetes checks and setting up.
+smoke - do the basic check on containers and basics to start up MEXE.
+func  - do all functional verification on Mexe. 
+```
+
+This test checks if you have Docker installed and if the images are available, in case not, it tries to pull the latest in order to continue the deployment.
 
 The application can then be accessed through the frontend container.
 
@@ -463,13 +489,16 @@ MEXE Cloud-Native Roadmap
 │   └── Resource limits              ← NEXT
 │
 ├── 9. Kubernetes
-│   ├── Deployment
-│   ├── Service
-│   ├── Probes
-│   ├── Config
-│   └── Scaling
+│   ├── Backend Deployment              ✓
+│   ├── Backend Service                 ✓
+│   ├── Backend readness                ✓
+│   ├── Security exporter               ✓
+│   ├── Dependency Exporter             ✓
+│   ├── Prometheus                      ✓
+│   ├── Loki                            ✓
+│   └── Alloy                           ✓
 │
-└── 10. Distributed Evolution
+└── 10. Distributed Evolution          ← NEXT
     ├── Multiple instances
     ├── Stateless scaling
     ├── Load balancing
