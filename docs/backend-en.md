@@ -2,6 +2,8 @@
 
 ## Architecture
 
+The backend follows a layered image-processing pipeline.
+
 The request arrives through the API interface and is forwarded to the `ImageProcessingService`, responsible for coordinating the processing.
 
 The operation is prepared by the `ImagePreparationService`, which first validates the input files through the `InputValidator`. After validation, the data is read into memory, decoded by the `ImageDecoder`, and normalized by the `NormalizeProcessor`.
@@ -10,11 +12,90 @@ Once the images are prepared, the operation is executed by the corresponding pro
 
 The result is then sent to the `ImageEncoder`, which transforms it into the response representation returned by the API.
 
+The processing flow is:
+
+```text
+
+HTTP Request
+     │
+     ▼
+API
+     │
+     ▼
+ImageProcessingService
+     │
+     ▼
+ImagePreparationService
+     │
+     ├── InputValidator
+     │
+     ├── ImageDecoder
+     │
+     └── NormalizeProcessor
+     │
+     ▼
+BlendProcessor
+     │
+     ▼
+ImageEncoder
+     │
+     ▼
+HTTP Response
+
+```
+
+The processing pipeline is intentionally independent from the runtime orchestration layer. Kubernetes manages backend replicas and traffic distribution, while the backend remains responsible for image processing.
+
 ---
 
 ## API Contract
 
 The backend exposes an HTTP interface for image processing.
+
+## Runtime Architecture
+
+The backend runs as a Kubernetes Deployment with multiple replicas.
+
+Each Pod contains an independent instance of the backend application.
+
+```text
+                    Kubernetes Service
+                           │
+              ┌────────────┴────────────┐
+              ▼                         ▼
+        Backend Pod 1              Backend Pod 2
+              │                         │
+              └────────────┬────────────┘
+                           ▼
+                    Image Processing
+```
+
+The Kubernetes Service provides a stable endpoint for the frontend and distributes requests between ready backend Pods.
+
+The backend does not maintain application state between requests, allowing individual Pods to be replaced without requiring state synchronization between replicas.
+
+## Readiness and Traffic
+
+Kubernetes uses /ready to determine whether a backend Pod can receive traffic.
+
+```text
+
+Backend Pod
+    │
+    ▼
+/ready
+    │
+    ├── Ready
+    │     └── Service can route traffic
+    │
+    └── Not Ready
+          └── Pod remains running but does not receive traffic
+
+```
+
+This separates application liveness from traffic eligibility.
+
+Pod replacement and traffic distribution are responsibilities of Kubernetes rather than the backend application.
 
 ### Stateless Processing
 
@@ -147,3 +228,36 @@ This allows the user to leave the current connection without losing the work.
 The user can discard the current state and return to the normal flow.
 
 The reset clears the images maintained by the frontend and restarts the corresponding process.
+
+### Runtime Recovery
+
+The backend also benefits from Kubernetes runtime recovery.
+
+If a backend Pod becomes unavailable, the Kubernetes Deployment maintains the desired number of replicas by replacing failed Pods.
+
+The Kubernetes Service routes traffic only to Pods considered ready.
+
+This provides a separate recovery mechanism from the application's operation-level resilience:
+
+```text
+
+Application Resilience
+    │
+    ├── retry
+    ├── reentry
+    └── preserved operation context
+
+Runtime Resilience
+    │
+    ├── readiness
+    ├── Pod replacement
+    └── Service traffic redistribution
+
+```
+
+Application recovery preserves the user's operation.
+
+Kubernetes recovery restores the backend runtime capacity.
+
+These mechanisms operate at different layers and complement each other.
+
