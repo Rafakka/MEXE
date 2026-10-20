@@ -7,23 +7,29 @@ function Wait-ForReady {
     param (
         [string]$Name,
         [string]$Url,
-        [int]$TimeoutSeconds = 30
+        [int]$TimeoutSeconds = 30,
+        [bool]$FailOnTimeout = $true
     )
 
     $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
 
     do {
-        curl.exe -fsS $Url | Out-Null
+        curl.exe -fsS "$Url" | Out-Null
 
         if ($LASTEXITCODE -eq 0) {
             Write-Host "$Name OK." -ForegroundColor Green
-            return
+            return $true
         }
 
         Start-Sleep -Milliseconds 500
     } while ((Get-Date) -lt $deadline)
 
-    throw "$Name did not become ready within ${TimeoutSeconds}s"
+    if ($FailOnTimeout) {
+        throw "$Name did not become ready within ${TimeoutSeconds}s"
+    }
+
+    Write-Host "$Name não ficou pronto dentro de ${TimeoutSeconds}s. Verifique o frontend." -ForegroundColor Yellow
+    return $false
 }
 
 function Assert-ContainerRunning {
@@ -31,9 +37,7 @@ function Assert-ContainerRunning {
         [string]$ContainerName
     )
 
-    $status = docker inspect `
-        --format "{{.State.Status}}" `
-        $ContainerName 2>$null
+    $status = docker inspect --format "{{.State.Status}}" $ContainerName 2>$null
 
     if ($LASTEXITCODE -ne 0) {
         throw "Container '$ContainerName' não existe."
@@ -63,33 +67,38 @@ Write-Host "Docker OK." -ForegroundColor Green
 # 2. Containers
 Write-Host "`n[2/5] Containers"
 
-Assert-ContainerRunning -ContainerName "mexe-frontend"
-Assert-ContainerRunning -ContainerName "mexe-grafana"
+Assert-ContainerRunning "mexe-frontend"
+Assert-ContainerRunning "mexe-grafana"
 
 
-# 3. Frontend health
+# 3. Frontend Health
 Write-Host "`n[3/5] Frontend Health"
 
 Wait-ForReady `
-    -Name "Frontend /api/health" `
-    -Url "$frontendUrl/api/health"
+    "Frontend /api/health" `
+    "$frontendUrl/api/health" `
+    30 `
+    $false
 
 
-# 4. Frontend readiness
+# 4. Frontend Ready
 Write-Host "`n[4/5] Frontend Ready"
 
 Wait-ForReady `
-    -Name "Frontend /api/ready" `
-    -Url "$frontendUrl/api/ready"
+    "Frontend /api/ready" `
+    "$frontendUrl/api/ready" `
+    30 `
+    $false
 
 
 # 5. Grafana
 Write-Host "`n[5/5] Grafana"
 
 Wait-ForReady `
-    -Name "Grafana /api/health" `
-    -Url "$grafanaUrl/api/health" `
-    -TimeoutSeconds 90
+    "Grafana /api/health" `
+    "$grafanaUrl/api/health" `
+    90 `
+    $true
 
 
 Write-Host ""

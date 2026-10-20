@@ -1,4 +1,3 @@
-
 services:
 
   frontend:
@@ -9,7 +8,6 @@ services:
       - "8080:80"
     networks:
       - mexe
-      - kind
 
   grafana:
     image: grafana/grafana:13.2.0
@@ -24,7 +22,6 @@ services:
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
     networks:
       - mexe
-      - kind
 
 volumes:
   grafana-data:
@@ -32,6 +29,3 @@ volumes:
 networks:
   mexe:
     driver: bridge
-  kind:
-    external: true
-    name: kind

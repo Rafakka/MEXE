@@ -2,6 +2,18 @@ $ErrorActionPreference = "Stop"
 
 $MexeRoot = Split-Path $PSScriptRoot -Parent
 
+$EnvFile = Join-Path $MexeRoot ".env"
+
+if (Test-Path $EnvFile) {
+    $GitlabTokenLine = Get-Content $EnvFile |
+        Where-Object { $_ -match '^GITLAB_TOKEN=' } |
+        Select-Object -First 1
+
+    if ($GitlabTokenLine) {
+        $env:GITLAB_TOKEN = $GitlabTokenLine -replace '^GITLAB_TOKEN=', ''
+    }
+}
+
 $ClusterConfig = Join-Path $MexeRoot "cluster.yaml"
 $KubernetesDir = Join-Path $MexeRoot "k8s"
 
@@ -170,35 +182,21 @@ if ($ShouldCreateCluster) {
 
 function Ensure-KindImage {
     param (
+        [Parameter(Mandatory = $true)]
         [string]$Image
     )
 
     Write-Host ""
     Write-Host "Verificando imagem: $Image"
 
-    # Verifica se a imagem existe no Docker host
-    docker image inspect $Image | Out-Null
+    docker image inspect $Image *> $null
 
     if ($LASTEXITCODE -ne 0) {
-        throw "Imagem '$Image' não encontrada no Docker host."
+        throw "Imagem '$Image' não existe no Docker local."
     }
 
-    $KindImages = docker exec $ClusterName-control-plane `
-        crictl images `
-        2>$null
-
-    $ImageName = $Image.Split(":")[0]
-    $ImageTag = $Image.Split(":")[1]
-
-    $ImageExists = $KindImages |
-        Select-String "docker.io/library/$ImageName\s+$ImageTag"
-
-    if ($ImageExists) {
-        Write-Host "Imagem '$Image' já está no Kind." -ForegroundColor Green
-        return
-    }
-
-    Write-Host "Imagem '$Image' não está no Kind. Carregando..."
+    Write-Host "Imagem '$Image' encontrada no Docker local."
+    Write-Host "Carregando '$Image' no Kind..."
 
     kind load docker-image $Image --name $ClusterName
 
@@ -215,10 +213,16 @@ function Ensure-KindImage {
 
 Write-Host "`nGarantindo imagens locais no Kind..."
 
-Ensure-KindImage -Image "mexe-backend:latest"
+$KindImages = @(
+    "mexe-backend:latest"
+)
 
 if ($SecurityExporterEnabled) {
-    Ensure-KindImage -Image "mexe-security-exporter:latest"
+    $KindImages += "mexe-security-exporter:latest"
+}
+
+if ($DependencyExporterEnabled) {
+    $KindImages += "mexe-dependency-exporter:latest"
 }
 
 
@@ -238,6 +242,12 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "Kubernetes OK." -ForegroundColor Green
+
+Write-Host "`nGarantindo imagens locais no Kind..."
+
+foreach ($Image in $KindImages) {
+    Ensure-KindImage -Image $Image
+}
 
 if ($DependencyExporterEnabled) {
 

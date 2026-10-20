@@ -16,7 +16,7 @@ from app.domain.health_status import HealthStatus
 
 from app.services.request_id_service import RequestIdService
 from app.services.image_processing_service import ImageProcessingService
-from.app.services.dependency_refresh_service import DependencyRefreshService
+from app.services.dependency_refresh_service import DependencyRefreshService
 
 
 logger = logging.getLogger("mexe")
