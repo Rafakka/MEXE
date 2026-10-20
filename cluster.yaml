@@ -5,6 +5,7 @@ name: desktop
 
 nodes:
   - role: control-plane
+    image: kindest/node:v1.36.1
     extraPortMappings:
       - containerPort: 32717
         hostPort: 32717

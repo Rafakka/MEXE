@@ -29,6 +29,7 @@ spec:
                 secretKeyRef:
                   name: mexe-dependency-refresh
                   key: DEPENDENCY_REFRESH_TOKEN
+                  optional: true
 
           readinessProbe:
             httpGet:

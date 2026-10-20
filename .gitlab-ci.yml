@@ -148,4 +148,4 @@ publish-images:
   script:
     - docker buildx build --platform linux/amd64,linux/arm64 --tag ghcr.io/rafakka/mexe-backend:$CI_COMMIT_SHA --push ./backend
     - docker buildx build --platform linux/amd64,linux/arm64 --tag ghcr.io/rafakka/mexe-frontend:$CI_COMMIT_SHA --push ./frontend
-    - Invoke-WebRequest -Uri "http://localhost:8080/api/admin/dependency-refresh" -Method POST -Headers @{ Authorization = "Bearer $env:DEPENDENCY_REFRESH_TOKEN" }
+    - if ([string]::IsNullOrWhiteSpace($env:DEPENDENCY_REFRESH_TOKEN)) { Write-Host "DEPENDENCY_REFRESH_TOKEN não configurado. Dependency refresh ignorado."} else { Invoke-WebRequest ` -Uri "http://localhost:8080/api/admin/dependency-refresh" ` -Method POST ` -Headers @{ Authorization = "Bearer $env:DEPENDENCY_REFRESH_TOKEN" } Write-Host "Dependency refresh executado com sucesso." }

@@ -45,36 +45,17 @@ else {
 }
 
 # Dependency exporter
-$SecretExists = kubectl get secret $SecretName `
-    --ignore-not-found `
-    -o name
+$DependencyExporterEnabled = -not [string]::IsNullOrWhiteSpace($env:GITLAB_TOKEN)
 
-$DependencyExporterEnabled = $false
-
-if (-not [string]::IsNullOrWhiteSpace($SecretExists)) {
-    Write-Host ""
-    Write-Host "Secret '$SecretName' já existe." -ForegroundColor Green
-    $DependencyExporterEnabled = $true
-}
-elseif (-not [string]::IsNullOrWhiteSpace($env:GITLAB_TOKEN)) {
+if ($DependencyExporterEnabled) {
     Write-Host ""
     Write-Host "GITLAB_TOKEN encontrado no ambiente." -ForegroundColor Green
-    Write-Host "Criando Secret '$SecretName'..."
-
-    kubectl create secret generic $SecretName `
-        --from-literal=GITLAB_TOKEN="$env:GITLAB_TOKEN"
-
-    if ($LASTEXITCODE -ne 0) {
-        throw "Não foi possível criar o Secret '$SecretName'."
-    }
-
-    Write-Host "Secret criado." -ForegroundColor Green
-    $DependencyExporterEnabled = $true
+    Write-Host "Dependency exporter será habilitado." -ForegroundColor Green
 }
 else {
     Write-Host ""
     Write-Host "Aviso: GITLAB_TOKEN não encontrado no ambiente." -ForegroundColor Yellow
-    Write-Host "dependency-exporter será ignorado." -ForegroundColor Yellow
+    Write-Host "Dependency exporter será ignorado." -ForegroundColor Yellow
 }
 
 # ============================================================
@@ -87,13 +68,31 @@ if (-not (Test-Path $ClusterConfig)) {
     throw "Configuração do Kind não encontrada: $ClusterConfig"
 }
 
-$ClusterExists = kind get clusters |
-    Where-Object { $_ -eq $ClusterName }
+$KindClusters = @(cmd /c "kind get clusters 2>&1")
+$KindExitCode = $LASTEXITCODE
 
-$ControlPlaneExists = docker ps -a `
-    --filter "name=$ClusterName-control-plane" `
-    --format "{{.Names}}" |
-    Where-Object { $_ -eq "$ClusterName-control-plane" }
+if ($KindExitCode -ne 0) {
+
+    $NoClustersFound = $KindClusters -match "No kind clusters found"
+
+    if (-not $NoClustersFound) {
+        throw "Falha ao consultar os clusters Kind: $KindClusters"
+    }
+
+    $KindClusters = @()
+}
+
+$ClusterExists = $KindClusters -contains $ClusterName
+
+$ControlPlaneInspect = @(cmd /c "docker container inspect $ClusterName-control-plane 2>&1")
+$ControlPlaneExitCode = $LASTEXITCODE
+
+if ($ControlPlaneExitCode -eq 0) {
+    $ControlPlaneExists = $true
+}
+else {
+    $ControlPlaneExists = $false
+}
 
 $ShouldCreateCluster = $false
 
@@ -104,31 +103,19 @@ if ($ClusterExists) {
 }
 elseif ($ControlPlaneExists) {
 
-    Write-Host "Container '$ClusterName-control-plane' encontrado sem registro Kind." -ForegroundColor Yellow
-    Write-Host "Tentando recuperar o cluster '$ClusterName'..."
+    Write-Host "Cluster '$ClusterName' não existe no Kind." -ForegroundColor Yellow
+    Write-Host "Container '$ClusterName-control-plane' encontrado." -ForegroundColor Yellow
+    Write-Host "Removendo container órfão..." -ForegroundColor Yellow
 
-    kubectl get nodes | Out-Null
+    docker rm -f "$ClusterName-control-plane"
 
-    if ($LASTEXITCODE -eq 0) {
-
-        Write-Host "Cluster '$ClusterName' recuperado com sucesso." -ForegroundColor Green
-
+    if ($LASTEXITCODE -ne 0) {
+        throw "Não foi possível remover o container órfão '$ClusterName-control-plane'."
     }
-    else {
 
-        Write-Host "Container '$ClusterName-control-plane' não é recuperável." -ForegroundColor Yellow
-        Write-Host "Removendo container órfão..." -ForegroundColor Yellow
+    Write-Host "Container órfão removido." -ForegroundColor Green
 
-        docker rm -f "$ClusterName-control-plane"
-
-        if ($LASTEXITCODE -ne 0) {
-            throw "Não foi possível remover o container órfão '$ClusterName-control-plane'."
-        }
-
-        Write-Host "Container órfão removido." -ForegroundColor Green
-
-        $ShouldCreateCluster = $true
-    }
+    $ShouldCreateCluster = $true
 
 }
 else {
@@ -147,14 +134,15 @@ if ($ShouldCreateCluster) {
     if ($SecurityExporterEnabled) {
 
         $SecurityMount = @"
-
     extraMounts:
       - hostPath: $SecurityResultsDir
         containerPath: /mnt/mexe-security-results
         readOnly: true
 "@
 
-        $ClusterYaml = $ClusterYaml.TrimEnd() + "`n" + $SecurityMount
+        $ClusterYaml = $ClusterYaml -replace `
+            '(?m)^(\s+image:\s+kindest/node:[^\r\n]+)', `
+            "`$1`n$SecurityMount"
     }
 
     Set-Content `
@@ -163,6 +151,8 @@ if ($ShouldCreateCluster) {
         -Encoding UTF8
 
     Write-Host "Configuração temporária do Kind criada."
+    Write-Host "Conteúdo:"
+    Get-Content $KindConfig
 
     kind create cluster `
         --config $KindConfig `
@@ -231,9 +221,6 @@ if ($SecurityExporterEnabled) {
     Ensure-KindImage -Image "mexe-security-exporter:latest"
 }
 
-if ($DependencyExporterEnabled) {
-    Ensure-KindImage -Image "mexe-dependency-exporter:latest"
-}
 
 # ============================================================
 # 3. Kubernetes
@@ -251,6 +238,32 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "Kubernetes OK." -ForegroundColor Green
+
+if ($DependencyExporterEnabled) {
+
+    $SecretExists = kubectl get secret $SecretName `
+        --ignore-not-found `
+        -o name
+
+    if ([string]::IsNullOrWhiteSpace($SecretExists)) {
+
+        Write-Host ""
+        Write-Host "Criando Secret '$SecretName'..."
+
+        kubectl create secret generic $SecretName `
+            --from-literal=GITLAB_TOKEN="$env:GITLAB_TOKEN"
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "Não foi possível criar o Secret '$SecretName'."
+        }
+
+        Write-Host "Secret criado." -ForegroundColor Green
+    }
+    else {
+        Write-Host ""
+        Write-Host "Secret '$SecretName' já existe." -ForegroundColor Green
+    }
+}
 
 # ============================================================
 # 4. Aplicar infraestrutura
