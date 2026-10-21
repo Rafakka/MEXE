@@ -145,6 +145,15 @@ docker-frontend:
 
 security-scan:
   stage: security
+  image: docker:27-cli
+
+  services:
+    - name: docker:27-dind
+      alias: docker
+
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
 
   artifacts:
     when: always
