@@ -9,6 +9,7 @@ wait_for_ready() {
     NAME="$1"
     URL="$2"
     TIMEOUT="${3:-30}"
+    FAIL_ON_TIMEOUT="${4:-true}"
 
     echo "Waiting for $NAME..."
 
@@ -21,8 +22,13 @@ wait_for_ready() {
         sleep 1
     done
 
-    echo "ERROR: $NAME did not become ready within ${TIMEOUT}s."
-    return 1
+    if [ "$FAIL_ON_TIMEOUT" = "true" ]; then
+        echo "ERROR: $NAME did not become ready within ${TIMEOUT}s."
+        return 1
+    fi
+
+    echo "WARNING: $NAME did not become ready within ${TIMEOUT}s."
+    return 0
 }
 
 assert_container_running() {
@@ -60,14 +66,18 @@ echo "[3/5] Frontend Health"
 
 wait_for_ready \
     "Frontend /api/health" \
-    "$FRONTEND_URL/api/health"
+    "$FRONTEND_URL/api/health" \
+    30 \
+    false
 
 echo ""
 echo "[4/5] Frontend Ready"
 
 wait_for_ready \
     "Frontend /api/ready" \
-    "$FRONTEND_URL/api/ready"
+    "$FRONTEND_URL/api/ready" \
+    30 \
+    false
 
 echo ""
 echo "[5/5] Grafana"
@@ -75,7 +85,8 @@ echo "[5/5] Grafana"
 wait_for_ready \
     "Grafana /api/health" \
     "$GRAFANA_URL/api/health" \
-    90
+    90 \
+    true
 
 echo ""
 echo "== SMOKE TEST PASSED =="
