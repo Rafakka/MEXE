@@ -231,8 +231,15 @@ publish-images:
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
 
-  tags:
-    - mexe-local
+  image: docker:27-cli
+
+  services:
+    - name: docker:27-dind
+      alias: docker
+
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
 
   before_script:
     - docker info
