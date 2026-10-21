@@ -1,11 +1,7 @@
 workflow:
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "push"'
-    - if: '$CI_PIPELINE_SOURCE == "web"'
-    - if: '$CI_PIPELINE_SOURCE == "pipeline"'
-    - if: '$CI_PIPELINE_SOURCE == "trigger"'
-    - if: '$CI_PIPELINE_SOURCE == "api"'
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_MESSAGE =~ /\[CI\/CD UP\]/i'
+      when: always
     - when: never
 
 stages:
@@ -14,9 +10,8 @@ stages:
   - security
   - publish
 
-integration-test:
+compose-smoke-test:
   stage: test
-
   image: docker:27
 
   services:
