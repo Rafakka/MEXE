@@ -31,13 +31,16 @@ compose-smoke-test:
     - docker compose ps
     - docker compose ps --status running
     - docker compose ps --format "table {{.Name}}\t{{.State}}\t{{.Health}}"
+
     - docker exec mexe-frontend nginx -t
     - docker exec mexe-frontend wget -qO- http://127.0.0.1/
+    - docker compose logs --no-color frontend
+    - curl -v http://localhost:8080/
+
     - chmod +x scripts/smoke-test.sh
     - ./scripts/smoke-test.sh
 
   after_script:
-    - docker compose logs --no-color mexe-frontend
     - docker compose logs --no-color
     - docker compose down -v
 
