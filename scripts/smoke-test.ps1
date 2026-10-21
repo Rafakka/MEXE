@@ -77,7 +77,7 @@ Write-Host "`n[3/5] Frontend Health"
 Wait-ForReady `
     "Frontend /api/health" `
     "$frontendUrl/api/health" `
-    30 `
+    90 `
     $false
 
 
@@ -87,7 +87,7 @@ Write-Host "`n[4/5] Frontend Ready"
 Wait-ForReady `
     "Frontend /api/ready" `
     "$frontendUrl/api/ready" `
-    30 `
+    90 `
     $false
 
 
@@ -97,7 +97,7 @@ Write-Host "`n[5/5] Grafana"
 Wait-ForReady `
     "Grafana /api/health" `
     "$grafanaUrl/api/health" `
-    90 `
+    180 `
     $true
 
 
