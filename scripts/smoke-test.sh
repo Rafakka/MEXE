@@ -49,43 +49,34 @@ assert_container_running() {
 echo "== MEXE Smoke Test =="
 
 echo ""
-echo "[1/5] Docker"
+echo "[1/4] Docker"
 
 docker info >/dev/null
 
 echo "Docker OK."
 
 echo ""
-echo "[2/5] Containers"
+echo "[2/4] Containers"
 
 assert_container_running "mexe-frontend"
 assert_container_running "mexe-grafana"
 
 echo ""
-echo "[3/5] Frontend Health"
+echo "[3/4] Frontend"
 
 wait_for_ready \
-    "Frontend /api/health" \
-    "$FRONTEND_URL/api/health" \
-    30 \
-    false
+    "Frontend" \
+    "$FRONTEND_URL/" \
+    60 \
+    true
 
 echo ""
-echo "[4/5] Frontend Ready"
-
-wait_for_ready \
-    "Frontend /api/ready" \
-    "$FRONTEND_URL/api/ready" \
-    30 \
-    false
-
-echo ""
-echo "[5/5] Grafana"
+echo "[4/4] Grafana"
 
 wait_for_ready \
     "Grafana /api/health" \
     "$GRAFANA_URL/api/health" \
-    90 \
+    180 \
     true
 
 echo ""

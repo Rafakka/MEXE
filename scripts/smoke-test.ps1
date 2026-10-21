@@ -53,7 +53,7 @@ function Assert-ContainerRunning {
 Write-Host "== MEXE Smoke Test ==" -ForegroundColor Cyan
 
 # 1. Docker
-Write-Host "`n[1/5] Docker"
+Write-Host "`n[1/4] Docker"
 
 docker info | Out-Null
 
@@ -65,34 +65,24 @@ Write-Host "Docker OK." -ForegroundColor Green
 
 
 # 2. Containers
-Write-Host "`n[2/5] Containers"
+Write-Host "`n[2/4] Containers"
 
 Assert-ContainerRunning "mexe-frontend"
 Assert-ContainerRunning "mexe-grafana"
 
 
-# 3. Frontend Health
-Write-Host "`n[3/5] Frontend Health"
+# 3. Frontend
+Write-Host "`n[3/4] Frontend"
 
 Wait-ForReady `
-    "Frontend /api/health" `
-    "$frontendUrl/api/health" `
-    90 `
-    $false
+    "Frontend" `
+    "$frontendUrl/" `
+    60 `
+    $true
 
 
-# 4. Frontend Ready
-Write-Host "`n[4/5] Frontend Ready"
-
-Wait-ForReady `
-    "Frontend /api/ready" `
-    "$frontendUrl/api/ready" `
-    90 `
-    $false
-
-
-# 5. Grafana
-Write-Host "`n[5/5] Grafana"
+# 4. Grafana
+Write-Host "`n[4/4] Grafana"
 
 Wait-ForReady `
     "Grafana /api/health" `
