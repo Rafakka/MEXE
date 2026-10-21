@@ -2,7 +2,7 @@
 
 set -e
 
-if [ -n "${CI:-}" ]; then
+if [ -n "${GITLAB_CI:-}" ]; then
     HOST="docker"
 else
     HOST="localhost"

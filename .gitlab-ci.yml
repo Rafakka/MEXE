@@ -31,12 +31,6 @@ compose-smoke-test:
     - docker compose ps
     - docker compose ps --status running
     - docker compose ps --format "table {{.Name}}\t{{.State}}\t{{.Health}}"
-
-    - docker exec mexe-frontend nginx -t
-    - docker exec mexe-frontend wget -qO- http://127.0.0.1/
-    - docker compose logs --no-color frontend
-    - curl -v http://localhost:8080/
-
     - chmod +x scripts/smoke-test.sh
     - ./scripts/smoke-test.sh
 
@@ -79,6 +73,11 @@ docker-backend:
     DOCKER_HOST: tcp://docker:2375
     DOCKER_TLS_CERTDIR: ""
 
+  artifacts:
+    when: always
+    paths:
+      - security/results/current/backend.json
+
   before_script:
     - docker info
     - docker run --privileged --rm tonistiigi/binfmt --install all
@@ -86,7 +85,21 @@ docker-backend:
 
   script:
     - docker buildx build --platform linux/amd64 --tag mexe-backend:security-test --load ./backend
+
+    - mkdir -p security/results/current
+
+    - >
+      docker run --rm
+      -v /var/run/docker.sock:/var/run/docker.sock
+      -v "$CI_PROJECT_DIR/security/results/current:/results"
+      aquasec/trivy:latest
+      image
+      --format json
+      --output /results/backend.json
+      mexe-backend:security-test
+
     - docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image --severity CRITICAL --exit-code 1 mexe-backend:security-test
+
     - docker buildx build --platform linux/amd64,linux/arm64 --tag mexe-backend:test --push=false ./backend
 
 docker-frontend:
@@ -101,6 +114,11 @@ docker-frontend:
     DOCKER_HOST: tcp://docker:2375
     DOCKER_TLS_CERTDIR: ""
 
+  artifacts:
+    when: always
+    paths:
+      - security/results/current/frontend.json
+
   before_script:
     - docker info
     - docker run --privileged --rm tonistiigi/binfmt --install all
@@ -108,20 +126,87 @@ docker-frontend:
 
   script:
     - docker buildx build --platform linux/amd64 --tag mexe-frontend:security-test --load ./frontend
+
+    - mkdir -p security/results/current
+
+    - >
+      docker run --rm
+      -v /var/run/docker.sock:/var/run/docker.sock
+      -v "$CI_PROJECT_DIR/security/results/current:/results"
+      aquasec/trivy:latest
+      image
+      --format json
+      --output /results/frontend.json
+      mexe-frontend:security-test
+
     - docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image --severity CRITICAL --exit-code 1 mexe-frontend:security-test
+
     - docker buildx build --platform linux/amd64,linux/arm64 --tag mexe-frontend:test --push=false ./frontend
 
 security-scan:
   stage: security
 
+  artifacts:
+    when: always
+    paths:
+      - security/results/current/alloy.json
+      - security/results/current/grafana.json
+      - security/results/current/loki.json
+      - security/results/current/prometheus.json
+
   before_script:
     - docker info
 
   script:
+    - mkdir -p security/results/current
+
     - docker pull grafana/alloy:v1.19.1
+
+    - >
+      docker run --rm
+      -v /var/run/docker.sock:/var/run/docker.sock
+      -v "$CI_PROJECT_DIR/security/results/current:/results"
+      aquasec/trivy:latest
+      image
+      --format json
+      --output /results/alloy.json
+      grafana/alloy:v1.19.1
+
     - docker pull grafana/grafana:13.2.0
+
+    - >
+      docker run --rm
+      -v /var/run/docker.sock:/var/run/docker.sock
+      -v "$CI_PROJECT_DIR/security/results/current:/results"
+      aquasec/trivy:latest
+      image
+      --format json
+      --output /results/grafana.json
+      grafana/grafana:13.2.0
+
     - docker pull grafana/loki:3.7.7
+
+    - >
+      docker run --rm
+      -v /var/run/docker.sock:/var/run/docker.sock
+      -v "$CI_PROJECT_DIR/security/results/current:/results"
+      aquasec/trivy:latest
+      image
+      --format json
+      --output /results/loki.json
+      grafana/loki:3.7.7
+
     - docker pull prom/prometheus:v3.14.0
+
+    - >
+      docker run --rm
+      -v /var/run/docker.sock:/var/run/docker.sock
+      -v "$CI_PROJECT_DIR/security/results/current:/results"
+      aquasec/trivy:latest
+      image
+      --format json
+      --output /results/prometheus.json
+      prom/prometheus:v3.14.0
 
     - docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$CI_PROJECT_DIR/.trivyignore:/root/.trivyignore:ro" aquasec/trivy:latest image --severity CRITICAL --exit-code 1 --ignorefile /root/.trivyignore grafana/alloy:v1.19.1
 
@@ -149,4 +234,57 @@ publish-images:
   script:
     - docker buildx build --platform linux/amd64,linux/arm64 --tag ghcr.io/rafakka/mexe-backend:$CI_COMMIT_SHA --push ./backend
     - docker buildx build --platform linux/amd64,linux/arm64 --tag ghcr.io/rafakka/mexe-frontend:$CI_COMMIT_SHA --push ./frontend
-    - if ([string]::IsNullOrWhiteSpace($env:DEPENDENCY_REFRESH_TOKEN)) { Write-Host "DEPENDENCY_REFRESH_TOKEN não configurado. Dependency refresh ignorado."} else { Invoke-WebRequest ` -Uri "http://localhost:8080/api/admin/dependency-refresh" ` -Method POST ` -Headers @{ Authorization = "Bearer $env:DEPENDENCY_REFRESH_TOKEN" } Write-Host "Dependency refresh executado com sucesso." }
+
+security-results:
+  stage: publish
+
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+
+  needs:
+    - job: docker-backend
+      artifacts: true
+    - job: docker-frontend
+      artifacts: true
+    - job: security-scan
+      artifacts: true
+
+  image: alpine:3.22
+
+  before_script:
+    - apk add --no-cache git
+    - git config user.name "GitLab CI"
+    - git config user.email "gitlab-ci@$CI_SERVER_HOST"
+
+  script: |
+    mkdir -p security/results/current
+
+    cat > security/results/current/metadata.json <<EOF
+    {
+      "schema_version": 1,
+      "source_commit": "$CI_COMMIT_SHA",
+      "pipeline_id": "$CI_PIPELINE_ID",
+      "generated_at": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+      "images": {
+        "backend": {
+          "reference": "ghcr.io/rafakka/mexe-backend:$CI_COMMIT_SHA"
+        },
+        "frontend": {
+          "reference": "ghcr.io/rafakka/mexe-frontend:$CI_COMMIT_SHA"
+        }
+      }
+    }
+    EOF
+
+    git add security/results/current
+
+    if git diff --cached --quiet; then
+      echo "Nenhuma alteração nos security results."
+      exit 0
+    fi
+
+    git commit -m "[skip ci] update security results for $CI_COMMIT_SHA"
+
+    git config http.extraHeader "JOB-TOKEN: $CI_JOB_TOKEN"
+
+    git push origin "HEAD:$CI_DEFAULT_BRANCH"

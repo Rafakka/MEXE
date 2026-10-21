@@ -70,6 +70,79 @@ else {
     Write-Host "Dependency exporter será ignorado." -ForegroundColor Yellow
 }
 
+function Update-SecurityResults {
+    Write-Host "`nSincronizando security/results com o Git..."
+
+    if (-not (Test-Path (Join-Path $MexeRoot ".git"))) {
+        Write-Warning "Repositório Git não encontrado. Atualização de security/results ignorada."
+        return
+    }
+
+    Push-Location $MexeRoot
+
+    try {
+
+        $GitStatus = @(git status --porcelain 2>&1)
+
+        if ($LASTEXITCODE -ne 0) {
+            Write-Warning "Não foi possível verificar o estado do Git."
+            return
+        }
+
+        if ($GitStatus.Count -gt 0) {
+            Write-Warning "Working tree possui alterações locais."
+            Write-Warning "git pull não será executado para evitar interferir no trabalho local."
+            return
+        }
+
+        git pull --ff-only
+
+        if ($LASTEXITCODE -ne 0) {
+            Write-Warning "Não foi possível atualizar o repositório com git pull --ff-only."
+            Write-Warning "Observe o mecanismo de atualização de security/results."
+            return
+        }
+
+        Write-Host "security/results sincronizado com o Git." -ForegroundColor Green
+    }
+    finally {
+        Pop-Location
+    }
+}
+
+function Test-KindSecurityResults {
+    Write-Host "`nVerificando security/results dentro do Kind..."
+
+    if (-not $SecurityExporterEnabled) {
+        Write-Host "Security exporter desabilitado. Verificação ignorada." -ForegroundColor Yellow
+        return
+    }
+
+    $CurrentDir = Join-Path $SecurityResultsDir "current"
+
+    if (-not (Test-Path $CurrentDir -PathType Container)) {
+        Write-Warning "Diretório security/results/current não encontrado no host."
+        Write-Warning "Observe o mecanismo de atualização."
+        return
+    }
+
+    $NodeContainer = "$ClusterName-control-plane"
+
+    docker exec $NodeContainer sh -c `
+        "test -d /mnt/mexe-security-results/current"
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warning "Kind não está vendo security/results/current."
+        Write-Warning "Observe o mecanismo de atualização."
+        return
+    }
+
+    Write-Host "Kind atualizado: security/results está visível no mount." -ForegroundColor Green
+}
+
+
+Update-SecurityResults
+
 # ============================================================
 # 2. Cluster
 # ============================================================
@@ -360,6 +433,8 @@ else {
 # ============================================================
 
 Write-Host "`n=== Kubernetes pronto ===" -ForegroundColor Green
+
+Test-KindSecurityResults
 
 Write-Host "`nNodes:"
 kubectl get nodes

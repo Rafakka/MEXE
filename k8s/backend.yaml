@@ -20,17 +20,6 @@ spec:
           ports:
             - containerPort: 8000
 
-          env:
-            - name: DEPENDENCY_EXPORTER_URL
-              value: "http://mexe-dependency-exporter:8000"
-
-            - name: DEPENDENCY_REFRESH_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: mexe-dependency-refresh
-                  key: DEPENDENCY_REFRESH_TOKEN
-                  optional: true
-
           readinessProbe:
             httpGet:
               path: /ready

@@ -1,9 +1,9 @@
 $ErrorActionPreference = "Stop"
 
-$HostName = if ($env:CI -eq "true") {
-    "docker"
+if ($env:GITLAB_CI -eq "true") {
+    $HostName = "docker"
 } else {
-    "localhost"
+    $HostName = "localhost"
 }
 
 $FrontendUrl = "http://${HostName}:8080"
