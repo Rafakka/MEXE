@@ -2,8 +2,14 @@
 
 set -e
 
-FRONTEND_URL="http://localhost:8080"
-GRAFANA_URL="http://localhost:3000"
+if [ -n "${CI:-}" ]; then
+    HOST="docker"
+else
+    HOST="localhost"
+fi
+
+FRONTEND_URL="http://${HOST}:8080"
+GRAFANA_URL="http://${HOST}:3000"
 
 wait_for_ready() {
     NAME="$1"

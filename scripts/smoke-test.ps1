@@ -1,7 +1,13 @@
 $ErrorActionPreference = "Stop"
 
-$frontendUrl = "http://localhost:8080"
-$grafanaUrl = "http://localhost:3000"
+$HostName = if ($env:CI -eq "true") {
+    "docker"
+} else {
+    "localhost"
+}
+
+$FrontendUrl = "http://${HostName}:8080"
+$GrafanaUrl  = "http://${HostName}:3000"
 
 function Wait-ForReady {
     param (
