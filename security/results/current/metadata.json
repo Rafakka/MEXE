@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "source_commit": "c1d9987ded6ed7feee44a81cc77709176ebe1860",
+  "pipeline_id": "2972598734",
+  "generated_at": "2026-10-22T09:54:04Z",
+  "images": {
+    "backend": {
+      "reference": "ghcr.io/rafakka/mexe-backend:c1d9987ded6ed7feee44a81cc77709176ebe1860"
+    },
+    "frontend": {
+      "reference": "ghcr.io/rafakka/mexe-frontend:c1d9987ded6ed7feee44a81cc77709176ebe1860"
+    }
+  }
+}
