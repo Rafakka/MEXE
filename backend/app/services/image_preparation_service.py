@@ -52,7 +52,20 @@ class ImagePreparationService:
             operation.image_2
         )
 
+        self.input_validator.check_pixels(image1)
+        self.input_validator.check_width(image1)
+        self.input_validator.check_height(image1)
+
+        self.input_validator.check_pixels(image2)
+        self.input_validator.check_width(image2)
+        self.input_validator.check_height(image2)
+
         target_size = (
+            operation.width,
+            operation.height,
+        )
+
+        self.input_validator.check_out_pixels(
             operation.width,
             operation.height,
         )

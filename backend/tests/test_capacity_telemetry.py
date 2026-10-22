@@ -36,6 +36,7 @@ def create_upload(image_bytes):
 
     return UploadFile(
         file=buffer,
+        size=len(image_bytes),
         filename="capacity-telemetry.png",
         headers=headers,
     )
@@ -127,7 +128,10 @@ async def run_operation(service, size, request_id):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("size", SIZES)
-async def test_capacity_telemetry(size):
+async def test_capacity_telemetry(size, allow_capacity_candidate):
+
+    allow_capacity_candidate(*size)
+
     service = ImageProcessingService()
 
     before_snapshot = get_metrics_snapshot()

@@ -13,7 +13,7 @@ from starlette.datastructures import Headers
 from app.services.image_processing_service import ImageProcessingService
 
 
-SIZE = (8192, 8192)
+SIZE = (4096, 4096)
 
 
 def create_image_bytes(size, color):
@@ -34,6 +34,7 @@ def create_upload(image_bytes):
 
     return UploadFile(
         file=buffer,
+        size=len(image_bytes),
         filename="capacity-test.png",
         headers=headers,
     )
@@ -153,7 +154,10 @@ def validate_output(output, width, height):
 
 
 @pytest.mark.asyncio
-async def test_capacity_comparison():
+async def test_capacity_comparison(allow_capacity_candidate):
+
+    allow_capacity_candidate(*SIZE)
+
     width, height = SIZE
 
     service = ImageProcessingService()
@@ -345,7 +349,10 @@ async def test_capacity_comparison():
     )
 
 @pytest.mark.asyncio
-async def test_capacity_concurrency_3():
+async def test_capacity_concurrency_3(allow_capacity_candidate):
+
+    allow_capacity_candidate(*SIZE)
+
     width, height = SIZE
 
     service = ImageProcessingService()
@@ -448,7 +455,10 @@ async def test_capacity_concurrency_3():
     )
 
 @pytest.mark.asyncio
-async def test_capacity_concurrency_timeline():
+async def test_capacity_concurrency_timeline(allow_capacity_candidate):
+
+    allow_capacity_candidate(*SIZE)
+
     width, height = SIZE
 
     service = ImageProcessingService()
@@ -532,7 +542,10 @@ def monitor_resources(process, stop_event, samples):
         time.sleep(0.01)
 
 @pytest.mark.asyncio
-async def test_capacity_concurrency_diagnostics():
+async def test_capacity_concurrency_diagnostics(allow_capacity_candidate):
+
+    allow_capacity_candidate(*SIZE)
+
     width, height = SIZE
 
     service = ImageProcessingService()

@@ -1,6 +1,8 @@
 
 from PIL import Image
 
+from pathlib import Path
+
 from fastapi import UploadFile
 
 from starlette.datastructures import Headers
@@ -19,6 +21,53 @@ from app.infra.image_encoder import ImageEncoder
 
 from app.domain.processors.normalize_processor import NormalizeProcessor
 
+def pytest_addoption(parser):
+    parser.addoption(
+        "--capacity-images",
+        action="store",
+        default=None,
+        metavar="DIR",
+        help="Directory containing image-a.png and image-b.png "
+             "for capacity characterization.",
+    )
+
+@pytest.fixture
+def capacity_image_samples(pytestconfig):
+    raw_directory = pytestconfig.getoption("--capacity-images")
+
+    # Without the option, keep the existing synthetic mode.
+    if not raw_directory:
+        return None
+
+    directory = Path(raw_directory).expanduser()
+
+    if not directory.is_absolute():
+        directory = Path(pytestconfig.rootpath) / directory
+
+    paths = {
+        "image_a": directory / "image-a.png",
+        "image_b": directory / "image-b.png",
+    }
+
+    missing = [
+        str(path)
+        for path in paths.values()
+        if not path.is_file()
+    ]
+
+    if missing:
+        pytest.fail(
+            "--capacity-images requires both image files. "
+            f"Missing: {', '.join(missing)}"
+        )
+
+    return {
+        name: {
+            "path": str(path),
+            "data": path.read_bytes(),
+        }
+        for name, path in paths.items()
+    }
 
 @pytest.fixture
 def new_image():
@@ -95,10 +144,11 @@ def valid_image_upload():
         )
 
     return UploadFile(
-            file=buffer,
-            filename="image.png",
-            headers=headers
-            )
+        file=buffer,
+        size=len(buffer.getvalue()),
+        filename="image.png",
+        headers=headers,
+    )
 
 
 
@@ -117,7 +167,25 @@ def invalid_image_upload():
 
 
     return UploadFile(
-            file = file_to_test,
-            filename="hellotest.txt",
-            headers=headers
-            )
+        file=file_to_test,
+        size=len(file_to_test.getvalue()),
+        filename="hellotest.txt",
+        headers=headers,
+    )
+
+@pytest.fixture
+def allow_capacity_candidate(monkeypatch):
+    import app.infra.validators.input_validator as validator_module
+
+    def configure(width: int, height: int) -> None:
+        # This is deliberately test-only: it allows measuring candidate sizes
+        # beyond current production limits without changing settings.py.
+        monkeypatch.setattr(validator_module, "MAX_IMAGE_WIDTH", width)
+        monkeypatch.setattr(validator_module, "MAX_IMAGE_HEIGHT", height)
+        monkeypatch.setattr(
+            validator_module,
+            "MAX_IMAGE_PIXELS",
+            width * height,
+        )
+
+    return configure

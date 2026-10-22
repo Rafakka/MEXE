@@ -3,7 +3,7 @@ import os
 import threading
 import time
 from io import BytesIO
-
+import struct
 import psutil
 import pytest
 from fastapi import UploadFile
@@ -45,9 +45,11 @@ async def run_blend(
 
 
 @pytest.mark.asyncio
-async def test_blend_capacity_concurrency_2():
+async def test_blend_capacity_concurrency_2(allow_capacity_candidate):
     width = 8192
     height = 8192
+
+    allow_capacity_candidate(width, height)
 
     process = psutil.Process(os.getpid())
     memory_before = process.memory_info().rss
@@ -196,19 +198,67 @@ def create_upload(image_bytes: bytes):
 
     return UploadFile(
         file=buffer,
+        size=len(image_bytes),
         filename="capacity-test.png",
         headers=headers,
     )
-
 
 @pytest.mark.parametrize("width,height", SIZES)
 @pytest.mark.asyncio
 async def test_blend_capacity_characterization(
     width,
     height,
+    allow_capacity_candidate,
+    capacity_image_samples,
 ):
-    process = psutil.Process(os.getpid())
+    allow_capacity_candidate(width, height)
 
+    service = ImageProcessingService()
+
+    if capacity_image_samples is None:
+        # Default: keep the existing synthetic test behavior.
+        image_a_bytes = create_image_bytes(
+            (width, height),
+            (255, 0, 0, 255),
+        )
+        image_b_bytes = create_image_bytes(
+            (width, height),
+            (0, 0, 255, 255),
+        )
+        image_source = "synthetic"
+        image_a_label = "generated"
+        image_b_label = "generated"
+    else:
+        # Optional mode: read actual PNG samples from disk.
+        image_a_bytes = capacity_image_samples["image_a"]["data"]
+        image_b_bytes = capacity_image_samples["image_b"]["data"]
+
+        image_source = "real"
+        image_a_label = capacity_image_samples["image_a"]["path"]
+        image_b_label = capacity_image_samples["image_b"]["path"]
+
+    with Image.open(BytesIO(image_a_bytes)) as image_a_info:
+        input_a_size = image_a_info.size
+        input_a_format = image_a_info.format
+
+    with Image.open(BytesIO(image_b_bytes)) as image_b_info:
+        input_b_size = image_b_info.size
+        input_b_format = image_b_info.format
+
+    image_a = create_upload(image_a_bytes)
+    image_b = create_upload(image_b_bytes)
+
+    input_bytes_a = len(image_a_bytes)
+    input_bytes_b = len(image_b_bytes)
+    input_bytes = input_bytes_a + input_bytes_b
+
+    estimated_three_rgba_buffers_bytes = (
+        3 * width * height * 4
+    )
+
+    # 2. Registre a memória antes do processamento.
+
+    process = psutil.Process(os.getpid())
     memory_before = process.memory_info().rss
 
     stop_event = threading.Event()
@@ -220,99 +270,131 @@ async def test_blend_capacity_characterization(
         daemon=True,
     )
 
-    memory_monitor.start()
-
-    service = ImageProcessingService()
-
-    image_a_bytes = create_image_bytes(
-        (width, height),
-        (255, 0, 0, 255),
-    )
-
-    image_b_bytes = create_image_bytes(
-        (width, height),
-        (0, 0, 255, 255),
-    )
-
-    # Third image kept alive to model the expected
-    # memory footprint of three decoded RGBA images.
-    image_c_bytes = create_image_bytes(
-        (width, height),
-        (0, 255, 0, 255),
-    )
-
-    image_a = create_upload(image_a_bytes)
-    image_b = create_upload(image_b_bytes)
-    image_c = Image.open(BytesIO(image_c_bytes)).convert("RGBA")
-
-    input_bytes = (
-        len(image_a_bytes)
-        + len(image_b_bytes)
-        + len(image_c_bytes)
-    )
-
-    estimated_memory_bytes = (
-        3
-        * width
-        * height
-        * 4
-    )
+    output_size = 0
+    output_header = bytearray()
 
     start = time.perf_counter()
+    memory_monitor.start()
 
-    response = await service.process_uploads(
-        image_a=image_a,
-        image_b=image_b,
-        width=width,
-        height=height,
-        request_id=f"capacity-{width}x{height}",
-    )
+    chunk_count = 0
+    small_chunk_count = 0
+    min_chunk_bytes = None
+    max_chunk_bytes = 0
 
-    elapsed_ms = (time.perf_counter() - start) * 1000
+    try:
+        # Time spent until process_uploads returns the response.
+        process_started = time.perf_counter()
 
-    output_body = bytearray()
+        response = await service.process_uploads(
+            image_a=image_a,
+            image_b=image_b,
+            width=width,
+            height=height,
+            request_id=f"capacity-{width}x{height}",
+        )
 
-    async for chunk in response.body_iterator:
-        if isinstance(chunk, bytes):
-            output_body.extend(chunk)
-        elif isinstance(chunk, str):
-            output_body.extend(chunk.encode())
-        else:
-            raise TypeError(
-                f"Unexpected response chunk type: {type(chunk).__name__}"
+        process_elapsed_ms = (
+            time.perf_counter() - process_started
+        ) * 1000
+
+        # Time spent consuming the response body.
+        consume_started = time.perf_counter()
+
+        async for chunk in response.body_iterator:
+            if isinstance(chunk, str):
+                chunk = chunk.encode()
+            elif not isinstance(chunk, bytes):
+                raise TypeError(
+                    f"Unexpected response chunk type: {type(chunk)}"
+                )
+
+            chunk_size = len(chunk)
+
+            chunk_count += 1
+            if chunk_size <= 1024:
+                small_chunk_count += 1
+
+            if min_chunk_bytes is None:
+                min_chunk_bytes = chunk_size
+            else:
+                min_chunk_bytes = min(
+                    min_chunk_bytes,
+                    chunk_size,
+                )
+
+            max_chunk_bytes = max(
+                max_chunk_bytes,
+                chunk_size,
             )
 
-    output_body = bytes(output_body)
+            output_size += chunk_size
+
+            if len(output_header) < 24:
+                remaining = 24 - len(output_header)
+                output_header.extend(chunk[:remaining])
+
+        response_consumption_ms = (
+            time.perf_counter() - consume_started
+        ) * 1000
+
+        elapsed_ms = (
+            time.perf_counter() - start
+        ) * 1000
+
+    finally:
+        stop_event.set()
+        memory_monitor.join()
 
     memory_after = process.memory_info().rss
-
-    stop_event.set()
-    memory_monitor.join()
-
     memory_peak = memory_result["peak"]
-    memory_delta = memory_after - memory_before
-    memory_peak_delta = memory_peak - memory_before
 
-    memory_after = process.memory_info().rss
-    memory_delta = memory_after - memory_before
+    memory_delta_bytes = memory_after - memory_before
+    memory_peak_delta_bytes = memory_peak - memory_before
 
-    assert output_body
+    # Validate the PNG signature and output dimensions.
+    assert output_size > 0
+    assert len(output_header) >= 24
+    assert bytes(output_header[:8]) == b"\x89PNG\r\n\x1a\n"
 
-    with Image.open(BytesIO(output_body)) as output_image:
-        assert output_image.size == (width, height)
-        assert output_image.format == "PNG"
+    output_width, output_height = struct.unpack(
+        ">II",
+        output_header[16:24],
+    )
+
+    assert (output_width, output_height) == (width, height)
+
+    # 4. Dados comparáveis entre resoluções.
+    mib = 1024 * 1024
 
     print(
         "\n"
-        f"CAPACITY | "
+        f"CAPACITY_CHARACTERIZATION | "
         f"size={width}x{height} | "
         f"pixels={width * height} | "
+        f"source={image_source} | "
+        f"input_a={input_a_size[0]}x{input_a_size[1]} "
+        f"format_a={input_a_format} "
+        f"bytes_a={input_bytes_a} | "
+        f"input_b={input_b_size[0]}x{input_b_size[1]} "
+        f"format_b={input_b_format} "
+        f"bytes_b={input_bytes_b} | "
         f"input_bytes={input_bytes} | "
-        f"estimated_memory_bytes={estimated_memory_bytes} | "
-        f"memory_delta_bytes={memory_delta} | "
-        f"memory_peak_delta_bytes={memory_peak_delta} | "
-        f"output_bytes={len(output_body)} | "
-        f"elapsed_ms={elapsed_ms:.2f}"
+        f"estimated_three_rgba_buffers_mb="
+        f"{estimated_three_rgba_buffers_bytes / mib:.2f} | "
+        f"baseline_rss_mb={memory_before / mib:.2f} | "
+        f"peak_rss_mb={memory_peak / mib:.2f} | "
+        f"peak_delta_mb={memory_peak_delta_bytes / mib:.2f} | "
+        f"final_delta_mb={memory_delta_bytes / mib:.2f} | "
+        f"output_bytes={output_size} | "
+        f"elapsed_ms={elapsed_ms:.2f} | "
+        f"input_a_path={image_a_label} | "
+        f"input_b_path={image_b_label}"
+        f"service_elapsed_ms={process_elapsed_ms:.2f} | "
+        f"response_consumption_ms={response_consumption_ms:.2f} | "
+        f"response_chunks={chunk_count} | "
+        f"small_chunks_le_1kb={small_chunk_count} | "
+        f"min_chunk_bytes={min_chunk_bytes} | "
+        f"max_chunk_bytes={max_chunk_bytes} | "
+        f"avg_chunk_bytes="
+        f"{output_size / chunk_count if chunk_count else 0:.1f} | "
     )
-
-    image_c.close()
