@@ -17,6 +17,11 @@ spec:
           image: mexe-backend:latest
           imagePullPolicy: IfNotPresent
 
+          resources:
+            requests:
+              memory: "512Mi"
+            limits:
+              memory: "768Mi"
           ports:
             - containerPort: 8000
 

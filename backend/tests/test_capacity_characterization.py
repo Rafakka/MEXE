@@ -1,4 +1,5 @@
 import asyncio
+import gc
 import os
 import threading
 import time
@@ -398,3 +399,119 @@ async def test_blend_capacity_characterization(
         f"avg_chunk_bytes="
         f"{output_size / chunk_count if chunk_count else 0:.1f} | "
     )
+
+@pytest.mark.asyncio
+async def test_capacity_memory_stability_repeated_real_images(
+    allow_capacity_candidate,
+    capacity_image_samples,
+):
+    if capacity_image_samples is None:
+        pytest.skip(
+            "Run with --capacity-images tests/imgs/within-limit"
+        )
+
+    width, height = 4096, 4096
+    allow_capacity_candidate(width, height)
+
+    image_a_bytes = capacity_image_samples["image_a"]["data"]
+    image_b_bytes = capacity_image_samples["image_b"]["data"]
+
+    process = psutil.Process(os.getpid())
+    service = ImageProcessingService()
+
+    mib = 1024 * 1024
+    baseline_rss = process.memory_info().rss
+
+    print(
+        f"\nMEMORY_STABILITY | baseline_rss_mb="
+        f"{baseline_rss / mib:.2f}"
+    )
+
+    output_sizes = []
+
+    for iteration in range(1, 9):
+        image_a = create_upload(image_a_bytes)
+        image_b = create_upload(image_b_bytes)
+
+        memory_before = process.memory_info().rss
+        stop_event = threading.Event()
+        memory_result = {}
+
+        monitor = threading.Thread(
+            target=monitor_memory,
+            args=(process, stop_event, memory_result),
+            daemon=True,
+        )
+
+        response = None
+        output_size = 0
+        output_header = bytearray()
+
+        monitor.start()
+
+        try:
+            response = await service.process_uploads(
+                image_a=image_a,
+                image_b=image_b,
+                width=width,
+                height=height,
+                request_id=f"memory-stability-{iteration}",
+            )
+
+            async for chunk in response.body_iterator:
+                if isinstance(chunk, str):
+                    chunk = chunk.encode()
+                elif not isinstance(chunk, bytes):
+                    raise TypeError(
+                        f"Unexpected response chunk type: "
+                        f"{type(chunk)}"
+                    )
+
+                output_size += len(chunk)
+
+                if len(output_header) < 24:
+                    remaining = 24 - len(output_header)
+                    output_header.extend(chunk[:remaining])
+
+            assert output_size > 0
+            assert bytes(output_header[:8]) == (
+                b"\x89PNG\r\n\x1a\n"
+            )
+
+            output_width, output_height = struct.unpack(
+                ">II",
+                output_header[16:24],
+            )
+            assert (output_width, output_height) == (
+                width,
+                height,
+            )
+
+        finally:
+            stop_event.set()
+            monitor.join()
+
+        peak_rss = memory_result.get(
+            "peak",
+            process.memory_info().rss,
+        )
+
+        output_sizes.append(output_size)
+
+        # Release references before measuring retained RSS.
+        del response, image_a, image_b, output_header, chunk
+        gc.collect()
+
+        rss_after = process.memory_info().rss
+
+        print(
+            f"MEMORY_STABILITY | iteration={iteration} | "
+            f"output_mb={output_size / mib:.2f} | "
+            f"rss_before_mb={memory_before / mib:.2f} | "
+            f"rss_peak_mb={peak_rss / mib:.2f} | "
+            f"rss_after_mb={rss_after / mib:.2f} | "
+            f"retained_delta_mb="
+            f"{(rss_after - baseline_rss) / mib:.2f}"
+        )
+
+    assert len(set(output_sizes)) == 1
