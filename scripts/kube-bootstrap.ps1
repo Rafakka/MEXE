@@ -1,6 +1,6 @@
 
 param(
-    [string]$BackendImage = "mexe-backend:latest"
+    [string]$BackendImage = "ghcr.io/rafakka/mexe-backend:latest"
 )
 
 $ErrorActionPreference = "Stop"
@@ -267,24 +267,24 @@ function Ensure-KindImage {
     Write-Host ""
     Write-Host "Verificando imagem: $Image"
 
-    docker image inspect $Image *> $null
+    if ($Image -like "ghcr.io/*") {
+        Write-Host "Atualizando imagem remota: $Image"
 
-    if ($LASTEXITCODE -ne 0) {
-        if ($Image -like "ghcr.io/*") {
-            Write-Host "Imagem não encontrada localmente. Baixando do GHCR..."
+        docker pull $Image
 
-            docker pull $Image
-
-            if ($LASTEXITCODE -ne 0) {
-                throw "Falha ao baixar a imagem '$Image'."
-            }
+        if ($LASTEXITCODE -ne 0) {
+            throw "Falha ao baixar a imagem '$Image' do registry."
         }
-        else {
-            throw "Imagem '$Image' não existe no Docker local."
+    }
+    else {
+        docker image inspect $Image *> $null
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "Imagem local '$Image' não existe no Docker."
         }
     }
 
-    Write-Host "Imagem '$Image' encontrada no Docker local."
+    Write-Host "Imagem '$Image' disponível." -ForegroundColor Green
     Write-Host "Carregando '$Image' no Kind..."
 
     $ImageArchive = Join-Path `
@@ -319,6 +319,43 @@ function Ensure-KindImage {
             Remove-Item $ImageArchive -Force
         }
     }
+}
+
+
+function Get-ImageFingerprint {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Image
+    )
+
+    if ($Image -like "ghcr.io/*") {
+        $InspectOutput = docker image inspect $Image --format '{{json .RepoDigests}}'
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "Não foi possível inspecionar a imagem '$Image'."
+        }
+
+        $RepoDigests = @($InspectOutput | ConvertFrom-Json)
+        $Repository = $Image -replace ':[^/:]+$', ''
+
+        $RepoDigest = $RepoDigests |
+            Where-Object { $_ -like "$Repository@sha256:*" } |
+            Select-Object -First 1
+
+        if (-not $RepoDigest) {
+            throw "Não foi possível obter o digest do registry para '$Image'."
+        }
+
+        return $RepoDigest.Substring($RepoDigest.IndexOf("@") + 1)
+    }
+
+    $ImageId = docker image inspect $Image --format '{{.Id}}'
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "Não foi possível obter o ID da imagem local '$Image'."
+    }
+
+    return $ImageId.Trim()
 }
 
 # ============================================================
@@ -361,6 +398,37 @@ Write-Host "`nGarantindo imagens locais no Kind..."
 
 foreach ($Image in $KindImages) {
     Ensure-KindImage -Image $Image
+}
+
+$BackendFingerprint = Get-ImageFingerprint -Image $BackendImage
+
+Write-Host "Fingerprint desejado do backend: $BackendFingerprint"
+
+$CurrentBackendFingerprint = $null
+
+$CurrentDeploymentJson = kubectl get deployment mexe-backend -o json 2>$null
+
+if ($LASTEXITCODE -eq 0) {
+    $CurrentDeployment = (
+        $CurrentDeploymentJson -join [Environment]::NewLine
+    ) | ConvertFrom-Json
+
+    $CurrentAnnotations = $CurrentDeployment.spec.template.metadata.annotations
+
+    if ($CurrentAnnotations) {
+        $CurrentBackendFingerprint = `
+            $CurrentAnnotations.'mexe.io/backend-image-fingerprint'
+    }
+}
+
+if ($CurrentBackendFingerprint -eq $BackendFingerprint) {
+    Write-Host "Digest do backend inalterado; nenhum rollout por mudança de digest é esperado."
+}
+elseif ($CurrentBackendFingerprint) {
+    Write-Host "Digest do backend mudou. O manifesto provocará o rollout."
+}
+else {
+    Write-Host "Ainda não há fingerprint registrado no Deployment."
 }
 
 if ($DependencyExporterEnabled) {
@@ -412,24 +480,49 @@ foreach ($Manifest in $RequiredManifests) {
     $ManifestToApply = $Manifest
     $TemporaryManifest = $null
 
-    if (
-        (Split-Path $Manifest -Leaf) -eq "backend.yaml" -and
-        $BackendImage -ne "mexe-backend:latest"
-    ) {
+    if ((Split-Path $Manifest -Leaf) -eq "backend.yaml") {
+
         $TemporaryManifest = Join-Path `
             $env:TEMP `
             ("mexe-backend-" + [guid]::NewGuid().ToString("N") + ".yaml")
 
         $OriginalContent = Get-Content -LiteralPath $Manifest -Raw
-        $ExpectedImage = "image: mexe-backend:latest"
+        $DefaultBackendImage = "ghcr.io/rafakka/mexe-backend:latest"
+        $ExpectedImageLine = "image: $DefaultBackendImage"
 
-        if (-not $OriginalContent.Contains($ExpectedImage)) {
+        if (-not $OriginalContent.Contains($ExpectedImageLine)) {
             throw "Não foi possível localizar a imagem padrão em '$Manifest'."
         }
 
-        $RenderedContent = $OriginalContent.Replace(
-            $ExpectedImage,
-            "image: $BackendImage"
+        $RenderedContent = $OriginalContent
+
+        if ($BackendImage -ne $DefaultBackendImage) {
+            $RenderedContent = $RenderedContent.Replace(
+                $ExpectedImageLine,
+                "image: $BackendImage"
+            )
+        }
+
+        $TemplateMetadataPattern = '(?m)(^    metadata:\r?\n      labels:\r?\n        app: mexe-backend\r?\n)'
+
+        if ([regex]::Matches(
+            $RenderedContent,
+            $TemplateMetadataPattern
+        ).Count -ne 1) {
+            throw "Não foi possível identificar unicamente o metadata do template dos pods."
+        }
+
+        $AnnotationReplacement = '$1      annotations:' +
+            [Environment]::NewLine +
+            '        mexe.io/backend-image-fingerprint: "' +
+            $BackendFingerprint +
+            '"' +
+            [Environment]::NewLine
+
+        $RenderedContent = [regex]::Replace(
+            $RenderedContent,
+            $TemplateMetadataPattern,
+            $AnnotationReplacement
         )
 
         Set-Content `
