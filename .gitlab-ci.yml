@@ -248,8 +248,8 @@ publish-images:
     - echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
 
   script:
-    - docker buildx build --platform linux/amd64,linux/arm64 --tag ghcr.io/rafakka/mexe-backend:$CI_COMMIT_SHA --push ./backend
-    - docker buildx build --platform linux/amd64,linux/arm64 --tag ghcr.io/rafakka/mexe-frontend:$CI_COMMIT_SHA --push ./frontend
+    - docker buildx build --platform linux/amd64,linux/arm64 --tag ghcr.io/rafakka/mexe-backend:$CI_COMMIT_SHA --tag ghcr.io/rafakka/mexe-backend:latest --push ./backend
+    - docker buildx build --platform linux/amd64,linux/arm64 --tag ghcr.io/rafakka/mexe-frontend:$CI_COMMIT_SHA --tag ghcr.io/rafakka/mexe-frontend:latest --push ./frontend
 
 security-results:
   stage: publish
