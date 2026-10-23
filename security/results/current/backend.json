@@ -3,9 +3,9 @@
   "Trivy": {
     "Version": "0.76.1"
   },
-  "ReportID": "01a168c2-ee11-7e32-b2a7-664819c9e1db",
-  "CreatedAt": "2026-10-23T12:36:07.825932777Z",
-  "ArtifactID": "sha256:7eaf7b4867c80c6c3dd28025869b46ef4221ffb7729b593a7f56883ec1dcbc85",
+  "ReportID": "01a16930-3b8e-72f3-adfd-5c790e0eda6f",
+  "CreatedAt": "2026-10-23T14:35:31.086195597Z",
+  "ArtifactID": "sha256:b839bd2f23e72cb2516bfe14dc081b2f10b0940f09388278fdd93e19af6711ab",
   "ArtifactName": "mexe-backend:security-test",
   "ArtifactType": "container_image",
   "Metadata": {
@@ -14,17 +14,17 @@
       "Family": "alpine",
       "Name": "3.24.3"
     },
-    "ImageID": "sha256:0a43539bb6e9a4ccdf3807887a0c5148fbd2e31df5237afa2527643017e44fec",
+    "ImageID": "sha256:01a41a9789e148ce05c24df805f34d65c4daba6241fe491d274b2a0cb72e5396",
     "DiffIDs": [
       "sha256:75c137aedfb2760f88629236cb7b797630aed0c3d91d626d1d1bb694878fc2ba",
       "sha256:41db907353f7452da525fdb9adbe2dfebe90a15730bf2f91b373664042b2a586",
       "sha256:ad7e652f61b2ea6386c791b6bcec9a5c269a7f433d3d1b405b204eb82ae84fa5",
       "sha256:5cfa8eb1b33a16c94b0c3f8a1d9296248ab254088f6b0fd1243885a6adfaaa9a",
-      "sha256:679d6bac44b86ed0fb63424a283b427c6bac46b6544ef297e69758d5ae2c5691",
-      "sha256:6eee825a050c7c05366e18cd1bcdd27a64b2673e2a967973b9ec5eb0832a4e13",
-      "sha256:7902cb3e35a8d1d759be66556365c0bfa9acb0214240e9e4cc455e45df4af74b",
-      "sha256:8fcd79dcc911415b41d9d36bf50f15be6a57706c625b99c420686b8fad8ef702",
-      "sha256:9ebeba912e5df0fd7f263419b4730650e11f570d12fa59468390d5ca4974a23a"
+      "sha256:54e55b8b6775785564d6b3634b563e01a811b82b4e1bb08fcf99e97a926cde9b",
+      "sha256:8b757a114b9f1b86858448ee9fd56acfc9d7ea3266dc33414a861554622cfbe0",
+      "sha256:b3bcb0d40205962811e3d45aadb7a3c853b7e73a873a848939e09d61cce115ed",
+      "sha256:e208f63d99f01692b51acfe49aa5afbd27fead49548767aff99b89ff8ef957df",
+      "sha256:af661ae70dd95f41af02109f40ff2a05e08bd5445118bd7d9cd044da7a0447ab"
     ],
     "RepoTags": [
       "mexe-backend:security-test"
@@ -32,7 +32,7 @@
     "Reference": "mexe-backend:security-test",
     "ImageConfig": {
       "architecture": "amd64",
-      "created": "2026-10-23T12:35:42.264829288Z",
+      "created": "2026-10-23T14:35:04.722317069Z",
       "history": [
         {
           "created": "2026-10-21T22:37:22Z",
@@ -97,44 +97,44 @@
           "empty_layer": true
         },
         {
-          "created": "2026-10-23T12:35:33Z",
+          "created": "2026-10-23T14:34:55Z",
           "created_by": "WORKDIR /app",
           "comment": "buildkit.dockerfile.v0"
         },
         {
-          "created": "2026-10-23T12:35:33Z",
+          "created": "2026-10-23T14:34:55Z",
           "created_by": "COPY requirements.txt . # buildkit",
           "comment": "buildkit.dockerfile.v0"
         },
         {
-          "created": "2026-10-23T12:35:34Z",
+          "created": "2026-10-23T14:34:56Z",
           "created_by": "RUN /bin/sh -c apk update     \u0026\u0026 apk upgrade     \u0026\u0026 rm -rf /var/cache/apk/* # buildkit",
           "comment": "buildkit.dockerfile.v0"
         },
         {
-          "created": "2026-10-23T12:35:41Z",
+          "created": "2026-10-23T14:35:04Z",
           "created_by": "RUN /bin/sh -c pip install --no-cache-dir -r requirements.txt     \u0026\u0026 python -m pip uninstall -y pip # buildkit",
           "comment": "buildkit.dockerfile.v0"
         },
         {
-          "created": "2026-10-23T12:35:42Z",
+          "created": "2026-10-23T14:35:04Z",
           "created_by": "COPY . . # buildkit",
           "comment": "buildkit.dockerfile.v0"
         },
         {
-          "created": "2026-10-23T12:35:42Z",
+          "created": "2026-10-23T14:35:04Z",
           "created_by": "EXPOSE [8000/tcp]",
           "comment": "buildkit.dockerfile.v0",
           "empty_layer": true
         },
         {
-          "created": "2026-10-23T12:35:42Z",
+          "created": "2026-10-23T14:35:04Z",
           "created_by": "HEALTHCHECK {Test:[CMD-SHELL python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\" || exit 1] Interval:10s Timeout:5s StartPeriod:5s StartInterval:0s Retries:3}",
           "comment": "buildkit.dockerfile.v0",
           "empty_layer": true
         },
         {
-          "created": "2026-10-23T12:35:42Z",
+          "created": "2026-10-23T14:35:04Z",
           "created_by": "CMD [\"uvicorn\" \"app.main:app\" \"--host\" \"0.0.0.0\" \"--port\" \"8000\" \"--no-access-log\"]",
           "comment": "buildkit.dockerfile.v0",
           "empty_layer": true
@@ -148,11 +148,11 @@
           "sha256:41db907353f7452da525fdb9adbe2dfebe90a15730bf2f91b373664042b2a586",
           "sha256:ad7e652f61b2ea6386c791b6bcec9a5c269a7f433d3d1b405b204eb82ae84fa5",
           "sha256:5cfa8eb1b33a16c94b0c3f8a1d9296248ab254088f6b0fd1243885a6adfaaa9a",
-          "sha256:679d6bac44b86ed0fb63424a283b427c6bac46b6544ef297e69758d5ae2c5691",
-          "sha256:6eee825a050c7c05366e18cd1bcdd27a64b2673e2a967973b9ec5eb0832a4e13",
-          "sha256:7902cb3e35a8d1d759be66556365c0bfa9acb0214240e9e4cc455e45df4af74b",
-          "sha256:8fcd79dcc911415b41d9d36bf50f15be6a57706c625b99c420686b8fad8ef702",
-          "sha256:9ebeba912e5df0fd7f263419b4730650e11f570d12fa59468390d5ca4974a23a"
+          "sha256:54e55b8b6775785564d6b3634b563e01a811b82b4e1bb08fcf99e97a926cde9b",
+          "sha256:8b757a114b9f1b86858448ee9fd56acfc9d7ea3266dc33414a861554622cfbe0",
+          "sha256:b3bcb0d40205962811e3d45aadb7a3c853b7e73a873a848939e09d61cce115ed",
+          "sha256:e208f63d99f01692b51acfe49aa5afbd27fead49548767aff99b89ff8ef957df",
+          "sha256:af661ae70dd95f41af02109f40ff2a05e08bd5445118bd7d9cd044da7a0447ab"
         ]
       },
       "config": {
@@ -208,23 +208,23 @@
       },
       {
         "Size": 1536,
-        "DiffID": "sha256:679d6bac44b86ed0fb63424a283b427c6bac46b6544ef297e69758d5ae2c5691"
+        "DiffID": "sha256:54e55b8b6775785564d6b3634b563e01a811b82b4e1bb08fcf99e97a926cde9b"
       },
       {
         "Size": 3072,
-        "DiffID": "sha256:6eee825a050c7c05366e18cd1bcdd27a64b2673e2a967973b9ec5eb0832a4e13"
+        "DiffID": "sha256:8b757a114b9f1b86858448ee9fd56acfc9d7ea3266dc33414a861554622cfbe0"
       },
       {
         "Size": 90624,
-        "DiffID": "sha256:7902cb3e35a8d1d759be66556365c0bfa9acb0214240e9e4cc455e45df4af74b"
+        "DiffID": "sha256:b3bcb0d40205962811e3d45aadb7a3c853b7e73a873a848939e09d61cce115ed"
       },
       {
         "Size": 44873728,
-        "DiffID": "sha256:8fcd79dcc911415b41d9d36bf50f15be6a57706c625b99c420686b8fad8ef702"
+        "DiffID": "sha256:e208f63d99f01692b51acfe49aa5afbd27fead49548767aff99b89ff8ef957df"
       },
       {
         "Size": 38813184,
-        "DiffID": "sha256:9ebeba912e5df0fd7f263419b4730650e11f570d12fa59468390d5ca4974a23a"
+        "DiffID": "sha256:af661ae70dd95f41af02109f40ff2a05e08bd5445118bd7d9cd044da7a0447ab"
       }
     ]
   },
@@ -2196,7 +2196,7 @@
             "MIT"
           ],
           "Layer": {
-            "DiffID": "sha256:8fcd79dcc911415b41d9d36bf50f15be6a57706c625b99c420686b8fad8ef702"
+            "DiffID": "sha256:e208f63d99f01692b51acfe49aa5afbd27fead49548767aff99b89ff8ef957df"
           },
           "FilePath": "usr/local/lib/python3.12/site-packages/annotated_doc-0.0.4.dist-info/METADATA",
           "AnalyzedBy": "python-pkg"
@@ -2212,7 +2212,7 @@
             "MIT"
           ],
           "Layer": {
-            "DiffID": "sha256:8fcd79dcc911415b41d9d36bf50f15be6a57706c625b99c420686b8fad8ef702"
+            "DiffID": "sha256:e208f63d99f01692b51acfe49aa5afbd27fead49548767aff99b89ff8ef957df"
           },
           "FilePath": "usr/local/lib/python3.12/site-packages/annotated_types-0.7.0.dist-info/METADATA",
           "AnalyzedBy": "python-pkg"
@@ -2228,7 +2228,7 @@
             "MIT"
           ],
           "Layer": {
-            "DiffID": "sha256:8fcd79dcc911415b41d9d36bf50f15be6a57706c625b99c420686b8fad8ef702"
+            "DiffID": "sha256:e208f63d99f01692b51acfe49aa5afbd27fead49548767aff99b89ff8ef957df"
           },
           "FilePath": "usr/local/lib/python3.12/site-packages/anyio-4.14.2.dist-info/METADATA",
           "AnalyzedBy": "python-pkg"
@@ -2244,7 +2244,7 @@
             "MPL-2.0"
           ],
           "Layer": {
-            "DiffID": "sha256:8fcd79dcc911415b41d9d36bf50f15be6a57706c625b99c420686b8fad8ef702"
+            "DiffID": "sha256:e208f63d99f01692b51acfe49aa5afbd27fead49548767aff99b89ff8ef957df"
           },
           "FilePath": "usr/local/lib/python3.12/site-packages/certifi-2026.10.23.dist-info/METADATA",
           "AnalyzedBy": "python-pkg"
@@ -2260,7 +2260,7 @@
             "BSD-3-Clause"
           ],
           "Layer": {
-            "DiffID": "sha256:8fcd79dcc911415b41d9d36bf50f15be6a57706c625b99c420686b8fad8ef702"
+            "DiffID": "sha256:e208f63d99f01692b51acfe49aa5afbd27fead49548767aff99b89ff8ef957df"
           },
           "FilePath": "usr/local/lib/python3.12/site-packages/click-8.4.2.dist-info/METADATA",
           "AnalyzedBy": "python-pkg"
@@ -2276,7 +2276,7 @@
             "MIT"
           ],
           "Layer": {
-            "DiffID": "sha256:8fcd79dcc911415b41d9d36bf50f15be6a57706c625b99c420686b8fad8ef702"
+            "DiffID": "sha256:e208f63d99f01692b51acfe49aa5afbd27fead49548767aff99b89ff8ef957df"
           },
           "FilePath": "usr/local/lib/python3.12/site-packages/fastapi-0.138.1.dist-info/METADATA",
           "AnalyzedBy": "python-pkg"
@@ -2292,7 +2292,7 @@
             "MIT"
           ],
           "Layer": {
-            "DiffID": "sha256:8fcd79dcc911415b41d9d36bf50f15be6a57706c625b99c420686b8fad8ef702"
+            "DiffID": "sha256:e208f63d99f01692b51acfe49aa5afbd27fead49548767aff99b89ff8ef957df"
           },
           "FilePath": "usr/local/lib/python3.12/site-packages/h11-0.16.0.dist-info/METADATA",
           "AnalyzedBy": "python-pkg"
@@ -2308,7 +2308,7 @@
             "BSD-3-Clause"
           ],
           "Layer": {
-            "DiffID": "sha256:8fcd79dcc911415b41d9d36bf50f15be6a57706c625b99c420686b8fad8ef702"
+            "DiffID": "sha256:e208f63d99f01692b51acfe49aa5afbd27fead49548767aff99b89ff8ef957df"
           },
           "FilePath": "usr/local/lib/python3.12/site-packages/httpcore-1.0.9.dist-info/METADATA",
           "AnalyzedBy": "python-pkg"
@@ -2324,7 +2324,7 @@
             "BSD-3-Clause"
           ],
           "Layer": {
-            "DiffID": "sha256:8fcd79dcc911415b41d9d36bf50f15be6a57706c625b99c420686b8fad8ef702"
+            "DiffID": "sha256:e208f63d99f01692b51acfe49aa5afbd27fead49548767aff99b89ff8ef957df"
           },
           "FilePath": "usr/local/lib/python3.12/site-packages/httpcore2-2.5.0.dist-info/METADATA",
           "AnalyzedBy": "python-pkg"
@@ -2340,7 +2340,7 @@
             "BSD-3-Clause"
           ],
           "Layer": {
-            "DiffID": "sha256:8fcd79dcc911415b41d9d36bf50f15be6a57706c625b99c420686b8fad8ef702"
+            "DiffID": "sha256:e208f63d99f01692b51acfe49aa5afbd27fead49548767aff99b89ff8ef957df"
           },
           "FilePath": "usr/local/lib/python3.12/site-packages/httpx-0.28.1.dist-info/METADATA",
           "AnalyzedBy": "python-pkg"
@@ -2356,7 +2356,7 @@
             "BSD-3-Clause"
           ],
           "Layer": {
-            "DiffID": "sha256:8fcd79dcc911415b41d9d36bf50f15be6a57706c625b99c420686b8fad8ef702"
+            "DiffID": "sha256:e208f63d99f01692b51acfe49aa5afbd27fead49548767aff99b89ff8ef957df"
           },
           "FilePath": "usr/local/lib/python3.12/site-packages/httpx2-2.5.0.dist-info/METADATA",
           "AnalyzedBy": "python-pkg"
@@ -2372,7 +2372,7 @@
             "BSD-3-Clause"
           ],
           "Layer": {
-            "DiffID": "sha256:8fcd79dcc911415b41d9d36bf50f15be6a57706c625b99c420686b8fad8ef702"
+            "DiffID": "sha256:e208f63d99f01692b51acfe49aa5afbd27fead49548767aff99b89ff8ef957df"
           },
           "FilePath": "usr/local/lib/python3.12/site-packages/idna-3.18.dist-info/METADATA",
           "AnalyzedBy": "python-pkg"
@@ -2388,7 +2388,7 @@
             "Apache-2.0 OR BSD-2-Clause"
           ],
           "Layer": {
-            "DiffID": "sha256:8fcd79dcc911415b41d9d36bf50f15be6a57706c625b99c420686b8fad8ef702"
+            "DiffID": "sha256:e208f63d99f01692b51acfe49aa5afbd27fead49548767aff99b89ff8ef957df"
           },
           "FilePath": "usr/local/lib/python3.12/site-packages/packaging-26.2.dist-info/METADATA",
           "AnalyzedBy": "python-pkg"
@@ -2404,7 +2404,7 @@
             "MIT-CMU"
           ],
           "Layer": {
-            "DiffID": "sha256:8fcd79dcc911415b41d9d36bf50f15be6a57706c625b99c420686b8fad8ef702"
+            "DiffID": "sha256:e208f63d99f01692b51acfe49aa5afbd27fead49548767aff99b89ff8ef957df"
           },
           "FilePath": "usr/local/lib/python3.12/site-packages/pillow-13.0.0.dist-info/METADATA",
           "AnalyzedBy": "python-pkg"
@@ -2420,7 +2420,7 @@
             "Apache-2.0 AND BSD-2-Clause"
           ],
           "Layer": {
-            "DiffID": "sha256:8fcd79dcc911415b41d9d36bf50f15be6a57706c625b99c420686b8fad8ef702"
+            "DiffID": "sha256:e208f63d99f01692b51acfe49aa5afbd27fead49548767aff99b89ff8ef957df"
           },
           "FilePath": "usr/local/lib/python3.12/site-packages/prometheus_client-0.26.0.dist-info/METADATA",
           "AnalyzedBy": "python-pkg"
@@ -2436,7 +2436,7 @@
             "MIT"
           ],
           "Layer": {
-            "DiffID": "sha256:8fcd79dcc911415b41d9d36bf50f15be6a57706c625b99c420686b8fad8ef702"
+            "DiffID": "sha256:e208f63d99f01692b51acfe49aa5afbd27fead49548767aff99b89ff8ef957df"
           },
           "FilePath": "usr/local/lib/python3.12/site-packages/pydantic-2.13.4.dist-info/METADATA",
           "AnalyzedBy": "python-pkg"
@@ -2452,7 +2452,7 @@
             "MIT"
           ],
           "Layer": {
-            "DiffID": "sha256:8fcd79dcc911415b41d9d36bf50f15be6a57706c625b99c420686b8fad8ef702"
+            "DiffID": "sha256:e208f63d99f01692b51acfe49aa5afbd27fead49548767aff99b89ff8ef957df"
           },
           "FilePath": "usr/local/lib/python3.12/site-packages/pydantic_core-2.46.4.dist-info/METADATA",
           "AnalyzedBy": "python-pkg"
@@ -2468,7 +2468,7 @@
             "BSD-2-Clause"
           ],
           "Layer": {
-            "DiffID": "sha256:8fcd79dcc911415b41d9d36bf50f15be6a57706c625b99c420686b8fad8ef702"
+            "DiffID": "sha256:e208f63d99f01692b51acfe49aa5afbd27fead49548767aff99b89ff8ef957df"
           },
           "FilePath": "usr/local/lib/python3.12/site-packages/python_json_logger-4.2.0.dist-info/METADATA",
           "AnalyzedBy": "python-pkg"
@@ -2484,7 +2484,7 @@
             "Apache-2.0"
           ],
           "Layer": {
-            "DiffID": "sha256:8fcd79dcc911415b41d9d36bf50f15be6a57706c625b99c420686b8fad8ef702"
+            "DiffID": "sha256:e208f63d99f01692b51acfe49aa5afbd27fead49548767aff99b89ff8ef957df"
           },
           "FilePath": "usr/local/lib/python3.12/site-packages/python_multipart-0.0.32.dist-info/METADATA",
           "AnalyzedBy": "python-pkg"
@@ -2500,7 +2500,7 @@
             "BSD-3-Clause"
           ],
           "Layer": {
-            "DiffID": "sha256:8fcd79dcc911415b41d9d36bf50f15be6a57706c625b99c420686b8fad8ef702"
+            "DiffID": "sha256:e208f63d99f01692b51acfe49aa5afbd27fead49548767aff99b89ff8ef957df"
           },
           "FilePath": "usr/local/lib/python3.12/site-packages/starlette-1.3.1.dist-info/METADATA",
           "AnalyzedBy": "python-pkg"
@@ -2516,7 +2516,7 @@
             "MIT"
           ],
           "Layer": {
-            "DiffID": "sha256:8fcd79dcc911415b41d9d36bf50f15be6a57706c625b99c420686b8fad8ef702"
+            "DiffID": "sha256:e208f63d99f01692b51acfe49aa5afbd27fead49548767aff99b89ff8ef957df"
           },
           "FilePath": "usr/local/lib/python3.12/site-packages/truststore-0.10.4.dist-info/METADATA",
           "AnalyzedBy": "python-pkg"
@@ -2532,7 +2532,7 @@
             "MIT"
           ],
           "Layer": {
-            "DiffID": "sha256:8fcd79dcc911415b41d9d36bf50f15be6a57706c625b99c420686b8fad8ef702"
+            "DiffID": "sha256:e208f63d99f01692b51acfe49aa5afbd27fead49548767aff99b89ff8ef957df"
           },
           "FilePath": "usr/local/lib/python3.12/site-packages/typing_inspection-0.4.2.dist-info/METADATA",
           "AnalyzedBy": "python-pkg"
@@ -2548,7 +2548,7 @@
             "PSF-2.0"
           ],
           "Layer": {
-            "DiffID": "sha256:8fcd79dcc911415b41d9d36bf50f15be6a57706c625b99c420686b8fad8ef702"
+            "DiffID": "sha256:e208f63d99f01692b51acfe49aa5afbd27fead49548767aff99b89ff8ef957df"
           },
           "FilePath": "usr/local/lib/python3.12/site-packages/typing_extensions-4.15.0.dist-info/METADATA",
           "AnalyzedBy": "python-pkg"
@@ -2564,7 +2564,7 @@
             "BSD-3-Clause"
           ],
           "Layer": {
-            "DiffID": "sha256:8fcd79dcc911415b41d9d36bf50f15be6a57706c625b99c420686b8fad8ef702"
+            "DiffID": "sha256:e208f63d99f01692b51acfe49aa5afbd27fead49548767aff99b89ff8ef957df"
           },
           "FilePath": "usr/local/lib/python3.12/site-packages/uvicorn-0.49.0.dist-info/METADATA",
           "AnalyzedBy": "python-pkg"
@@ -2586,7 +2586,7 @@
           "FixedVersion": "2.10.0",
           "Status": "fixed",
           "Layer": {
-            "DiffID": "sha256:8fcd79dcc911415b41d9d36bf50f15be6a57706c625b99c420686b8fad8ef702"
+            "DiffID": "sha256:e208f63d99f01692b51acfe49aa5afbd27fead49548767aff99b89ff8ef957df"
           },
           "SeveritySource": "ghsa",
           "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-84381",
@@ -2595,7 +2595,7 @@
             "Name": "GitHub Security Advisory pip",
             "URL": "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip"
           },
-          "Fingerprint": "sha256:0329fd527cc0db4aad55b53df36d70aed0c7780545167f5c82e7364fe35a2d61",
+          "Fingerprint": "sha256:3627446818d69ebc567d60e746d1728c9b4cb884995aae4363a6e69cd557d61e",
           "Title": "httpx2: httpcore2: HTTPX2: WebSocket traffic sent in plaintext via SOCKS5 proxy due to TLS failure",
           "Description": "HTTPX2 is a next generation HTTP client for Python. Prior to 2.10.0, httpcore2 fails to start TLS in src/httpcore2/httpcore2/_sync/socks_proxy.py and src/httpcore2/httpcore2/_async/socks_proxy.py when the remote origin uses wss through a SOCKS5 proxy because the TLS upgrade condition only recognizes https. HTTPX2 exposes the flaw through Client.websocket() and AsyncClient.websocket() from 2.6.0 through 2.9.1, so the opening handshake, query parameters, Authorization headers, cookies, and subsequent frames can cross the proxy path in plaintext without certificate verification. An attacker controlling or observing that path can read or modify traffic and impersonate the WebSocket server. This issue is fixed in httpcore2 2.10.0 and HTTPX2 2.10.0.",
           "Severity": "HIGH",
@@ -2646,7 +2646,7 @@
           "FixedVersion": "2.12.0",
           "Status": "fixed",
           "Layer": {
-            "DiffID": "sha256:8fcd79dcc911415b41d9d36bf50f15be6a57706c625b99c420686b8fad8ef702"
+            "DiffID": "sha256:e208f63d99f01692b51acfe49aa5afbd27fead49548767aff99b89ff8ef957df"
           },
           "SeveritySource": "ghsa",
           "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-84382",
@@ -2655,7 +2655,7 @@
             "Name": "GitHub Security Advisory pip",
             "URL": "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip"
           },
-          "Fingerprint": "sha256:03555bc01e49faf336635712bff777c84e51d8c3a72c98c5d769ca2be5f701b4",
+          "Fingerprint": "sha256:77104baf6c451d6ee6fbe07ba0b267129a38dc125405bc8339b7d19d9c2a719d",
           "Title": "httpx2: HTTPX2: Denial of Service via streaming response decompression memory amplification",
           "Description": "HTTPX2 is a next generation HTTP client for Python. Prior to 2.12.0, the HTTPX2 content decoders in src/httpx2/httpx2/_decoders.py fully inflate each gzip, deflate, br, or zstd network chunk before iter_bytes() or aiter_bytes() yields bounded pieces to the application. A 64 KiB compressed chunk can expand to approximately 64 MiB in one intermediate allocation, so an attacker-controlled or compromised server can cause severe memory pressure or out-of-memory process termination even when the application streams the response. This issue is fixed in version 2.12.0.",
           "Severity": "HIGH",
@@ -2706,7 +2706,7 @@
           "FixedVersion": "2.10.0",
           "Status": "fixed",
           "Layer": {
-            "DiffID": "sha256:8fcd79dcc911415b41d9d36bf50f15be6a57706c625b99c420686b8fad8ef702"
+            "DiffID": "sha256:e208f63d99f01692b51acfe49aa5afbd27fead49548767aff99b89ff8ef957df"
           },
           "SeveritySource": "ghsa",
           "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-84378",
@@ -2715,7 +2715,7 @@
             "Name": "GitHub Security Advisory pip",
             "URL": "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip"
           },
-          "Fingerprint": "sha256:4b3d9c518c77c9c54b82dedf070e5b047db13e014ddfce56e617d124d772b00a",
+          "Fingerprint": "sha256:0895def47a9fbc581173b9ff7cfe1cca85c2204bb6981af50d91b7c60d94d3cf",
           "Title": "httpx2: HTTPX2: Denial of Service via crafted Server-Sent Events stream",
           "Description": "HTTPX2 is a next generation HTTP client for Python. From 2.5.0 until 2.10.0, the HTTPX2 Server-Sent Events parser in src/httpx2/httpx2/_sse.py repeatedly copies and rescans buffered text in _SSELineDecoder.decode() when an attacker-controlled or compromised SSE endpoint splits one unterminated line across many response chunks. The behavior affects httpx2.Client.sse() and httpx2.AsyncClient.sse(), and the total processing work grows quadratically with the line length, allowing a crafted stream to consume excessive CPU and block a synchronous worker or asynchronous event loop. This issue is fixed in version 2.10.0.",
           "Severity": "MEDIUM",
@@ -2767,7 +2767,7 @@
           "FixedVersion": "2.11.0",
           "Status": "fixed",
           "Layer": {
-            "DiffID": "sha256:8fcd79dcc911415b41d9d36bf50f15be6a57706c625b99c420686b8fad8ef702"
+            "DiffID": "sha256:e208f63d99f01692b51acfe49aa5afbd27fead49548767aff99b89ff8ef957df"
           },
           "SeveritySource": "ghsa",
           "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-84379",
@@ -2776,7 +2776,7 @@
             "Name": "GitHub Security Advisory pip",
             "URL": "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip"
           },
-          "Fingerprint": "sha256:73178adf5c278344ed03f66fcc9c5bccd4e0bfc15a083d3c1cc49eb63435ec54",
+          "Fingerprint": "sha256:58dff61a2def992e84f15975ddd8c58f3ab7ae6b77345c30d926aa53d31fe3fc",
           "Title": "httpx2: HTTPX2: Multipart header injection via unvalidated input",
           "Description": "HTTPX2 is a next generation HTTP client for Python. Prior to 2.11.0, FileField.render_headers() in src/httpx2/httpx2/_multipart.py directly interpolates attacker-controlled content_type values and custom headers from the files= three-element (filename, content, content_type) tuple and the files= four-element (filename, content, content_type, headers) tuple into multipart/form-data part headers without validating header names or values. CR or LF characters can terminate a part header, inject additional part headers, or end the part header block early, allowing a downstream multipart parser to treat attacker-supplied lines as genuine headers and potentially alter part semantics or bypass header-based checks. This issue is fixed in version 2.11.0.",
           "Severity": "MEDIUM",
@@ -2827,7 +2827,7 @@
           "FixedVersion": "2.11.0",
           "Status": "fixed",
           "Layer": {
-            "DiffID": "sha256:8fcd79dcc911415b41d9d36bf50f15be6a57706c625b99c420686b8fad8ef702"
+            "DiffID": "sha256:e208f63d99f01692b51acfe49aa5afbd27fead49548767aff99b89ff8ef957df"
           },
           "SeveritySource": "ghsa",
           "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-84380",
@@ -2836,7 +2836,7 @@
             "Name": "GitHub Security Advisory pip",
             "URL": "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip"
           },
-          "Fingerprint": "sha256:39bc870c3503777e12544f5d5b9cc4dbf70c032239f2c1d723a05f6eab674852",
+          "Fingerprint": "sha256:3b8b1896334ce7a3ec76b10466e7ff5904a95ae925c67474119771f659ffe49d",
           "Title": "httpx2: HTTPX2: Request Smuggling and Connection Desynchronization via Conflicting HTTP Headers",
           "Description": "HTTPX2 is a next generation HTTP client for Python. Prior to 2.11.0, Request._prepare() in src/httpx2/httpx2/_models.py can add a body-derived Content-Length header to a request that already contains a caller-supplied Transfer-Encoding header because its setdefault() processing checks each default header independently rather than treating the two framing headers as mutually exclusive. Fixed-size byte, JSON, form, and known-length multipart bodies can therefore be serialized over HTTP/1.1 with both headers, allowing request smuggling or connection desynchronization when downstream intermediaries disagree about which framing header takes precedence. This issue is fixed in version 2.11.0.",
           "Severity": "MEDIUM",

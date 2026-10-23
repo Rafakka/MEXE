@@ -1,14 +1,14 @@
 {
   "schema_version": 1,
-  "source_commit": "b9f4386add66f9ce2119eaa481772bb10c59c53c",
-  "pipeline_id": "2981103299",
-  "generated_at": "2026-10-23T12:43:37Z",
+  "source_commit": "dae72324c00c55971082767aef7f9fe134c77b79",
+  "pipeline_id": "2981596409",
+  "generated_at": "2026-10-23T14:43:18Z",
   "images": {
     "backend": {
-      "reference": "ghcr.io/rafakka/mexe-backend:b9f4386add66f9ce2119eaa481772bb10c59c53c"
+      "reference": "ghcr.io/rafakka/mexe-backend:dae72324c00c55971082767aef7f9fe134c77b79"
     },
     "frontend": {
-      "reference": "ghcr.io/rafakka/mexe-frontend:b9f4386add66f9ce2119eaa481772bb10c59c53c"
+      "reference": "ghcr.io/rafakka/mexe-frontend:dae72324c00c55971082767aef7f9fe134c77b79"
     }
   }
 }
