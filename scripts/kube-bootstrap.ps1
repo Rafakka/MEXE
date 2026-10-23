@@ -1,3 +1,8 @@
+
+param(
+    [string]$BackendImage = "mexe-backend:latest"
+)
+
 $ErrorActionPreference = "Stop"
 
 $MexeRoot = Split-Path $PSScriptRoot -Parent
@@ -265,19 +270,55 @@ function Ensure-KindImage {
     docker image inspect $Image *> $null
 
     if ($LASTEXITCODE -ne 0) {
-        throw "Imagem '$Image' não existe no Docker local."
+        if ($Image -like "ghcr.io/*") {
+            Write-Host "Imagem não encontrada localmente. Baixando do GHCR..."
+
+            docker pull $Image
+
+            if ($LASTEXITCODE -ne 0) {
+                throw "Falha ao baixar a imagem '$Image'."
+            }
+        }
+        else {
+            throw "Imagem '$Image' não existe no Docker local."
+        }
     }
 
     Write-Host "Imagem '$Image' encontrada no Docker local."
     Write-Host "Carregando '$Image' no Kind..."
 
-    kind load docker-image $Image --name $ClusterName
+    $ImageArchive = Join-Path `
+        $env:TEMP `
+        ("kind-image-" + [guid]::NewGuid().ToString("N") + ".tar")
 
-    if ($LASTEXITCODE -ne 0) {
-        throw "Falha ao carregar a imagem '$Image' no Kind."
+    try {
+        Write-Host "Exportando imagem para linux/amd64..."
+
+        docker image save `
+            --platform linux/amd64 `
+            --output $ImageArchive `
+            $Image
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "Falha ao exportar a imagem '$Image'."
+        }
+
+        Write-Host "Carregando arquivo de imagem no Kind..."
+
+        kind load image-archive $ImageArchive --name $ClusterName
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "Falha ao carregar a imagem '$Image' no Kind."
+        }
+
+        Write-Host "Imagem '$Image' carregada no Kind." `
+            -ForegroundColor Green
     }
-
-    Write-Host "Imagem '$Image' carregada no Kind." -ForegroundColor Green
+    finally {
+        if (Test-Path $ImageArchive) {
+            Remove-Item $ImageArchive -Force
+        }
+    }
 }
 
 # ============================================================
@@ -287,7 +328,7 @@ function Ensure-KindImage {
 Write-Host "`nGarantindo imagens locais no Kind..."
 
 $KindImages = @(
-    "mexe-backend:latest"
+    $BackendImage
 )
 
 if ($SecurityExporterEnabled) {
@@ -367,22 +408,57 @@ $RequiredManifests = @(
 )
 
 foreach ($Manifest in $RequiredManifests) {
-    if (-not (Test-Path $Manifest)) {
-        throw "Manifest não encontrado: $Manifest"
+
+    $ManifestToApply = $Manifest
+    $TemporaryManifest = $null
+
+    if (
+        (Split-Path $Manifest -Leaf) -eq "backend.yaml" -and
+        $BackendImage -ne "mexe-backend:latest"
+    ) {
+        $TemporaryManifest = Join-Path `
+            $env:TEMP `
+            ("mexe-backend-" + [guid]::NewGuid().ToString("N") + ".yaml")
+
+        $OriginalContent = Get-Content -LiteralPath $Manifest -Raw
+        $ExpectedImage = "image: mexe-backend:latest"
+
+        if (-not $OriginalContent.Contains($ExpectedImage)) {
+            throw "Não foi possível localizar a imagem padrão em '$Manifest'."
+        }
+
+        $RenderedContent = $OriginalContent.Replace(
+            $ExpectedImage,
+            "image: $BackendImage"
+        )
+
+        Set-Content `
+            -LiteralPath $TemporaryManifest `
+            -Value $RenderedContent `
+            -Encoding utf8
+
+        $ManifestToApply = $TemporaryManifest
+    }
+
+    try {
+        Write-Host "Aplicando: $Manifest"
+
+        kubectl apply -f $ManifestToApply
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "Falha ao aplicar o manifest: $Manifest"
+        }
+    }
+    finally {
+        if (
+            $TemporaryManifest -and
+            (Test-Path $TemporaryManifest)
+        ) {
+            Remove-Item -LiteralPath $TemporaryManifest -Force
+        }
     }
 }
 
-# Aplicar manifests obrigatórios individualmente
-foreach ($Manifest in $RequiredManifests) {
-
-    Write-Host "Aplicando: $Manifest"
-
-    kubectl apply -f $Manifest
-
-    if ($LASTEXITCODE -ne 0) {
-        throw "Falha ao aplicar o manifest: $Manifest"
-    }
-}
 
 # Security exporter
 if ($SecurityExporterEnabled) {
