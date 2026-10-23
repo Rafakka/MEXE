@@ -421,7 +421,7 @@ The current observability flow is:
 
 Tracing remains a future capability.
 
-For in depth explanations, please read [OBSERVABILITY IN DEPTH](./docs/observability.md)
+For in depth explanations, please read [IN DEPTH](./docs/observability.md)
 
 ---
 
