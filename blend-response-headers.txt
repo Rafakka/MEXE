@@ -1,0 +1,9 @@
+HTTP/1.1 100 Continue
+
+HTTP/1.1 200 OK
+date: Fri, 23 Oct 2026 15:28:49 GMT
+server: uvicorn
+content-type: image/png
+x-request-id: 60856785-f2d4-45ac-8197-a0670a838905
+Transfer-Encoding: chunked
+

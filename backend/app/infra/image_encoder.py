@@ -4,6 +4,7 @@ import logging
 from app.observability.decorators import measure_time
 
 from collections.abc import Iterator
+from starlette.concurrency import run_in_threadpool
 
 from PIL import Image
 from io import BytesIO
@@ -40,10 +41,11 @@ class ImageEncoder:
 
         output = BytesIO()
 
-        image.save(
-                output,
-                format="PNG"
-                )
+        await run_in_threadpool(
+            image.save,
+            output,
+            format="PNG",
+        )
 
         output.seek(0)
 

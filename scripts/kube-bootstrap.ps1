@@ -406,7 +406,32 @@ Write-Host "Fingerprint desejado do backend: $BackendFingerprint"
 
 $CurrentBackendFingerprint = $null
 
-$CurrentDeploymentJson = kubectl get deployment mexe-backend -o json 2>$null
+$CurrentDeploymentJson = kubectl get deployment mexe-backend `
+    --ignore-not-found `
+    -o json
+
+if ($LASTEXITCODE -ne 0) {
+    throw "Falha ao consultar o Deployment mexe-backend."
+}
+
+if (-not [string]::IsNullOrWhiteSpace(
+    ($CurrentDeploymentJson -join "")
+)) {
+    $CurrentDeployment = (
+        $CurrentDeploymentJson -join [Environment]::NewLine
+    ) | ConvertFrom-Json
+
+    $CurrentAnnotations = $CurrentDeployment.spec.template.metadata.annotations
+
+    if ($CurrentAnnotations) {
+        $CurrentBackendFingerprint = `
+            $CurrentAnnotations.'mexe.io/backend-image-fingerprint'
+    }
+}
+else {
+    Write-Host "Deployment mexe-backend ainda não existe; será criado pelo bootstrap." `
+        -ForegroundColor Yellow
+}
 
 if ($LASTEXITCODE -eq 0) {
     $CurrentDeployment = (
