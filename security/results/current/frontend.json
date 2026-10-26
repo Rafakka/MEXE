@@ -3,18 +3,18 @@
   "Trivy": {
     "Version": "0.76.1"
   },
-  "ReportID": "01a16930-6020-77d4-973d-19a573e4c2eb",
-  "CreatedAt": "2026-10-23T14:35:40.448516836Z",
-  "ArtifactID": "sha256:cc522bbb392c3b0a39c2e39c8d3d7b4663bab70bd176eb03a14f7d37f5e8d106",
+  "ReportID": "01a177d8-11d3-74f9-9abe-de29546102f5",
+  "CreatedAt": "2026-10-26T10:53:31.475329298Z",
+  "ArtifactID": "sha256:14c64ff9c9637152a081d2ff562b86876503add07cdcaef27c888d80b6727f1c",
   "ArtifactName": "mexe-frontend:security-test",
   "ArtifactType": "container_image",
   "Metadata": {
-    "Size": 66139136,
+    "Size": 67178496,
     "OS": {
       "Family": "alpine",
       "Name": "3.24.3"
     },
-    "ImageID": "sha256:b69f8cb6ca77480b767509778403d074eeeb9a9c6a7463de4db3ec3b90cefe2e",
+    "ImageID": "sha256:c64a46992b9df8160e68c24445a166f58fcb7d6b4ce62715f80695bcad335722",
     "DiffIDs": [
       "sha256:75c137aedfb2760f88629236cb7b797630aed0c3d91d626d1d1bb694878fc2ba",
       "sha256:347d70688a4f620ee434007bc3b622592c459d0c45cbc275d0c8c3db0d2cb3e5",
@@ -24,9 +24,9 @@
       "sha256:26fc657c345556a2c48a5cdaa66f5e31ea881a18184bc943ad42cc46e93d7139",
       "sha256:6e2ae602f9d69418f36fd9c178e472fb6e6b468f6aadd3dbd759fcee552a7527",
       "sha256:a617e334a194398d200a112e5d4a39c65aa720650fe0fae732bdb1d7d4fb53a0",
-      "sha256:555ce277aff677b0d326c83354a48e62b3a92e3e0dc9d04fbf5a76716a1efed1",
-      "sha256:bd5ae46f019d50c6de5ecf4fd2603fbd37ef4bb56ebdfdc820d8399110b005a2",
-      "sha256:bd3aef94f83f9d8515b54e55b99f65c117f0edb1da86b1d77dba3fba8108cf16"
+      "sha256:47ba064befede2bfb0d5f9f740a7ba2da102b2813987e005f5e7544c145f0a07",
+      "sha256:c595f0da68597fa3d2740f9cd967118c3ac5bc6926cb0a272086d52d107730dc",
+      "sha256:3fb92947ef711d87e6620a5dfc9ef3652393d1f496aac48495ea16de885fd053"
     ],
     "RepoTags": [
       "mexe-frontend:security-test"
@@ -34,7 +34,7 @@
     "Reference": "mexe-frontend:security-test",
     "ImageConfig": {
       "architecture": "amd64",
-      "created": "2026-10-23T14:35:17.428307619Z",
+      "created": "2026-10-26T10:53:09.249138937Z",
       "history": [
         {
           "created": "2026-10-21T22:37:22Z",
@@ -149,34 +149,34 @@
           "comment": "buildkit.dockerfile.v0"
         },
         {
-          "created": "2026-10-23T14:35:02Z",
+          "created": "2026-10-26T10:52:56Z",
           "created_by": "RUN /bin/sh -c apk update     \u0026\u0026 apk upgrade     \u0026\u0026 rm -rf /var/cache/apk/* # buildkit",
           "comment": "buildkit.dockerfile.v0"
         },
         {
-          "created": "2026-10-23T14:35:17Z",
+          "created": "2026-10-26T10:53:09Z",
           "created_by": "COPY /app/dist /usr/share/nginx/html # buildkit",
           "comment": "buildkit.dockerfile.v0"
         },
         {
-          "created": "2026-10-23T14:35:17Z",
+          "created": "2026-10-26T10:53:09Z",
           "created_by": "COPY nginx.conf /etc/nginx/conf.d/default.conf # buildkit",
           "comment": "buildkit.dockerfile.v0"
         },
         {
-          "created": "2026-10-23T14:35:17Z",
+          "created": "2026-10-26T10:53:09Z",
           "created_by": "EXPOSE [80/tcp]",
           "comment": "buildkit.dockerfile.v0",
           "empty_layer": true
         },
         {
-          "created": "2026-10-23T14:35:17Z",
+          "created": "2026-10-26T10:53:09Z",
           "created_by": "CMD [\"nginx\" \"-g\" \"daemon off;\"]",
           "comment": "buildkit.dockerfile.v0",
           "empty_layer": true
         },
         {
-          "created": "2026-10-23T14:35:17Z",
+          "created": "2026-10-26T10:53:09Z",
           "created_by": "HEALTHCHECK {Test:[CMD-SHELL wget --spider --quiet http://127.0.0.1/api/health || exit 1] Interval:10s Timeout:5s StartPeriod:5s StartInterval:0s Retries:3}",
           "comment": "buildkit.dockerfile.v0",
           "empty_layer": true
@@ -194,9 +194,9 @@
           "sha256:26fc657c345556a2c48a5cdaa66f5e31ea881a18184bc943ad42cc46e93d7139",
           "sha256:6e2ae602f9d69418f36fd9c178e472fb6e6b468f6aadd3dbd759fcee552a7527",
           "sha256:a617e334a194398d200a112e5d4a39c65aa720650fe0fae732bdb1d7d4fb53a0",
-          "sha256:555ce277aff677b0d326c83354a48e62b3a92e3e0dc9d04fbf5a76716a1efed1",
-          "sha256:bd5ae46f019d50c6de5ecf4fd2603fbd37ef4bb56ebdfdc820d8399110b005a2",
-          "sha256:bd3aef94f83f9d8515b54e55b99f65c117f0edb1da86b1d77dba3fba8108cf16"
+          "sha256:47ba064befede2bfb0d5f9f740a7ba2da102b2813987e005f5e7544c145f0a07",
+          "sha256:c595f0da68597fa3d2740f9cd967118c3ac5bc6926cb0a272086d52d107730dc",
+          "sha256:3fb92947ef711d87e6620a5dfc9ef3652393d1f496aac48495ea16de885fd053"
         ]
       },
       "config": {
@@ -272,16 +272,16 @@
         "DiffID": "sha256:a617e334a194398d200a112e5d4a39c65aa720650fe0fae732bdb1d7d4fb53a0"
       },
       {
-        "Size": 1112064,
-        "DiffID": "sha256:555ce277aff677b0d326c83354a48e62b3a92e3e0dc9d04fbf5a76716a1efed1"
+        "Size": 2151424,
+        "DiffID": "sha256:47ba064befede2bfb0d5f9f740a7ba2da102b2813987e005f5e7544c145f0a07"
       },
       {
         "Size": 674304,
-        "DiffID": "sha256:bd5ae46f019d50c6de5ecf4fd2603fbd37ef4bb56ebdfdc820d8399110b005a2"
+        "DiffID": "sha256:c595f0da68597fa3d2740f9cd967118c3ac5bc6926cb0a272086d52d107730dc"
       },
       {
         "Size": 3584,
-        "DiffID": "sha256:bd3aef94f83f9d8515b54e55b99f65c117f0edb1da86b1d77dba3fba8108cf16"
+        "DiffID": "sha256:3fb92947ef711d87e6620a5dfc9ef3652393d1f496aac48495ea16de885fd053"
       }
     ]
   },
@@ -543,7 +543,7 @@
             "musl@1.2.6-r3"
           ],
           "Layer": {
-            "DiffID": "sha256:555ce277aff677b0d326c83354a48e62b3a92e3e0dc9d04fbf5a76716a1efed1"
+            "DiffID": "sha256:47ba064befede2bfb0d5f9f740a7ba2da102b2813987e005f5e7544c145f0a07"
           },
           "Digest": "sha1:f482d0e3f6ec36fd4910358472c6b48be6388584",
           "InstalledFiles": [
@@ -825,29 +825,29 @@
           "AnalyzedBy": "apk"
         },
         {
-          "ID": "curl@8.22.0-r0",
+          "ID": "curl@8.23.0-r0",
           "Name": "curl",
           "Identifier": {
-            "PURL": "pkg:apk/alpine/curl@8.22.0-r0?arch=x86_64\u0026distro=3.24.3",
-            "UID": "2e5ee87a6ee5b0d7"
+            "PURL": "pkg:apk/alpine/curl@8.23.0-r0?arch=x86_64\u0026distro=3.24.3",
+            "UID": "d7992d26398ad8b4"
           },
-          "Version": "8.22.0-r0",
+          "Version": "8.23.0-r0",
           "Arch": "x86_64",
           "SrcName": "curl",
-          "SrcVersion": "8.22.0-r0",
+          "SrcVersion": "8.23.0-r0",
           "Licenses": [
             "curl"
           ],
           "Maintainer": "Achill Gilgenast \u003cachill@achill.org\u003e",
           "DependsOn": [
-            "libcurl@8.22.0-r0",
+            "libcurl@8.23.0-r0",
             "musl@1.2.6-r3",
             "zlib@1.3.2-r1"
           ],
           "Layer": {
-            "DiffID": "sha256:a617e334a194398d200a112e5d4a39c65aa720650fe0fae732bdb1d7d4fb53a0"
+            "DiffID": "sha256:47ba064befede2bfb0d5f9f740a7ba2da102b2813987e005f5e7544c145f0a07"
           },
-          "Digest": "sha1:cfbb78b38d8f69e33129b7e98863f1759878010d",
+          "Digest": "sha1:9379b89d9475ec26adbf463deff410d01a5a7d80",
           "InstalledFiles": [
             "usr/bin/curl",
             "usr/bin/wcurl"
@@ -1211,16 +1211,16 @@
           "AnalyzedBy": "apk"
         },
         {
-          "ID": "libcurl@8.22.0-r0",
+          "ID": "libcurl@8.23.0-r0",
           "Name": "libcurl",
           "Identifier": {
-            "PURL": "pkg:apk/alpine/libcurl@8.22.0-r0?arch=x86_64\u0026distro=3.24.3",
-            "UID": "5459458448472038"
+            "PURL": "pkg:apk/alpine/libcurl@8.23.0-r0?arch=x86_64\u0026distro=3.24.3",
+            "UID": "a59da8bbde6fe2d1"
           },
-          "Version": "8.22.0-r0",
+          "Version": "8.23.0-r0",
           "Arch": "x86_64",
           "SrcName": "curl",
-          "SrcVersion": "8.22.0-r0",
+          "SrcVersion": "8.23.0-r0",
           "Licenses": [
             "curl"
           ],
@@ -1239,9 +1239,9 @@
             "zstd-libs@1.5.7-r2"
           ],
           "Layer": {
-            "DiffID": "sha256:a617e334a194398d200a112e5d4a39c65aa720650fe0fae732bdb1d7d4fb53a0"
+            "DiffID": "sha256:47ba064befede2bfb0d5f9f740a7ba2da102b2813987e005f5e7544c145f0a07"
           },
-          "Digest": "sha1:7816006b6af2270ab6e7e85f74adb94c16bdc48b",
+          "Digest": "sha1:7adaabffb7d1facb5cd3de9a522b43bc63373bd4",
           "InstalledFiles": [
             "usr/lib/libcurl.so.4",
             "usr/lib/libcurl.so.4.8.0"
