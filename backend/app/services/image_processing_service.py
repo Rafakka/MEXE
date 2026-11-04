@@ -5,7 +5,7 @@ from PIL import Image
 from time import perf_counter
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("mexe")
 
 def log_capacity_stage(
     request_id: str,
@@ -38,7 +38,7 @@ class ImageProcessingService:
         stage_start = perf_counter()
 
         image1, image2 = (
-            self.image_preparation_service.prepare(
+            await self.image_preparation_service.prepare(
                 operation
             )
         )

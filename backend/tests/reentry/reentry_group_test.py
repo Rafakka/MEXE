@@ -461,7 +461,7 @@ async def test_image_processing_service_processes_resume_model(
     blended_image = "blended-image"
     encoded_result = b"encoded-result"
 
-    def fake_prepare(received_operation):
+    async def fake_prepare(received_operation):
         assert received_operation is operation
         return prepared_images
 
