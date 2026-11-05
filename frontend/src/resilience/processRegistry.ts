@@ -1,9 +1,13 @@
 
 
+export type ProcessResult =
+    | "success"
+    | "failed";
+
 export type ProcessHandler = (
     firstFile: File,
     secondFile: File,
-) => Promise<void>;
+) => Promise<ProcessResult>;
 
 const processRegistry = new Map<string, ProcessHandler>();
 

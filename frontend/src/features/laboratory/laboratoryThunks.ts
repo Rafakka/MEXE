@@ -44,7 +44,7 @@ import { reconstructFiles} from "../../resilience/reconstructor";
 
 import { SessionValidator } from "../../services/sessionValidator";
 
-import { getProcessHandler } from "../../resilience/processRegistry";
+import { getProcessHandler, type ProcessResult } from "../../resilience/processRegistry";
 
 import { mexeApi } from "../../api/mexeApi";
 
@@ -114,7 +114,7 @@ import {parseLaboratoryOperation } from "../../features/laboratory/utils/typePar
         secondFile: File
     ) => async (
         dispatch: AppDispatch
-    ) => {
+    ): Promise<ProcessResult> => {
 
         const handler = getProcessHandler(operation);
 
@@ -146,7 +146,7 @@ import {parseLaboratoryOperation } from "../../features/laboratory/utils/typePar
 
         dispatch(mergeStarted());
 
-        await handler(
+        return handler(
             firstFile, secondFile
             )
 
@@ -155,7 +155,7 @@ import {parseLaboratoryOperation } from "../../features/laboratory/utils/typePar
     function completeMerge(
         dispatch: AppDispatch,
         result: Awaited<ReturnType<typeof mexeApi.blend>>
-    ) {
+    ): ProcessResult {
             dispatch(mergeCompleted(result));
             dispatch(acceleratingStarted());
 
@@ -169,7 +169,7 @@ import {parseLaboratoryOperation } from "../../features/laboratory/utils/typePar
         secondFile: File
     ) => async (
         dispatch: AppDispatch
-    ) => {
+    ): Promise<ProcessResult> => {
 
         console.log(">>> PERFORM MERGE:", getMemorizedProcess());
 
@@ -259,10 +259,14 @@ import {parseLaboratoryOperation } from "../../features/laboratory/utils/typePar
 
         try {
 
-            await handler(
+            const result = await handler(
                 firstFile,
                 secondFile
             );
+
+            if (result !== "success") {
+                return "failed";
+            }
 
             forgetProcess();
 

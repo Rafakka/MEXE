@@ -16,7 +16,7 @@ describe("process registry", () => {
 
     it("registers and retrieves a process handler", () => {
 
-        const handler = vi.fn().mockResolvedValue(undefined);
+        const handler = vi.fn().mockResolvedValue("success");
 
         registerProcess("blend", handler);
 
@@ -27,7 +27,7 @@ describe("process registry", () => {
 
     it("unregisters a process handler", () => {
 
-    const handler = vi.fn().mockResolvedValue(undefined);
+    const handler = vi.fn().mockResolvedValue("success");
 
     registerProcess("blend", handler);
 

@@ -19,7 +19,7 @@ export const registerLaboratoryEffects = (
         "blend",
         async (firstFile, secondFile) => {
 
-            await dispatch(
+            return dispatch(
                 performMerge(
                     firstFile,
                     secondFile

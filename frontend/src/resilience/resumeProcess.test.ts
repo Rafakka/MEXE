@@ -11,9 +11,12 @@ import {
 } from "../features/laboratory/laboratoryThunks";
 
 import {
+    getMemorizedProcess,
     memorizeProcess,
     forgetProcess,
 } from "./resilienceMemory";
+
+import type { ProcessResult} from "./processRegistry";
 
 import {
     registerProcess,
@@ -24,9 +27,11 @@ import {
 describe("resumeProcess", () => {
 
     afterEach(() => {
+        vi.clearAllMocks();
         forgetProcess();
         unregisterProcess("blend");
         unregisterProcess("unknown");
+
     });
 
     const firstFile = new File(
@@ -52,7 +57,7 @@ describe("resumeProcess", () => {
     it("resumes the interrupted process successfully", async () => {
 
         const handler = vi.fn(
-            async () => {}
+            async ():Promise<ProcessResult> => "success"
         );
 
         memorizeProcess({
@@ -112,4 +117,37 @@ describe("resumeProcess", () => {
 
     });
 
+    it("preserves the interrupted process when the handler returns failed", async () => {
+
+        const process = {
+            type: "blend" as const,
+            phase: "processing" as const,
+            operationPhase: "running" as const,
+        };
+
+        const handler = vi.fn(
+            async (): Promise<ProcessResult> => "failed"
+        );
+
+        memorizeProcess(process);
+
+        registerProcess(
+            "blend",
+            handler
+        );
+
+        const result = await resumeProcess(
+            firstFile,
+            secondFile
+        )();
+
+        expect(result).toBe("failed");
+
+        expect(handler).toHaveBeenCalledOnce();
+
+        expect(getMemorizedProcess()).toEqual(process);
+
+    });
+
 });
+

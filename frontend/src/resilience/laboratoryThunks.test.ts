@@ -10,6 +10,7 @@ import {
 import { mexeApi } from "../api/mexeApi";
 import { recoverConnection } from "../resilience/connectionRecovery";
 import {
+    getMemorizedProcess,
     memorizeProcess,
     forgetProcess
 } from "./resilienceMemory";
@@ -49,7 +50,7 @@ describe("laboratory resilience", () => {
         });
 
         vi.spyOn(mexeApi, "ready")
-            .mockResolvedValue(undefined);
+            .mockResolvedValue("success");
 
         vi.spyOn(mexeApi, "blend")
             .mockRejectedValue(
@@ -132,7 +133,7 @@ describe("laboratory resilience", () => {
             },
         });
 
-        const resumeHandler = vi.fn().mockResolvedValue(undefined);
+        const resumeHandler = vi.fn().mockResolvedValue("success");
 
         memorizeProcess({
             type: "blend",
@@ -244,7 +245,7 @@ describe("laboratory resilience", () => {
             },
         });
 
-        const resumeHandler = vi.fn().mockResolvedValue(undefined);
+        const resumeHandler = vi.fn().mockResolvedValue("success");
 
         memorizeProcess({
             type: "blend",
@@ -318,7 +319,7 @@ describe("laboratory resilience", () => {
 
         const resumeHandler = vi
             .fn()
-            .mockResolvedValue(undefined);
+            .mockResolvedValue("success");
 
         memorizeProcess({
             type: "blend",
@@ -342,6 +343,53 @@ describe("laboratory resilience", () => {
         expect(recoverConnection).toHaveBeenCalledTimes(2);
 
         expect(resumeHandler).toHaveBeenCalledOnce();
+    });
+
+    it("keeps the interrupted process when the recovery handler returns failed", async () => {
+
+        const testStore = configureStore({
+            reducer: {
+                laboratory: laboratoryReducer,
+            },
+        });
+
+        const interruptedProcess = {
+            type: "blend" as const,
+            phase: "processing" as const,
+            operationPhase: "running" as const,
+        };
+
+        const resumeHandler = vi.fn()
+            .mockResolvedValue("failed");
+
+        memorizeProcess(interruptedProcess);
+
+        registerProcess(
+            "blend",
+            resumeHandler
+        );
+
+        vi.mocked(recoverConnection)
+            .mockResolvedValue(true);
+
+        const result = await testStore.dispatch(
+            manualRetry(firstFile, secondFile)
+        );
+
+        const state = testStore.getState().laboratory;
+
+        expect(recoverConnection).toHaveBeenCalledOnce();
+
+        expect(resumeHandler).toHaveBeenCalledOnce();
+
+        expect(result).toBe("failed");
+
+        expect(state.operationPhase).toBe("offline");
+
+        expect(state.notification?.type).toBe("error");
+
+        expect(getMemorizedProcess()).toEqual(interruptedProcess);
+
     });
 
 });
