@@ -30,8 +30,6 @@ describe("resumeProcess", () => {
         vi.clearAllMocks();
         forgetProcess();
         unregisterProcess("blend");
-        unregisterProcess("unknown");
-
     });
 
     const firstFile = new File(

@@ -1,11 +1,25 @@
 
+import { configureStore } from "@reduxjs/toolkit";
 
-import { describe, expect, it, afterEach } from "vitest";
+import { describe, expect, it, afterEach, vi, } from "vitest";
+
 import JSZip from "jszip";
 
-import { SESSION_VERSION } from "../types/session";
+import laboratoryReducer from "../features/laboratory/laboratorySlice";
 
-import { validateAndProcessReentry } from "../../src/features/laboratory/laboratoryThunks";
+import {
+    manualReentry,
+    validateAndProcessReentry,
+} from "../features/laboratory/laboratoryThunks";
+
+import {
+    registerProcess,
+    unregisterProcess,
+    type ProcessResult,
+} from "./processRegistry";
+
+
+import { SESSION_VERSION } from "../types/session";
 
 import { getMemorizedProcess, forgetProcess } from "../../src/resilience/resilienceMemory";
 
@@ -13,12 +27,12 @@ import {createPngBlob } from "./pngTestFixture";
 
     afterEach(() => {
     forgetProcess();
+    unregisterProcess("blend");
     });
 
-describe("validateAndProcessReentry", () => {
+describe("reentry flow", () => {
 
-    it("reconstructs a valid session for reentry", async () => {
-
+    it("validates and resumes a session through ProcessRegistry", async () => {
 
         const image1 = createPngBlob();
         const image2 = createPngBlob();
@@ -47,7 +61,6 @@ describe("validateAndProcessReentry", () => {
             },
         };
 
-
         const zip = new JSZip();
 
         zip.file("image_1.png", image1);
@@ -62,13 +75,20 @@ describe("validateAndProcessReentry", () => {
             type: "blob",
         });
 
-        const result = await validateAndProcessReentry(
-            mxFile
-        )();
+        // 1. Register handler before validating the session
+        const handler = vi.fn(
+            async (): Promise<ProcessResult> => "success"
+        );
 
-        const memorized = getMemorizedProcess();
+        registerProcess("blend", handler);
 
-        expect(memorized).toEqual(result.recoveryProcess);
+        // 2. Validate and reconstruct session
+        const result = await validateAndProcessReentry(mxFile)();
+
+        // 3. Verify process was memorized
+        expect(getMemorizedProcess()).toEqual(
+            result.recoveryProcess
+        );
 
         expect(result.session).toEqual(session);
 
@@ -78,8 +98,57 @@ describe("validateAndProcessReentry", () => {
         expect(result.firstFile.name).toBe("image1.png");
         expect(result.secondFile.name).toBe("image2.png");
 
-        expect(new Uint8Array(await result.firstFile.arrayBuffer()) ).toEqual( new Uint8Array(await image1.arrayBuffer()));
-        expect(new Uint8Array(await result.secondFile.arrayBuffer()) ).toEqual( new Uint8Array(await image2.arrayBuffer()));
+        expect(result.firstFile.type).toBe("image/png");
+        expect(result.secondFile.type).toBe("image/png");
+
+        expect(result.operation).toBe("blend");
+
+        // 4. Verify reconstructed image bytes
+        expect(
+            new Uint8Array(await result.firstFile.arrayBuffer())
+        ).toEqual(
+            new Uint8Array(await image1.arrayBuffer())
+        );
+
+        expect(
+            new Uint8Array(await result.secondFile.arrayBuffer())
+        ).toEqual(
+            new Uint8Array(await image2.arrayBuffer())
+        );
+
+        // 5. Create Redux store
+        const testStore = configureStore({
+            reducer: {
+                laboratory: laboratoryReducer,
+            },
+        });
+
+        // 6. Execute reentry through ProcessRegistry
+        const reentryResult = await testStore.dispatch(
+            manualReentry(
+                result.operation,
+                result.firstFile,
+                result.secondFile
+            )
+        );
+
+        // 7. Verify registry execution
+        expect(reentryResult).toBe("success");
+
+        expect(handler).toHaveBeenCalledOnce();
+
+        expect(handler).toHaveBeenCalledWith(
+            result.firstFile,
+            result.secondFile
+        );
+
+        // 8. Verify recovery memory was cleared
+        expect(getMemorizedProcess()).toBeNull();
+
+        // 9. Verify laboratory workflow continued
+        expect(
+            testStore.getState().laboratory.operationPhase
+        ).toBe("revealing");
 
     });
 

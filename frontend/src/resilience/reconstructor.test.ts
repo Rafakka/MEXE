@@ -1,8 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { reconstructFiles } from "./reconstructor";
+import {
+    SESSION_VERSION,
+    type SessionFile,
+} from "../types/session";
 
-import type {SessionFile} from "../types/session";
+import { createPngBlob } from "./pngTestFixture";
+
+import { reconstructFiles } from "./reconstructor";
 
 describe("reconstructor", () => {
 
@@ -15,16 +20,16 @@ describe("reconstructor", () => {
                 width: 800,
                 height: 600,
             },
-            version: "1.0.0",
+            version: SESSION_VERSION,
             metadata: {
                 image_1: {
-                    name: "image1.png",
-                    type: "image/png",
+                    name: "image1.jpg",
+                    type: "image/jpeg",
                     size: 1000,
                 },
                 image_2: {
-                    name: "image2.png",
-                    type: "image/png",
+                    name: "image2.jpg",
+                    type: "image/jpeg",
                     size: 1200,
                 },
                 laboratoryPhase: "processing",
@@ -32,15 +37,8 @@ describe("reconstructor", () => {
             },
         };
 
-        const image1 = new Blob(
-            ["image 1 content"],
-            { type: "image/png" }
-        );
-
-        const image2 = new Blob(
-            ["image 2 content"],
-            { type: "image/png" }
-        );
+        const image1 = createPngBlob();
+        const image2 = createPngBlob();
 
         const result = reconstructFiles({
             session,
@@ -51,14 +49,18 @@ describe("reconstructor", () => {
         expect(result.firstFile).toBeInstanceOf(File);
         expect(result.secondFile).toBeInstanceOf(File);
 
-        expect(result.firstFile.name).toBe("image1.png");
-        expect(result.secondFile.name).toBe("image2.png");
+        expect(result.firstFile.name).toBe("image1.jpg");
+        expect(result.secondFile.name).toBe("image2.jpg");
 
         expect(result.firstFile.type).toBe("image/png");
         expect(result.secondFile.type).toBe("image/png");
 
-        expect(await result.firstFile.text()).toBe("image 1 content");
-        expect(await result.secondFile.text()).toBe("image 2 content");
+        expect(new Uint8Array(await result.firstFile.arrayBuffer())
+            ).toEqual( new Uint8Array(await image1.arrayBuffer()));
+
+        expect(new Uint8Array(await result.secondFile.arrayBuffer())
+            ).toEqual( new Uint8Array(await image2.arrayBuffer()));
+
     });
 
     it("reconstructs image_1 without name", async () => {
@@ -70,7 +72,7 @@ describe("reconstructor", () => {
                 width: 800,
                 height: 600,
             },
-            version: "1.0.0",
+            version:SESSION_VERSION,
             metadata: {
                 image_1: {
                     type: "image/png",
@@ -86,15 +88,9 @@ describe("reconstructor", () => {
             },
         };
 
-        const image1 = new Blob(
-            ["image 1 content"],
-            { type: "image/png" }
-        );
+        const image1 = createPngBlob();
 
-        const image2 = new Blob(
-            ["image 2 content"],
-            { type: "image/png" }
-        );
+        const image2 = createPngBlob();
 
         const result = reconstructFiles({
             session,
@@ -116,7 +112,7 @@ describe("reconstructor", () => {
                 width: 800,
                 height: 600,
             },
-            version: "1.0.0",
+            version:SESSION_VERSION,
             metadata: {
                 image_1: {
                     name: "image1.png",
@@ -132,15 +128,9 @@ describe("reconstructor", () => {
             },
         };
 
-        const image1 = new Blob(
-            ["image 1 content"],
-            { type: "image/png" }
-        );
+        const image1 = createPngBlob();
 
-        const image2 = new Blob(
-            ["image 2 content"],
-            { type: "image/png" }
-        );
+        const image2 = createPngBlob();
 
         const result = reconstructFiles({
             session,
@@ -162,7 +152,7 @@ describe("reconstructor", () => {
                 width: 800,
                 height: 600,
             },
-            version: "1.0.0",
+            version: SESSION_VERSION,
             metadata: {
                 image_1: {
                     type: "image/png",
@@ -177,15 +167,8 @@ describe("reconstructor", () => {
             },
         };
 
-        const image1 = new Blob(
-            ["image 1 content"],
-            { type: "image/png" }
-        );
-
-        const image2 = new Blob(
-            ["image 2 content"],
-            { type: "image/png" }
-        );
+        const image1 = createPngBlob();
+        const image2 = createPngBlob();
 
         const result = reconstructFiles({
             session,

@@ -23,7 +23,7 @@ export function reconstructFiles({
         [image1],
         session.metadata.image_1.name ?? "image_1.png",
         {
-            type: session.metadata.image_1.type,
+            type: "image/png",
         }
     );
 
@@ -31,7 +31,7 @@ export function reconstructFiles({
         [image2],
         session.metadata.image_2.name ?? "image_2.png",
         {
-            type: session.metadata.image_2.type,
+            type:"image/png",
         }
     );
 

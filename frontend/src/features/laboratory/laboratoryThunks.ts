@@ -392,6 +392,14 @@ import {parseLaboratoryOperation } from "../../features/laboratory/utils/typePar
 
         const operation = parseLaboratoryOperation(session.operation);
 
+        const handler = getProcessHandler(operation);
+
+        if (!handler) {
+            throw new Error(
+                `No registered handler for operation: ${operation}`
+            );
+        }
+
         const recoveryProcess = adaptSessionToRecovery(session);
 
         const {
@@ -421,33 +429,47 @@ import {parseLaboratoryOperation } from "../../features/laboratory/utils/typePar
         secondFile: File
         ) => async (
             dispatch: AppDispatch
-        ) => {
+        ): Promise<ProcessResult> => {
 
-        console.log(">>> 1. MANUAL REENTRY START");
+            console.log(">>> 1. MANUAL REENTRY START");
 
-            if (operation !== "blend") {
+            const process = getMemorizedProcess();
+
+            if (!process) {
+                console.error(
+                    ">>> No memorized Process avaliable for reentry"
+                );
+
+                return "failed";
+            }
+
+            if(process.type !== operation ){
+                console.error(
+                    ">>> Reentry operation does not match memorized process:",
+                    {
+                        requested: operation,
+                        memorized: process.type,
+                    }
+                );
+
                 return "failed";
             }
 
             const result = await dispatch(
-                performMerge(firstFile, secondFile)
+                resumeProcess(firstFile, secondFile)
             );
 
 
             if (result !== "success") {
                 return "failed";
             }
-
-            console.log(">>> REENTRY SUCCESS", {
-                    result,
-                    operation,
-                    firstFile,
-                    secondFile,
-                    });
-
                 dispatch(revealingStarted());
 
-                    return "success";
+                console.log(">>> REENTRY SUCCESS", {
+                        operation
+                        });
+
+                return "success";
             };
 
 

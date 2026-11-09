@@ -1,4 +1,5 @@
 
+import type { LaboratoryOperation } from "../features/laboratory/laboratoryOperation";
 
 export type ProcessResult =
     | "success"
@@ -9,21 +10,24 @@ export type ProcessHandler = (
     secondFile: File,
 ) => Promise<ProcessResult>;
 
-const processRegistry = new Map<string, ProcessHandler>();
+const processRegistry = new Map<
+    LaboratoryOperation,
+    ProcessHandler,
+    >();
 
 export function registerProcess(
-    type: string,
+    type:LaboratoryOperation,
     handler: ProcessHandler
 ): void {
     processRegistry.set(type, handler);
 }
 
 export function getProcessHandler(
-    type: string
+    type: LaboratoryOperation
 ): ProcessHandler | null {
     return processRegistry.get(type) ?? null;
 }
 
-export function unregisterProcess(type: string): void {
+export function unregisterProcess(type: LaboratoryOperation): void {
     processRegistry.delete(type);
 }
