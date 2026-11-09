@@ -29,6 +29,7 @@ import {
         reentryObjOpened,
         reentryObjClosed,
         operationSelected,
+        sessionSaveFailed,
 
     } from "../../features/laboratory/laboratorySlice";
 
@@ -261,6 +262,8 @@ export default function Laboratory() {
                     ">>> Failed to save session:",
                     error
                 );
+
+                dispatch(sessionSaveFailed());
             }
         };
 

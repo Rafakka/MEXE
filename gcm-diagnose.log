@@ -1,0 +1,195 @@
+﻿Diagnose log at 2026-11-09T15:08:23Z
+
+AppPath: C:\Program Files\Git\mingw64\bin\git-credential-manager.exe
+InstallDir: C:\Program Files\Git\mingw64\bin\
+Version: 2.7.3+5fa7116896c82164996a609accd1c5ad90fe730a
+
+------------
+Diagnostic: Environment
+Skipped: False
+Success: True
+Exception: None
+Log:
+OSType: Windows
+OSVersion: 10.0 (build 19045)
+Reading environment variables... OK
+ Variables:
+SystemDrive=C:
+ProgramFiles(x86)=C:\Program Files (x86)
+MSYSTEM=MINGW64
+ProgramW6432=C:\Program Files
+PROCESSOR_IDENTIFIER=Intel64 Family 6 Model 158 Stepping 10, GenuineIntel
+SCROOT=C:\sybase\Shared\Sybase Central 4.3
+SYBROOT=C:\sybase
+TMP=C:\Users\skrafael\AppData\Local\Temp
+ALLUSERSPROFILE=C:\ProgramData
+DriverData=C:\Windows\System32\Drivers\DriverData
+Path=C:/Program Files/Git/mingw64/libexec/git-core;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Users\skrafael\bin;C:\Program Files\Microsoft\jdk-17.0.15.6-hotspot\bin;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\sybase\DataAccess\ADONET\dll;C:\sybase\DataAccess\OLEDB\dll;C:\sybase\DataAccess\ODBC\dll;C:\sybase\Shared\Sybase Central 4.3;C:\sybase\ua\bin;C:\sybase\OCS-15_0\lib3p;C:\sybase\OCS-15_0\dll;C:\sybase\OCS-15_0\bin;C:\sybase\Shared\Sybase Central 4.3;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Users\Administrador\AppData\Local\Microsoft\WindowsApps;C:\Users\Administrador\AppData\Local\Microsoft\WindowsApps;C:\apache-maven-3.9.6\bin;C:\Program Files (x86)\Java\jre-1.8\bin;C:\Program Files\dotnet\;C:\Users\skrafael\AppData\Local\Programs\Python\Python314\Scripts;C:\Users\skrafael\AppData\Local\Programs\Python\;C:\Program Files\Neovim\bin;C:\Program Files\Git\cmd;C:\Program Files\nodejs\;C:\ffmpeg\bin;C:\Users\skrafael\AppData\Local\Programs\Python\Python314\;C:\Users\skrafael\AppData\Local\Programs\Python\Python314\Scripts\;C:\Users\skrafael\AppData\Local\GitHubDesktop\bin;C:\Users\skrafael\.cargo\bin;C:\Users\skrafael\AppData\Roaming\npm;C:\Tools\bin;C:\Users\skrafael\AppData\Local\Programs\DockerDesktop\resources\bin;C:\Users\skrafael\AppData\Local\Programs\Ollama
+USERDOMAIN_ROAMINGPROFILE=PMO1
+CommonProgramFiles=C:\Program Files\Common Files
+TEMP=C:\Users\skrafael\AppData\Local\Temp
+USERPROFILE=C:\Users\skrafael
+LOGONSERVER=\\PMO1-DC002
+TERM=xterm-256color
+USERNAME=skrafael
+SystemRoot=C:\Windows
+GIT_EXEC_PATH=C:/Program Files/Git/mingw64/libexec/git-core
+PLINK_PROTOCOL=ssh
+USERDNSDOMAIN=PMO1.OSASCO.SP.GOV.BR
+OneDrive=C:\Users\Administrador\OneDrive
+PROCESSOR_ARCHITECTURE=AMD64
+VBOX_MSI_INSTALL_PATH=C:\Program Files\Oracle\VirtualBox\
+INCLUDE=C:\sybase\OCS-15_0\include;
+ZES_ENABLE_SYSMAN=1
+UATDATA=C:\Windows\CCM\UATData\D9F8C395-CAB8-491d-B8AC-179A1FE1BE77
+ProgramData=C:\ProgramData
+LC_CTYPE=C.UTF-8
+HOMEPATH=\Users\skrafael
+COMPUTERNAME=SS00PE06CK0P
+M2_HOME=C:\apache-maven-3.9.6
+SYBASE_OCS=OCS-15_0
+__PSLockDownPolicy=0
+SYBASE_UA=C:\sybase\ua
+SYBASE_JRE=C:\sybase\Shared\Sun\jre142
+PROCESSOR_REVISION=9e0a
+SYBASE=C:\sybase
+windir=C:\Windows
+GIT_TRACE2_PARENT_SID=441ba6d3-16ca-42cf-89dc-733630aa6f0c
+NUMBER_OF_PROCESSORS=6
+OS=Windows_NT
+ProgramFiles=C:\Program Files
+ComSpec=C:\Windows\system32\cmd.exe
+HOMEDRIVE=C:
+PATHEXT=.COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC;.CPL
+HOME=C:\Users\skrafael
+JAVA_HOME=C:\Program Files\Microsoft\jdk-17.0.15.6-hotspot\
+LIB=C:\sybase\DataAccess\ADONET\dll;C:\sybase\OCS-15_0\lib
+PSModulePath=C:\Users\skrafael\Documents\WindowsPowerShell\Modules;C:\Program Files\WindowsPowerShell\Modules;C:\Windows\system32\WindowsPowerShell\v1.0\Modules
+TMPDIR=C:\Users\skrafael\AppData\Local\Temp
+APPDATA=C:\Users\skrafael\AppData\Roaming
+USERDOMAIN=PMO1
+PROCESSOR_LEVEL=6
+LOCALAPPDATA=C:\Users\skrafael\AppData\Local
+CommonProgramW6432=C:\Program Files\Common Files
+CommonProgramFiles(x86)=C:\Program Files (x86)\Common Files
+COLORTERM=truecolor
+PUBLIC=C:\Users\Public
+
+
+------------
+Diagnostic: File system
+Skipped: False
+Success: True
+Exception: None
+Log:
+Temporary directory is 'C:\Users\skrafael\AppData\Local\Temp\'...
+Checking basic file I/O...
+Writing to temporary file 'C:\Users\skrafael\AppData\Local\Temp\b73b4f1c9f3cc2270d987755'... OK
+Reading from temporary file 'C:\Users\skrafael\AppData\Local\Temp\b73b4f1c9f3cc2270d987755'... OK
+Deleting temporary file 'C:\Users\skrafael\AppData\Local\Temp\b73b4f1c9f3cc2270d987755'... OK
+Testing IFileSystem instance...
+UserHomePath: C:\Users\skrafael
+UserDataDirectoryPath: C:\Users\skrafael\.gcm
+GetCurrentDirectory(): C:\Users\skrafael\Desktop\GIT\MEXE
+
+------------
+Diagnostic: Networking
+Skipped: False
+Success: True
+Exception: None
+Log:
+Checking networking and HTTP stack...
+Creating HTTP client... OK
+IsNetworkAvailable: True
+Sending HEAD request to http://example.com...Sending HEAD request to https://example.com... OK
+ OK
+Acquiring free TCP port... OK
+Testing local HTTP loopback connections...
+Creating new HTTP listener for http://localhost:9215/... OK
+Waiting for loopback connection... OK
+Writing response... OK
+Waiting for response data... OK
+Loopback connection data OK
+
+------------
+Diagnostic: Git
+Skipped: False
+Success: True
+Exception: None
+Log:
+Getting Git version... OK
+Git version is '2.54.0.windows.1'
+Locating current repository...Git repository at 'C:/Users/skrafael/Desktop/GIT/MEXE/.git'
+ OK
+Listing all Git configuration... OK
+Git configuration:
+file:C:/Program Files/Git/etc/gitconfig	diff.astextplain.textconv=astextplain
+file:C:/Program Files/Git/etc/gitconfig	filter.lfs.clean=git-lfs clean -- %f
+file:C:/Program Files/Git/etc/gitconfig	filter.lfs.smudge=git-lfs smudge -- %f
+file:C:/Program Files/Git/etc/gitconfig	filter.lfs.process=git-lfs filter-process
+file:C:/Program Files/Git/etc/gitconfig	filter.lfs.required=true
+file:C:/Program Files/Git/etc/gitconfig	http.sslbackend=schannel
+file:C:/Program Files/Git/etc/gitconfig	core.autocrlf=true
+file:C:/Program Files/Git/etc/gitconfig	core.fscache=true
+file:C:/Program Files/Git/etc/gitconfig	core.symlinks=false
+file:C:/Program Files/Git/etc/gitconfig	pull.rebase=false
+file:C:/Program Files/Git/etc/gitconfig	credential.helper=manager
+file:C:/Program Files/Git/etc/gitconfig	credential.https://dev.azure.com.usehttppath=true
+file:C:/Program Files/Git/etc/gitconfig	init.defaultbranch=master
+file:C:/Users/skrafael/.gitconfig	filter.lfs.clean=git-lfs clean -- %f
+file:C:/Users/skrafael/.gitconfig	filter.lfs.smudge=git-lfs smudge -- %f
+file:C:/Users/skrafael/.gitconfig	filter.lfs.process=git-lfs filter-process
+file:C:/Users/skrafael/.gitconfig	filter.lfs.required=true
+file:C:/Users/skrafael/.gitconfig	user.name=Rafakka
+file:C:/Users/skrafael/.gitconfig	user.email=rafaelkaher@gmail.com
+file:.git/config	core.repositoryformatversion=0
+file:.git/config	core.filemode=false
+file:.git/config	core.bare=false
+file:.git/config	core.logallrefupdates=true
+file:.git/config	core.symlinks=false
+file:.git/config	core.ignorecase=true
+file:.git/config	remote.origin.url=https://github.com/Rafakka/MEXE.git
+file:.git/config	remote.origin.fetch=+refs/heads/*:refs/remotes/origin/*
+file:.git/config	branch.main.remote=gitlab
+file:.git/config	branch.main.merge=refs/heads/main
+file:.git/config	branch.feature/vercel-test.remote=origin
+file:.git/config	branch.feature/vercel-test.merge=refs/heads/feature/vercel-test
+file:.git/config	remote.gitlab.url=https://gitlab.com/logos-group/mexe.git
+file:.git/config	remote.gitlab.fetch=+refs/heads/*:refs/remotes/gitlab/*
+
+
+------------
+Diagnostic: Credential storage
+Skipped: False
+Success: True
+Exception: None
+Log:
+ICredentialStore instance is of type: CredentialStore
+Writing test credential... OK
+Reading test credential... OK
+Deleting test credential... OK
+
+------------
+Diagnostic: Microsoft authentication (AAD/MSA)
+Skipped: False
+Success: True
+Exception: None
+Log:
+Broker is not enabled.
+Flow type is: Auto
+Gathering MSAL token cache data... OK
+CacheDirectory: C:\Users\skrafael\AppData\Local\.IdentityService
+CacheFileName: msal.cache
+CacheFilePath: C:\Users\skrafael\AppData\Local\.IdentityService\msal.cache
+Creating cache helper... OK
+Verifying MSAL token cache persistence... OK
+
+------------
+Diagnostic: GitHub API
+Skipped: False
+Success: True
+Exception: None
+Log:
+Using 'https://github.com/' as API target.
+Querying '/meta' endpoint... OK
+

@@ -321,6 +321,14 @@ const laboratorySlice = createSlice({
 
     },
 
+    sessionSaveFailed(state) {
+        state.notification = {
+            type: "error",
+            title: "Session Export Failed",
+            message: "Não foi possível gerar o arquivo .mx. Por favor, resete o Laboratório."
+        };
+    },
+
     restoreRecoveredState(state) {
 
         console.log(
@@ -380,6 +388,8 @@ export const {
     backendRecovered,
     restoreRecoveredState,
     backendOffline,
+
+    sessionSaveFailed,
 
     reentryObjOpened,
     reentryObjClosed,
