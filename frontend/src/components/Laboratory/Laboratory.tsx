@@ -19,7 +19,6 @@ import {useState, useRef, useEffect} from "react";
 import type {RootState, AppDispatch} from "../../store/store";
 import type { LaboratoryMode } from "../../features/laboratory/LaboratoryMode";
 import {
-        clearLaboratory,
         clearNotification,
         loadFirstSample,
         loadSecondSample,
@@ -35,7 +34,8 @@ import {
 
 import {
     activeLab,
-    validateAndProcessReentry
+    validateAndProcessReentry,
+    resetExperiment,
 
     } from "../../features/laboratory/laboratoryThunks";
 
@@ -224,7 +224,7 @@ export default function Laboratory() {
         setFirstFile(null);
         setSecondFile(null);
 
-        dispatch(clearLaboratory());
+        dispatch(resetExperiment());
         dispatch(clearNotification());
 
     };
@@ -273,7 +273,7 @@ export default function Laboratory() {
         setReentryPending(false);
         setBackLocked(false);
 
-        dispatch(clearLaboratory());
+        dispatch(resetExperiment());
         dispatch(clearNotification());
     }
 
@@ -521,7 +521,7 @@ export default function Laboratory() {
 
             hiddenSamples.current.clear();
 
-            dispatch(clearLaboratory());
+            dispatch(resetExperiment());
             dispatch(clearNotification());
             dispatch(reentryObjClosed());
         };

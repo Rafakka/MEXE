@@ -4,7 +4,8 @@ import { configureStore } from "@reduxjs/toolkit";
 import laboratoryReducer from "../features/laboratory/laboratorySlice";
 import {
     performMerge,
-    manualRetry
+    manualRetry,
+    resetExperiment,
 } from "../features/laboratory/laboratoryThunks";
 
 import { mexeApi } from "../api/mexeApi";
@@ -389,6 +390,258 @@ describe("laboratory resilience", () => {
         expect(state.notification?.type).toBe("error");
 
         expect(getMemorizedProcess()).toEqual(interruptedProcess);
+
+    });
+
+    it("clears the interrupted process when the experiment resets", async () => {
+
+    const testStore = configureStore({
+        reducer: {
+            laboratory: laboratoryReducer,
+        },
+    });
+
+    memorizeProcess({
+        type: "blend",
+        phase: "processing",
+        operationPhase: "running",
+    });
+
+    expect(getMemorizedProcess()).not.toBeNull();
+
+    await testStore.dispatch(
+        resetExperiment()
+    );
+
+    const state = testStore.getState().laboratory;
+
+    expect(getMemorizedProcess()).toBeNull();
+
+    expect(state.phase).toBe("idle");
+
+    expect(state.operationPhase).toBe("idle");
+
+    });
+
+    it("recovers from a network TypeError", async () => {
+
+    const testStore = configureStore({
+        reducer: {
+            laboratory: laboratoryReducer,
+        },
+    });
+
+    const interruptedProcess = {
+        type: "blend" as const,
+        phase: "processing" as const,
+        operationPhase: "running" as const,
+    };
+
+    memorizeProcess(interruptedProcess);
+
+    vi.spyOn(mexeApi, "ready")
+        .mockRejectedValue(
+            new TypeError("Failed to fetch")
+        );
+
+    vi.mocked(recoverConnection)
+        .mockResolvedValue(false);
+
+    const result = await testStore.dispatch(
+        performMerge(firstFile, secondFile)
+    );
+
+    const state = testStore.getState().laboratory;
+
+    expect(result).toBe("failed");
+
+    expect(recoverConnection).toHaveBeenCalledOnce();
+
+    expect(state.operationPhase).toBe("offline");
+
+    expect(getMemorizedProcess()).toEqual(interruptedProcess);
+
+    });
+
+    it("marks the operation as failed on a permanent HTTP error", async () => {
+
+    const testStore = configureStore({
+        reducer: {
+            laboratory: laboratoryReducer,
+        },
+    });
+
+    memorizeProcess({
+        type: "blend",
+        phase: "processing",
+        operationPhase: "running",
+    });
+
+    vi.spyOn(mexeApi, "ready")
+        .mockResolvedValue(undefined);
+
+    vi.spyOn(mexeApi, "blend")
+        .mockRejectedValue(
+            new Error("HTTP 400")
+        );
+
+    const result = await testStore.dispatch(
+        performMerge(firstFile, secondFile)
+    );
+
+    const state = testStore.getState().laboratory;
+
+    expect(result).toBe("failed");
+
+    expect(recoverConnection).not.toHaveBeenCalled();
+
+    expect(state.operationPhase).toBe("failed");
+
+    expect(state.notification?.type).toBe("error");
+
+    expect(getMemorizedProcess()).toBeNull();
+
+    });
+
+    it("preserves the process when the second execution fails with a connection error", async () => {
+
+    const testStore = configureStore({
+        reducer: {
+            laboratory: laboratoryReducer,
+        },
+    });
+
+    const interruptedProcess = {
+        type: "blend" as const,
+        phase: "processing" as const,
+        operationPhase: "running" as const,
+    };
+
+    testStore.dispatch({
+        type: "laboratory/mergeStarted",
+    });
+
+    testStore.dispatch({
+        type: "laboratory/processingRunning",
+    });
+
+    memorizeProcess(interruptedProcess);
+
+    vi.spyOn(mexeApi, "ready")
+        .mockResolvedValue(undefined);
+
+    vi.spyOn(mexeApi, "blend")
+        .mockRejectedValueOnce(
+            new Error("HTTP 503")
+        )
+        .mockRejectedValueOnce(
+            new Error("HTTP 503")
+        );
+
+    vi.mocked(recoverConnection)
+        .mockResolvedValue(true);
+
+    const result = await testStore.dispatch(
+        performMerge(firstFile, secondFile)
+    );
+
+    const state = testStore.getState().laboratory;
+
+    expect(result).toBe("failed");
+
+    expect(recoverConnection).toHaveBeenCalledOnce();
+
+    expect(mexeApi.blend).toHaveBeenCalledTimes(2);
+
+    expect(state.operationPhase).toBe("offline");
+
+    expect(getMemorizedProcess()).toEqual(interruptedProcess);
+
+    });
+
+    it("keeps the completed state after a successful manual retry", async () => {
+
+    const testStore = configureStore({
+        reducer: {
+            laboratory: laboratoryReducer,
+        },
+    });
+
+    const interruptedProcess = {
+        type: "blend" as const,
+        phase: "processing" as const,
+        operationPhase: "running" as const,
+    };
+
+    testStore.dispatch({
+        type: "laboratory/mergeStarted",
+    });
+
+    testStore.dispatch({
+        type: "laboratory/processingRunning",
+    });
+
+    memorizeProcess(interruptedProcess);
+
+    vi.spyOn(mexeApi, "ready")
+        .mockResolvedValue(undefined);
+
+    vi.spyOn(mexeApi, "blend")
+        .mockRejectedValueOnce(
+            new Error("HTTP 503")
+        )
+        .mockResolvedValueOnce({
+            url: "result.png",
+            metadata: {},
+        });
+
+    vi.mocked(recoverConnection)
+        .mockResolvedValueOnce(false)
+        .mockResolvedValueOnce(true);
+
+    // First execution fails and enters offline.
+
+    const initialResult = await testStore.dispatch(
+        performMerge(firstFile, secondFile)
+    );
+
+    expect(initialResult).toBe("failed");
+
+    expect(testStore.getState().laboratory.operationPhase)
+        .toBe("offline");
+
+    // Register the real recovery handler.
+
+    const resumeHandler = vi.fn(
+        async (first: File, second: File) =>
+            testStore.dispatch(
+                performMerge(first, second)
+            )
+    );
+
+    registerProcess("blend", resumeHandler);
+
+    // Manual retry.
+
+    const result = await testStore.dispatch(
+        manualRetry(firstFile, secondFile)
+    );
+
+    const state = testStore.getState().laboratory;
+
+    expect(result).toBe("success");
+
+    expect(recoverConnection).toHaveBeenCalledTimes(2);
+
+    expect(mexeApi.blend).toHaveBeenCalledTimes(2);
+
+    expect(resumeHandler).toHaveBeenCalledOnce();
+
+    expect(state.operationPhase).toBe("accelerating");
+
+    expect(state.recoveryStateBeforeReconnect).toBeNull();
+
+    expect(getMemorizedProcess()).toBeNull();
 
     });
 

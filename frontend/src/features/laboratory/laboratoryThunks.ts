@@ -12,6 +12,8 @@ import {
 
     mergeStarted,
 
+    mergeFailed,
+
     mergeCompleted,
 
     processingRunning,
@@ -55,8 +57,12 @@ import {parseLaboratoryOperation } from "../../features/laboratory/utils/typePar
 
     function isConnectionError(error: unknown): boolean {
         return (
-            error instanceof Error && /HTTP (502|503|504)/.test(error.message)
-        );
+            error instanceof TypeError ||
+                (
+                    error instanceof Error &&
+                    /HTTP (502|503|504)/.test(error.message)
+                )
+            );
     };
 
     export const activeLab = () =>
@@ -107,6 +113,24 @@ import {parseLaboratoryOperation } from "../../features/laboratory/utils/typePar
 
         return result;
     };
+
+    function failOperation(
+        dispatch: AppDispatch,
+        error: unknown
+    ): ProcessResult {
+
+        dispatch(mergeFailed({
+            type: "error",
+            title: "Operation Failed",
+            message: error instanceof Error
+                ? error.message
+                : "The operation could not be completed."
+        }));
+
+        forgetProcess();
+
+        return "failed";
+    }
 
     export const startProcessing = (
         operation: LaboratoryOperation,
@@ -164,6 +188,7 @@ import {parseLaboratoryOperation } from "../../features/laboratory/utils/typePar
             return "success";
         }
 
+
     export const performMerge = (
         firstFile: File,
         secondFile: File
@@ -173,41 +198,39 @@ import {parseLaboratoryOperation } from "../../features/laboratory/utils/typePar
 
         console.log(">>> PERFORM MERGE:", getMemorizedProcess());
 
-    try {
+    // First execution
+        try {
 
-        const result = await executeMerge(
-            firstFile,
-            secondFile
-        );
+            const result = await executeMerge(
+                firstFile,
+                secondFile
+            );
 
-        return completeMerge(dispatch, result);
+            return completeMerge(dispatch, result);
 
-    }
+        } catch (error) {
 
-    catch (error) {
+            console.error(error);
 
-        console.error(error);
+            console.log("MERGE FAILED:", getMemorizedProcess());
 
-        console.log("MERGE FAILED:", getMemorizedProcess());
+            // Permanent error
+            if (!isConnectionError(error)) {
+                return failOperation(dispatch, error);
+            }
 
-        if (!isConnectionError(error)) {
-            throw error;
-        }
+            // Connection recovery
+            dispatch(reconnectingStarted());
 
-        dispatch(reconnectingStarted());
+            console.log(">>> STARTING CONNECTION RECOVERY");
 
-        console.log(">>> STARTING CONNECTION RECOVERY");
+            const recovered = await recoverConnection();
 
-        const recovered = await recoverConnection();
-
-        console.log(">>> RECOVERY RESULT:", recovered);
+            console.log(">>> RECOVERY RESULT:", recovered);
 
             if (!recovered) {
-
                 dispatch(backendOffline());
-
                 return "failed";
-
             }
 
             console.log(">>> Backend Recovered");
@@ -215,15 +238,31 @@ import {parseLaboratoryOperation } from "../../features/laboratory/utils/typePar
             dispatch(backendRecovered());
             dispatch(restoreRecoveredState());
 
-            const result = await executeMerge(
-                firstFile,
-                secondFile,
-            );
+            // Second execution
+            try {
 
-            return completeMerge(dispatch, result);
+                const result = await executeMerge(
+                    firstFile,
+                    secondFile
+                );
 
+                return completeMerge(dispatch, result);
+
+            } catch (retryError) {
+
+                // Connection failed again
+                if (isConnectionError(retryError)) {
+                    dispatch(backendOffline());
+                    return "failed";
+                }
+
+                // Permanent error on second execution
+                return failOperation(dispatch, retryError);
+
+            }
         }
     };
+
 
     export const resumeProcess = (
         firstFile: File,
@@ -290,52 +329,50 @@ import {parseLaboratoryOperation } from "../../features/laboratory/utils/typePar
        dispatch: AppDispatch
     ) => {
 
-    console.log(">>> 1. MANUAL RETRY START:");
+        console.log(">>> 1. MANUAL RETRY START:");
 
-    dispatch(reconnectingStarted());
+        dispatch(reconnectingStarted());
 
-    const recovered = await recoverConnection();
+        const recovered = await recoverConnection();
 
-    console.log(
-        ">>> 2. CONNECTION RESULT:",
-        recovered
-    );
+        console.log(
+            ">>> 2. CONNECTION RESULT:",
+            recovered
+        );
 
-    if (!recovered) {
+        if (!recovered) {
+            dispatch(backendOffline());
+            return "failed";
+        }
 
-        console.log(">>> 3. CONNECTION FAILED");
-        dispatch(backendOffline());
-        return "failed";
-    }
 
-    console.log(">>> 3. CONNECTION RECOVERED");
-
-    dispatch(backendRecovered());
-
-    const resumed = await dispatch(resumeProcess(firstFile, secondFile));
-
-    console.log(
-        ">>> 4. RESUME RESULT:",
-        resumed
-    );
-
-     if (resumed === "none") {
-        console.log(">>> 5. NO PROCESS");
+        dispatch(backendRecovered());
 
         dispatch(restoreRecoveredState());
-        return "none";
-    }
 
-    if (resumed === "failed") {
-        dispatch(backendOffline());
-        return "failed";
-    }
+        const resumed = await dispatch(resumeProcess(firstFile, secondFile));
 
-    console.log(">>> 5. RESUME SUCCESS");
+        console.log(
+            ">>> 4. RESUME RESULT:",
+            resumed
+        );
 
-    dispatch(restoreRecoveredState());
+        if (resumed === "none") {
+            return "none";
+        }
 
-    return "success";
+        if (resumed === "failed") {
+
+            if(getMemorizedProcess()){
+                dispatch(backendOffline());
+            }
+            return "failed";
+
+        }
+
+        console.log(">>> 5. RESUME SUCCESS");
+
+        return "success";
 
     };
 
@@ -424,6 +461,8 @@ import {parseLaboratoryOperation } from "../../features/laboratory/utils/typePar
     dispatch: AppDispatch
 
     ) => {
+
+    forgetProcess();
 
     dispatch(clearLaboratory());
 
