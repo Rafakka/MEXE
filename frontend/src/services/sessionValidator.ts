@@ -1,72 +1,130 @@
 
-
 import JSZip from "jszip";
 
-import type { SessionFile } from "../../src/types/session";
+import {
+    SESSION_VERSION,
+    type SessionFile,
+} from "../types/session";
 
+export type ValidatedSessionFile = {
+    session: SessionFile;
+    image1: Blob;
+    image2: Blob;
+};
 
-    export class SessionValidator {
+const VALID_LABORATORY_PHASES = [
+    "idle",
+    "activated",
+    "synchronizing",
+    "processing",
+    "stabilizing",
+    "result",
+    "resettingProcess",
+    "resettingLab",
+] as const;
+
+const VALID_OPERATION_PHASES = [
+    "idle",
+    "pending",
+    "revealing",
+    "running",
+    "accelerating",
+    "collapse",
+    "completed",
+    "processing",
+    "reconnecting",
+    "offline",
+    "failed",
+] as const;
+
+function isRecord(
+    value: unknown
+): value is Record<string, unknown> {
+    return (
+        typeof value === "object" &&
+        value !== null &&
+        !Array.isArray(value)
+    );
+}
+
+function isAllowedValue<T extends readonly string[]>(
+    value: unknown,
+    allowed: T
+): value is T[number] {
+    return (
+        typeof value === "string" &&
+        (allowed as readonly string[]).includes(value)
+    );
+}
+
+export class SessionValidator {
 
     public validateSession(
-        session: SessionFile
-    ): void {
+        session: unknown
+    ): asserts session is SessionFile {
 
         this.validateOperation(session);
     }
 
-
     public async validateFile(
         file: Blob
-    ): Promise<void> {
+    ): Promise<ValidatedSessionFile> {
 
-    const zip = await this.openZip(file);
+        const zip = await this.openZip(file);
 
-    this.validateStructure(zip);
+        this.validateStructure(zip);
 
-    const operationJson =
-        await this.readOperationJson(zip);
+        const session = await this.readOperationJson(zip);
 
-    this.validateOperation(operationJson);
+        this.validateSession(session);
 
-    await this.validateImages(zip);
+        const image1 = await this.readPng(
+            zip,
+            "image_1.png"
+        );
 
+        const image2 = await this.readPng(
+            zip,
+            "image_2.png"
+        );
+
+        return {
+            session,
+            image1,
+            image2,
+        };
     }
 
-    private async openZip(file: Blob): Promise<JSZip> {
+    private async openZip(
+        file: Blob
+    ): Promise<JSZip> {
 
         try {
-
             return await JSZip.loadAsync(file);
-
         } catch {
-
-            throw new Error(
-                "Invalid session file"
-            );
-
+            throw new Error("Invalid session file");
         }
     }
 
-
-    private validateStructure(zip: JSZip): void {
+    private validateStructure(
+        zip: JSZip
+    ): void {
 
         const requiredFiles = [
             "operation.json",
             "image_1.png",
-            "image_2.png"
+            "image_2.png",
         ];
 
-        for (const file of requiredFiles) {
+        for (const filename of requiredFiles) {
 
-            if (!zip.file(file)) {
-
+            if (!zip.file(filename)) {
                 throw new Error(
-                    `Missing required session file: ${file}`
+                    `Missing required session file: ${filename}`
                 );
             }
         }
     }
-
 
     private async readOperationJson(
         zip: JSZip
@@ -75,165 +133,179 @@ import type { SessionFile } from "../../src/types/session";
         const file = zip.file("operation.json");
 
         if (!file) {
-
-            throw new Error(
-                "Missing operation.json"
-            );
+            throw new Error("Missing operation.json");
         }
 
         try {
+            const content = await file.async("string");
 
-            const content =
-                await file.async("string");
-
-            return JSON.parse(content);
+            return JSON.parse(content) as unknown;
 
         } catch {
-
-            throw new Error(
-                "Invalid operation.json"
-            );
+            throw new Error("Invalid operation.json");
         }
     }
-
 
     private validateOperation(
         operation: unknown
+    ): asserts operation is SessionFile {
+
+        if (!isRecord(operation)) {
+            throw new Error("Invalid operation definition");
+        }
+
+        if (
+            typeof operation.id !== "string" ||
+            operation.id.trim() === ""
+        ) {
+            throw new Error("Invalid session id");
+        }
+
+        if (operation.operation !== "blend") {
+            throw new Error("Unsupported session operation");
+        }
+
+        if (operation.version !== SESSION_VERSION) {
+            throw new Error("Unsupported session version");
+        }
+
+        if (!isRecord(operation.dimensions)) {
+            throw new Error("Invalid session dimensions");
+        }
+
+        const { width, height } = operation.dimensions;
+
+        if (
+            typeof width !== "number" ||
+            !Number.isInteger(width) ||
+            width <= 0 ||
+            typeof height !== "number" ||
+            !Number.isInteger(height) ||
+            height <= 0
+        ) {
+            throw new Error("Invalid session dimensions");
+        }
+
+        if (!isRecord(operation.metadata)) {
+            throw new Error("Invalid session metadata");
+        }
+
+        const metadata = operation.metadata;
+
+        this.validateImageMetadata(
+            metadata.image_1,
+            "image_1"
+        );
+
+        this.validateImageMetadata(
+            metadata.image_2,
+            "image_2"
+        );
+
+        if (!isAllowedValue(
+            metadata.laboratoryPhase,
+            VALID_LABORATORY_PHASES
+        )) {
+            throw new Error("Invalid laboratory phase");
+        }
+
+        if (!isAllowedValue(
+            metadata.operationPhase,
+            VALID_OPERATION_PHASES
+        )) {
+            throw new Error("Invalid operation phase");
+        }
+    }
+
+    private validateImageMetadata(
+        image: unknown,
+        filename: string
     ): void {
 
-        if (
-            typeof operation !== "object" ||
-            operation === null
-        ) {
-
-            throw new Error(
-                "Invalid operation definition"
-            );
+        if (!isRecord(image)) {
+            throw new Error(`Invalid metadata: ${filename}`);
         }
 
-        const data =
-            operation as Record<string, unknown>;
+        for (const field of ["name", "type"]) {
 
-        if (typeof data.id !== "string") {
+            const value = image[field];
 
-            throw new Error(
-                "Invalid session id"
-            );
+            if (
+                value !== undefined &&
+                typeof value !== "string"
+            ) {
+                throw new Error(
+                    `Invalid image metadata ${field}: ${filename}`
+                );
+            }
         }
 
-        if (typeof data.operation !== "string") {
+        for (const field of ["width", "height", "size"]) {
 
-            throw new Error(
-                "Invalid session operation"
-            );
-        }
+            const value = image[field];
 
-        if (
-            typeof data.version !== "string"
-        ) {
-
-            throw new Error(
-                "Invalid session version"
-            );
-        }
-
-        if (
-            typeof data.dimensions !== "object" ||
-            data.dimensions === null
-        ) {
-
-            throw new Error(
-                "Invalid session dimensions"
-            );
-        }
-
-        const dimensions =
-            data.dimensions as Record<string, unknown>;
-
-        if (
-            typeof dimensions.width !== "number" ||
-            typeof dimensions.height !== "number"
-        ) {
-
-            throw new Error(
-                "Invalid session dimensions"
-            );
-        }
-
-        if (
-            typeof data.metadata !== "object" ||
-            data.metadata === null
-        ) {
-
-            throw new Error(
-                "Invalid session metadata"
-            );
+            if (
+                value !== undefined &&
+                (
+                    typeof value !== "number" ||
+                    !Number.isFinite(value) ||
+                    value <= 0
+                )
+            ) {
+                throw new Error(
+                    `Invalid image metadata ${field}: ${filename}`
+                );
+            }
         }
     }
 
+    private async readPng(
+        zip: JSZip,
+        filename: string
+    ): Promise<Blob> {
 
-    private async validateImages(
-        zip: JSZip
-    ): Promise<void> {
+        const file = zip.file(filename);
 
-        await this.validatePng(
-            zip,
-            "image_1.png"
-        );
+        if (!file) {
+            throw new Error(`Missing image: ${filename}`);
+        }
 
-        await this.validatePng(
-            zip,
-            "image_2.png"
-        );
+        const blob = await file.async("blob");
+
+        await this.validatePng(blob, filename);
+
+        return blob;
     }
-
 
     private async validatePng(
-        zip: JSZip,
+        blob: Blob,
         filename: string
     ): Promise<void> {
 
-    const file = zip.file(filename);
+        const buffer = await blob.arrayBuffer();
 
-    if (!file) {
+        const bytes = new Uint8Array(buffer);
 
-        throw new Error(
-            `Missing image: ${filename}`
-        );
-    }
+        const pngSignature = [
+            0x89,
+            0x50,
+            0x4E,
+            0x47,
+            0x0D,
+            0x0A,
+            0x1A,
+            0x0A,
+        ];
 
-    const blob =
-        await file.async("blob");
-
-    const buffer =
-        await blob.arrayBuffer();
-
-    const bytes =
-        new Uint8Array(buffer);
-
-    const pngSignature = [
-        0x89,
-        0x50,
-        0x4E,
-        0x47,
-        0x0D,
-        0x0A,
-        0x1A,
-        0x0A
-    ];
-
-    const isPng =
-        pngSignature.every(
-            (byte, index) =>
-                bytes[index] === byte
+        const isPng = pngSignature.every(
+            (byte, index) => bytes[index] === byte
         );
 
-    if (!isPng) {
-
-        throw new Error(
-            `Invalid image format: ${filename}`
-        );
-
+        if (!isPng) {
+            throw new Error(
+                `Invalid image format: ${filename}`
+            );
         }
     }
 }
+

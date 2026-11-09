@@ -1,9 +1,15 @@
 import { describe, expect, it } from "vitest";
 import JSZip from "jszip";
 
-import { readSessionFile } from "./reentryReader";
+import { SessionValidator } from "./sessionValidator";
 
-describe("reentryReader", () => {
+import { SESSION_VERSION } from "../types/session";
+
+import { createPngBlob } from "../resilience/pngTestFixture";
+
+const validator =  new SessionValidator();
+
+describe("SessionValidator", () => {
 
     it("reads a valid session file", async () => {
 
@@ -14,7 +20,7 @@ describe("reentryReader", () => {
                 width: 800,
                 height: 600,
             },
-            version: "1.0.0",
+            version: SESSION_VERSION,
             metadata: {
                 image_1: {
                     name: "image1.png",
@@ -31,16 +37,9 @@ describe("reentryReader", () => {
             },
         };
 
-        const image1 = new Blob(
-            ["image 1 content"],
-            { type: "image/png"}
-        );
+        const image1 = createPngBlob();
 
-        const image2 = new Blob(
-            ["image 2 content"],
-            { type: "image/png"}
-        );
-
+        const image2 = createPngBlob();
 
         const zip = new JSZip();
 
@@ -64,17 +63,21 @@ describe("reentryReader", () => {
             type: "blob",
         });
 
-        const result = await readSessionFile(blob);
+        const result = await validator.validateFile(blob);
 
         expect(result.session).toEqual(session);
 
-        expect(result.image1).toBeInstanceOf(Blob);
+        expect( new Uint8Array(await result.image1.arrayBuffer())
+        ).toEqual(
+        new Uint8Array(await image1.arrayBuffer())
+        );
 
-        expect(result.image2).toBeInstanceOf(Blob);
+        expect(
+        new Uint8Array(await result.image2.arrayBuffer())
+        ).toEqual(
+        new Uint8Array(await image2.arrayBuffer())
+        );
 
-        expect(await result.image1.text()).toBe("image 1 content");
-
-        expect(await result.image2.text()).toBe("image 2 content");
 
     });
 
@@ -95,9 +98,9 @@ describe("reentryReader", () => {
         });
 
         await expect(
-            readSessionFile(blob)
+            validator.validateFile(blob)
         ).rejects.toThrow(
-            "Missing operation.json"
+            "Missing required session file: operation.json"
         );
     });
 
@@ -109,7 +112,7 @@ describe("reentryReader", () => {
         ]);
 
         await expect(
-            readSessionFile(invalidFile)
+            validator.validateFile(invalidFile)
         ).rejects.toThrow();
     });
 
@@ -122,7 +125,7 @@ describe("reentryReader", () => {
             width: 800,
             height: 600,
         },
-        version: "1.0.0",
+        version: SESSION_VERSION,
         metadata: {
             image_1: {
                 name: "image1.png",
@@ -159,9 +162,9 @@ describe("reentryReader", () => {
     });
 
     await expect(
-        readSessionFile(blob)
+        validator.validateFile(blob)
     ).rejects.toThrow(
-        "Missing image 1"
+        "Missing required session file: image_1.png"
         );
 
     });

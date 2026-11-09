@@ -1,5 +1,5 @@
 
-import type { SessionFile } from "../../src/types/session";
+import { type SessionFile, SESSION_VERSION } from "../../src/types/session";
 import { getImageMetadata } from "../../src/features/laboratory/utils/getImageMetadata";
 import { getMemorizedProcess } from "../../src/resilience/resilienceMemory";
 import { SessionValidator } from "./sessionValidator";
@@ -34,7 +34,7 @@ export async function saveSession(
             height: 1024,
         },
 
-        version: "1.0",
+        version: SESSION_VERSION,
 
         metadata: {
 

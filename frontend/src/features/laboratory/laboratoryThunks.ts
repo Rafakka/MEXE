@@ -40,8 +40,6 @@ import {
     forgetProcess,
 } from "../../resilience/resilienceMemory";
 
-import {readSessionFile} from "../../resilience/reentryReader";
-
 import { reconstructFiles} from "../../resilience/reconstructor";
 
 import { SessionValidator } from "../../services/sessionValidator";
@@ -384,21 +382,17 @@ import {parseLaboratoryOperation } from "../../features/laboratory/utils/typePar
 
         console.log(">>> VALIDATING REENTRY FILE");
 
+        const validator = new SessionValidator();
+
         const {
             session,
             image1,
             image2,
-        } = await readSessionFile(file);
-
-        const validator = new SessionValidator();
-
-        validator.validateSession(session);
+        } = await validator.validateFile(file);
 
         const operation = parseLaboratoryOperation(session.operation);
 
         const recoveryProcess = adaptSessionToRecovery(session);
-
-        memorizeProcess(recoveryProcess);
 
         const {
             firstFile,
@@ -408,6 +402,8 @@ import {parseLaboratoryOperation } from "../../features/laboratory/utils/typePar
             image1,
             image2
         });
+
+        memorizeProcess(recoveryProcess);
 
         return {
             session,

@@ -3,9 +3,13 @@
 import { describe, expect, it, afterEach } from "vitest";
 import JSZip from "jszip";
 
+import { SESSION_VERSION } from "../types/session";
+
 import { validateAndProcessReentry } from "../../src/features/laboratory/laboratoryThunks";
 
 import { getMemorizedProcess, forgetProcess } from "../../src/resilience/resilienceMemory";
+
+import {createPngBlob } from "./pngTestFixture";
 
     afterEach(() => {
     forgetProcess();
@@ -15,6 +19,10 @@ describe("validateAndProcessReentry", () => {
 
     it("reconstructs a valid session for reentry", async () => {
 
+
+        const image1 = createPngBlob();
+        const image2 = createPngBlob();
+
         const session = {
             id: "test-session",
             operation: "blend",
@@ -22,7 +30,7 @@ describe("validateAndProcessReentry", () => {
                 width: 800,
                 height: 600,
             },
-            version: "1.0.0",
+            version: SESSION_VERSION,
             metadata: {
                 image_1: {
                     name: "image1.png",
@@ -39,27 +47,15 @@ describe("validateAndProcessReentry", () => {
             },
         };
 
+
         const zip = new JSZip();
+
+        zip.file("image_1.png", image1);
+        zip.file("image_2.png", image2);
 
         zip.file(
             "operation.json",
             JSON.stringify(session)
-        );
-
-        zip.file(
-            "image_1.png",
-            new Blob(
-                ["image 1 content"],
-                { type: "image/png" }
-            )
-        );
-
-        zip.file(
-            "image_2.png",
-            new Blob(
-                ["image 2 content"],
-                { type: "image/png" }
-            )
         );
 
         const mxFile = await zip.generateAsync({
@@ -82,13 +78,9 @@ describe("validateAndProcessReentry", () => {
         expect(result.firstFile.name).toBe("image1.png");
         expect(result.secondFile.name).toBe("image2.png");
 
-        expect(
-            await result.firstFile.text()
-        ).toBe("image 1 content");
+        expect(new Uint8Array(await result.firstFile.arrayBuffer()) ).toEqual( new Uint8Array(await image1.arrayBuffer()));
+        expect(new Uint8Array(await result.secondFile.arrayBuffer()) ).toEqual( new Uint8Array(await image2.arrayBuffer()));
 
-        expect(
-            await result.secondFile.text()
-        ).toBe("image 2 content");
     });
 
 });

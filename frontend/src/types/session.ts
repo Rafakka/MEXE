@@ -4,6 +4,9 @@ import type { LaboratoryPhase } from "../../src/features/laboratory/laboratoryPh
 import type { OperationPhase } from "../../src/features/laboratory/operationPhase";
 import type { LaboratoryOperation } from "../../src/features/laboratory/laboratoryOperation";
 
+
+export const SESSION_VERSION = "1.0" as const;
+
 export type SessionFile = {
     id: string;
     operation: LaboratoryOperation;
@@ -11,7 +14,7 @@ export type SessionFile = {
         width: number;
         height: number;
     };
-    version: string;
+    version: typeof SESSION_VERSION;
     metadata: {
         image_1: ImageMetadata;
         image_2: ImageMetadata;
