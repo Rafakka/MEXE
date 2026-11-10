@@ -32,6 +32,11 @@ $SecurityExporterManifest = Join-Path `
     $KubernetesDir `
     "optional\security-exporter.yaml"
 
+$PortForwardPort = 18000
+$PortForwardPidFile = Join-Path $env:TEMP "mexe-port-forward.pid"
+$PortForwardStdout = Join-Path $env:TEMP "mexe-port-forward.stdout.log"
+$PortForwardStderr = Join-Path $env:TEMP "mexe-port-forward.stderr.log"
+
 $SecretName = "mexe-dependency-exporter"
 
 $ClusterName = "desktop"
@@ -621,6 +626,109 @@ else {
     Write-Host ""
     Write-Host "dependency-exporter não será aplicado." -ForegroundColor Yellow
 }
+
+
+function Test-BackendLocalEndpoint {
+    $null = & curl.exe -fsS --max-time 2 "http://127.0.0.1:$PortForwardPort/ready" 2>$null
+    return ($LASTEXITCODE -eq 0)
+}
+
+function Ensure-BackendPortForward {
+
+    Write-Host "`nVerificando port-forward do backend..."
+
+    # Se a porta já estiver ocupada, verificar se é nossa ponte.
+    $Listener = Get-NetTCPConnection `
+        -LocalPort $PortForwardPort `
+        -State Listen `
+        -ErrorAction SilentlyContinue |
+        Select-Object -First 1
+
+    if ($Listener) {
+
+        if (Test-BackendLocalEndpoint) {
+            Write-Host "Port-forward já está funcionando." -ForegroundColor Green
+            return
+        }
+
+        throw "A porta $PortForwardPort está ocupada, mas o backend não respondeu. Verifique o processo que utiliza essa porta."
+    }
+
+    $Kubectl = Get-Command kubectl.exe -ErrorAction Stop
+
+    Write-Host "Iniciando port-forward em segundo plano..."
+
+    $ForwardProcess = Start-Process `
+        -FilePath $Kubectl.Source `
+        -ArgumentList @(
+            "port-forward",
+            "--address",
+            "0.0.0.0",
+            "service/mexe-backend",
+            "${PortForwardPort}:8000"
+        ) `
+        -WindowStyle Hidden `
+        -PassThru `
+        -RedirectStandardOutput $PortForwardStdout `
+        -RedirectStandardError $PortForwardStderr
+
+    Set-Content `
+        -Path $PortForwardPidFile `
+        -Value $ForwardProcess.Id
+
+    $Deadline = (Get-Date).AddSeconds(30)
+
+    do {
+
+        Start-Sleep -Seconds 1
+
+        $RunningProcess = Get-Process `
+            -Id $ForwardProcess.Id `
+            -ErrorAction SilentlyContinue
+
+        if (-not $RunningProcess) {
+
+            $ErrorLog = ""
+
+            if (Test-Path $PortForwardStderr) {
+                $ErrorLog = Get-Content $PortForwardStderr -Raw
+            }
+
+            Remove-Item $PortForwardPidFile -Force -ErrorAction SilentlyContinue
+
+            throw "O port-forward encerrou inesperadamente. Detalhes: $ErrorLog"
+        }
+
+        if (Test-BackendLocalEndpoint) {
+
+            Write-Host "Port-forward iniciado e backend respondendo." `
+                -ForegroundColor Green
+
+            return
+        }
+
+    } while ((Get-Date) -lt $Deadline)
+
+    Stop-Process -Id $ForwardProcess.Id -Force -ErrorAction SilentlyContinue
+
+    Remove-Item $PortForwardPidFile -Force -ErrorAction SilentlyContinue
+
+    throw "Backend não respondeu pela porta local $PortForwardPort dentro de 30 segundos."
+}
+
+
+
+Write-Host "`nAguardando backend ficar disponível..."
+
+
+kubectl rollout status deployment/mexe-backend --timeout=120s
+
+if ($LASTEXITCODE -ne 0) {
+throw "Deployment mexe-backend não ficou disponível."
+}
+
+Ensure-BackendPortForward
+
 
 # ============================================================
 # Resultado

@@ -1,7 +1,7 @@
 
 $ErrorActionPreference = "Stop"
 
-$BackendUrl = "http://localhost:32717"
+$BackendUrl = "http://localhost:18000"
 
 Write-Host "=== MEXE Functional Bootstrap ===" -ForegroundColor Cyan
 

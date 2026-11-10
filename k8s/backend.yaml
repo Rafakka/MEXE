@@ -41,11 +41,11 @@ kind: Service
 metadata:
   name: mexe-backend
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
     app: mexe-backend
   ports:
     - protocol: TCP
       port: 8000
       targetPort: 8000
-      nodePort: 32717
+
