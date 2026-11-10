@@ -1,5 +1,6 @@
 
 .env
+gcm-diagnose.log
 
 # Local secrets
 secrets-backup.yaml
