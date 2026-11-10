@@ -26,6 +26,14 @@ vi.mock("./connectionRecovery", () => ({
 
 const mockedRecoverConnection = vi.mocked(recoverConnection);
 
+function createTestStore() {
+    return configureStore({
+        reducer: {
+            laboratory: laboratoryReducer,
+        },
+    });
+}
+
 describe("recovery after offline state", () => {
 
     const existingProcess = {
@@ -41,7 +49,7 @@ describe("recovery after offline state", () => {
         async (): Promise<ProcessResult> => "success"
     );
 
-    let testStore: ReturnType<typeof configureStore>;
+    let testStore: ReturnType<typeof createTestStore>;
 
     beforeEach(() => {
         forgetProcess();
@@ -50,11 +58,7 @@ describe("recovery after offline state", () => {
         mockedRecoverConnection.mockReset();
         handler.mockClear();
 
-        testStore = configureStore({
-            reducer: {
-                laboratory: laboratoryReducer,
-            },
-        });
+       testStore = createTestStore();
 
         registerProcess("blend", handler);
         memorizeProcess(existingProcess);

@@ -12,7 +12,7 @@ export type ProcessHandler = (
 
 const processRegistry = new Map<
     LaboratoryOperation,
-    ProcessHandler,
+    ProcessHandler
     >();
 
 export function registerProcess(

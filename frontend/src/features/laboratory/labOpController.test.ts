@@ -231,7 +231,7 @@ describe("labOpController", () => {
             ["reentry", "manual reentry"],
         ] as const)(
             "rejects %s retry when a file is missing",
-            (mode) => {
+            (mode, _retryLabel) => {
 
                 const context = createContext(
                     mode,

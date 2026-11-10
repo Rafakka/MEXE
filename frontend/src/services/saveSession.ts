@@ -49,7 +49,7 @@ export async function saveSession(
         },
     };
 
-    const validator = new SessionValidator();
+    const validator: SessionValidator = new SessionValidator();
 
     validator.validateSession(session);
 
