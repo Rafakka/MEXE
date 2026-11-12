@@ -39,7 +39,14 @@ $PortForwardStderr = Join-Path $env:TEMP "mexe-port-forward.stderr.log"
 
 $SecretName = "mexe-dependency-exporter"
 
-$ClusterName = "desktop"
+$ClusterName = "mexe"
+
+$KubeconfigPath = Join-Path `
+    $env:TEMP `
+    "mexe-kind-mexe.kubeconfig"
+
+$env:KIND_EXPERIMENTAL_PROVIDER = "docker"
+
 
 Write-Host "=== MEXE Kubernetes Bootstrap ===" -ForegroundColor Cyan
 
@@ -196,23 +203,21 @@ if ($ClusterExists) {
     Write-Host "Cluster '$ClusterName' já existe. Reutilizando..." -ForegroundColor Green
 
 }
+
+
 elseif ($ControlPlaneExists) {
 
-    Write-Host "Cluster '$ClusterName' não existe no Kind." -ForegroundColor Yellow
-    Write-Host "Container '$ClusterName-control-plane' encontrado." -ForegroundColor Yellow
-    Write-Host "Removendo container órfão..." -ForegroundColor Yellow
+    throw @"
+Foi encontrado o container '$ClusterName-control-plane',
+mas o Kind não reconhece o cluster '$ClusterName'.
 
-    docker rm -f "$ClusterName-control-plane"
+O bootstrap não removerá o container automaticamente.
 
-    if ($LASTEXITCODE -ne 0) {
-        throw "Não foi possível remover o container órfão '$ClusterName-control-plane'."
-    }
-
-    Write-Host "Container órfão removido." -ForegroundColor Green
-
-    $ShouldCreateCluster = $true
+Investigue o estado do Docker e do Kind antes de continuar.
+"@
 
 }
+
 else {
 
     Write-Host "Cluster '$ClusterName' não existe. Criando..."
@@ -251,7 +256,9 @@ if ($ShouldCreateCluster) {
 
     kind create cluster `
         --config $KindConfig `
-        --name $ClusterName
+        --name $ClusterName `
+        --kubeconfig $KubeconfigPath `
+        --wait 5m
 
     if ($LASTEXITCODE -ne 0) {
         throw "Falha ao criar o cluster '$ClusterName'."
@@ -388,13 +395,93 @@ if ($DependencyExporterEnabled) {
 
 Write-Host "`n[3/4] Aguardando Kubernetes..."
 
+# ------------------------------------------------------------
+# Verificar se o container do control-plane está em execução
+# ------------------------------------------------------------
+
+$ControlPlaneRunning = docker inspect `
+    --format '{{.State.Running}}' `
+    "$ClusterName-control-plane" 2>$null
+
+if ($LASTEXITCODE -ne 0) {
+    throw "Não foi possível localizar o container do control-plane."
+}
+
+if ($ControlPlaneRunning.Trim() -ne "true") {
+    throw "O container do control-plane existe, mas não está em execução. Verifique o Docker."
+}
+
+Write-Host "Container do control-plane em execução." `
+    -ForegroundColor Green
+
+# ------------------------------------------------------------
+# Atualizar o kubeconfig usando o próprio Kind
+# ------------------------------------------------------------
+
+Write-Host "`nConfigurando kubeconfig isolado do Kind..."
+
+kind export kubeconfig `
+    --name $ClusterName `
+    --kubeconfig $KubeconfigPath
+
+if ($LASTEXITCODE -ne 0) {
+    throw "Não foi possível exportar o kubeconfig do Kind."
+}
+
+$env:KUBECONFIG = $KubeconfigPath
+
+kubectl config use-context "kind-$ClusterName"
+
+if ($LASTEXITCODE -ne 0) {
+    throw "Não foi possível selecionar o contexto kind-$ClusterName."
+}
+
+Write-Host "Kubeconfig isolado: $KubeconfigPath" `
+    -ForegroundColor Green
+
+# ------------------------------------------------------------
+# Aguardar o API Server responder
+# ------------------------------------------------------------
+
+Write-Host "`nAguardando API Server responder..."
+
+$ApiServerReady = $false
+
+for ($Attempt = 1; $Attempt -le 40; $Attempt++) {
+
+    $ApiResponse = kubectl `
+        --request-timeout=3s `
+        get --raw=/readyz 2>$null
+
+    if ($LASTEXITCODE -eq 0 -and $ApiResponse -match "ok") {
+        $ApiServerReady = $true
+        break
+    }
+
+    Write-Host "API Server ainda indisponível. Tentativa $Attempt/40..."
+
+    Start-Sleep -Seconds 2
+}
+
+if (-not $ApiServerReady) {
+    throw "API Server não respondeu dentro do tempo esperado. Verifique o estado do container Kind."
+}
+
+Write-Host "API Server respondendo." -ForegroundColor Green
+
+# ------------------------------------------------------------
+# Aguardar o Node ficar Ready
+# ------------------------------------------------------------
+
+Write-Host "`nAguardando Node ficar Ready..."
+
 kubectl wait `
     --for=condition=Ready `
     "node/$ClusterName-control-plane" `
     --timeout=120s
 
 if ($LASTEXITCODE -ne 0) {
-    throw "Kubernetes não ficou pronto dentro do tempo esperado."
+    throw "O Node do Kubernetes não ficou pronto dentro do tempo esperado."
 }
 
 Write-Host "Kubernetes OK." -ForegroundColor Green
@@ -436,19 +523,6 @@ if (-not [string]::IsNullOrWhiteSpace(
 else {
     Write-Host "Deployment mexe-backend ainda não existe; será criado pelo bootstrap." `
         -ForegroundColor Yellow
-}
-
-if ($LASTEXITCODE -eq 0) {
-    $CurrentDeployment = (
-        $CurrentDeploymentJson -join [Environment]::NewLine
-    ) | ConvertFrom-Json
-
-    $CurrentAnnotations = $CurrentDeployment.spec.template.metadata.annotations
-
-    if ($CurrentAnnotations) {
-        $CurrentBackendFingerprint = `
-            $CurrentAnnotations.'mexe.io/backend-image-fingerprint'
-    }
 }
 
 if ($CurrentBackendFingerprint -eq $BackendFingerprint) {
@@ -497,9 +571,87 @@ if (-not (Test-Path $KubernetesDir)) {
     throw "Diretório Kubernetes não encontrado: $KubernetesDir"
 }
 
-# Manifests obrigatórios
+
+# ============================================================
+# Aplicar backend via Kustomize
+# ============================================================
+
+$BackendKustomizationDir = Join-Path `
+    $KubernetesDir `
+    (".bootstrap-" + [guid]::NewGuid().ToString("N"))
+
+try {
+
+    New-Item `
+        -ItemType Directory `
+        -Path $BackendKustomizationDir `
+        -Force | Out-Null
+
+    $ImageYaml = ConvertTo-Json -InputObject $BackendImage -Compress
+    $FingerprintYaml = ConvertTo-Json -InputObject $BackendFingerprint -Compress
+
+    $PatchContent = @"
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mexe-backend
+spec:
+  template:
+    metadata:
+      annotations:
+        mexe.io/backend-image-fingerprint: $FingerprintYaml
+    spec:
+      containers:
+        - name: backend
+          image: $ImageYaml
+"@
+
+    $KustomizationContent = @"
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../base
+
+patches:
+  - path: backend-runtime-patch.yaml
+"@
+
+    Set-Content `
+        -LiteralPath (Join-Path $BackendKustomizationDir "backend-runtime-patch.yaml") `
+        -Value $PatchContent `
+        -Encoding utf8
+
+    Set-Content `
+        -LiteralPath (Join-Path $BackendKustomizationDir "kustomization.yaml") `
+        -Value $KustomizationContent `
+        -Encoding utf8
+
+    Write-Host "`nAplicando backend via Kustomize..."
+
+    kubectl apply -k $BackendKustomizationDir
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "Falha ao aplicar o backend via Kustomize."
+    }
+
+    Write-Host "Backend aplicado via Kustomize." -ForegroundColor Green
+}
+finally {
+
+    if (Test-Path $BackendKustomizationDir) {
+        Remove-Item `
+            -LiteralPath $BackendKustomizationDir `
+            -Recurse `
+            -Force
+    }
+}
+
+# ============================================================
+# Aplicar demais manifests obrigatórios
+# ============================================================
+
 $RequiredManifests = @(
-    (Join-Path $KubernetesDir "backend.yaml")
     (Join-Path $KubernetesDir "prometheus.yaml")
     (Join-Path $KubernetesDir "loki.yaml")
     (Join-Path $KubernetesDir "alloy.yaml")
@@ -507,80 +659,16 @@ $RequiredManifests = @(
 
 foreach ($Manifest in $RequiredManifests) {
 
-    $ManifestToApply = $Manifest
-    $TemporaryManifest = $null
+    Write-Host "`nAplicando: $Manifest"
 
-    if ((Split-Path $Manifest -Leaf) -eq "backend.yaml") {
+    kubectl apply -f $Manifest
 
-        $TemporaryManifest = Join-Path `
-            $env:TEMP `
-            ("mexe-backend-" + [guid]::NewGuid().ToString("N") + ".yaml")
-
-        $OriginalContent = Get-Content -LiteralPath $Manifest -Raw
-        $DefaultBackendImage = "ghcr.io/rafakka/mexe-backend:latest"
-        $ExpectedImageLine = "image: $DefaultBackendImage"
-
-        if (-not $OriginalContent.Contains($ExpectedImageLine)) {
-            throw "Não foi possível localizar a imagem padrão em '$Manifest'."
-        }
-
-        $RenderedContent = $OriginalContent
-
-        if ($BackendImage -ne $DefaultBackendImage) {
-            $RenderedContent = $RenderedContent.Replace(
-                $ExpectedImageLine,
-                "image: $BackendImage"
-            )
-        }
-
-        $TemplateMetadataPattern = '(?m)(^    metadata:\r?\n      labels:\r?\n        app: mexe-backend\r?\n)'
-
-        if ([regex]::Matches(
-            $RenderedContent,
-            $TemplateMetadataPattern
-        ).Count -ne 1) {
-            throw "Não foi possível identificar unicamente o metadata do template dos pods."
-        }
-
-        $AnnotationReplacement = '$1      annotations:' +
-            [Environment]::NewLine +
-            '        mexe.io/backend-image-fingerprint: "' +
-            $BackendFingerprint +
-            '"' +
-            [Environment]::NewLine
-
-        $RenderedContent = [regex]::Replace(
-            $RenderedContent,
-            $TemplateMetadataPattern,
-            $AnnotationReplacement
-        )
-
-        Set-Content `
-            -LiteralPath $TemporaryManifest `
-            -Value $RenderedContent `
-            -Encoding utf8
-
-        $ManifestToApply = $TemporaryManifest
-    }
-
-    try {
-        Write-Host "Aplicando: $Manifest"
-
-        kubectl apply -f $ManifestToApply
-
-        if ($LASTEXITCODE -ne 0) {
-            throw "Falha ao aplicar o manifest: $Manifest"
-        }
-    }
-    finally {
-        if (
-            $TemporaryManifest -and
-            (Test-Path $TemporaryManifest)
-        ) {
-            Remove-Item -LiteralPath $TemporaryManifest -Force
-        }
+    if ($LASTEXITCODE -ne 0) {
+        throw "Falha ao aplicar o manifest: $Manifest"
     }
 }
+
+
 
 
 # Security exporter
@@ -629,7 +717,7 @@ else {
 
 
 function Test-BackendLocalEndpoint {
-    $null = & curl.exe -fsS --max-time 2 "http://127.0.0.1:$PortForwardPort/ready" 2>$null
+    $null = & curl.exe -fsS --max-time 8 "http://127.0.0.1:$PortForwardPort/ready" 2>$null
     return ($LASTEXITCODE -eq 0)
 }
 
