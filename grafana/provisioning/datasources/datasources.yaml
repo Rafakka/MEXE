@@ -5,7 +5,7 @@ datasources:
     uid: prometheus
     type: prometheus
     access: proxy
-    url: http://desktop-control-plane:31103
+    url: http://prometheus:9090
     isDefault: true
     editable: true
 
@@ -13,7 +13,7 @@ datasources:
     uid: loki
     type: loki
     access: proxy
-    url: http://desktop-control-plane:32068
+    url: http://loki:3100
     editable: true
 
   - name: GitLab

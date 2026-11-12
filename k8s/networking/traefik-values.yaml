@@ -1,0 +1,15 @@
+﻿providers:
+  kubernetesGateway:
+    enabled: true
+  kubernetesCRD:
+    enabled: false
+  kubernetesIngress:
+    enabled: false
+gateway:
+  enabled: false
+ports:
+  web:
+    nodePort: 32717
+service:
+  spec:
+    type: NodePort

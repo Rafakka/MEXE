@@ -74,11 +74,10 @@ kind: Service
 metadata:
   name: loki
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
     app: loki
   ports:
     - protocol: TCP
       port: 3100
       targetPort: 3100
-      nodePort: 32068

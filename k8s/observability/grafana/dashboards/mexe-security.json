@@ -1,0 +1,10 @@
+{
+  "uid": "mexe-security",
+  "title": "MEXE Security",
+  "tags": ["mexe", "security", "trivy"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "panels": []
+}

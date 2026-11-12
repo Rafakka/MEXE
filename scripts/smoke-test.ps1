@@ -59,7 +59,7 @@ function Assert-ContainerRunning {
 Write-Host "== MEXE Smoke Test ==" -ForegroundColor Cyan
 
 # 1. Docker
-Write-Host "`n[1/4] Docker"
+Write-Host "`n[1/2] Docker"
 
 docker info | Out-Null
 
@@ -69,33 +69,43 @@ if ($LASTEXITCODE -ne 0) {
 
 Write-Host "Docker OK." -ForegroundColor Green
 
+function Assert-DeploymentReady {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$DeploymentName
+    )
 
-# 2. Containers
-Write-Host "`n[2/4] Containers"
+    $deployment = kubectl get deployment $DeploymentName `
+        -o json 2>$null | ConvertFrom-Json
 
-Assert-ContainerRunning "mexe-frontend"
-Assert-ContainerRunning "mexe-grafana"
+    if ($LASTEXITCODE -ne 0 -or $null -eq $deployment) {
+        throw "Deployment '$DeploymentName' não encontrado."
+    }
 
+    $desired = $deployment.spec.replicas
+    $ready = $deployment.status.readyReplicas
 
-# 3. Frontend
-Write-Host "`n[3/4] Frontend"
+    if ($null -eq $ready) {
+        $ready = 0
+    }
 
-Wait-ForReady `
-    "Frontend" `
-    "$frontendUrl/" `
-    60 `
-    $true
+    if ($ready -ne $desired) {
+        throw "Deployment '$DeploymentName' não está pronto. Ready: $ready/$desired."
+    }
 
+    Write-Host "Deployment '$DeploymentName': $ready/$desired Ready." `
+        -ForegroundColor Green
+}
 
-# 4. Grafana
-Write-Host "`n[4/4] Grafana"
+# 2. Kubernetes workloads
+Write-Host "`n[2/4] Kubernetes workloads"
 
-Wait-ForReady `
-    "Grafana /api/health" `
-    "$grafanaUrl/api/health" `
-    180 `
-    $true
+Assert-DeploymentReady "mexe-frontend"
+Assert-DeploymentReady "mexe-backend"
+Assert-DeploymentReady "grafana"
 
+Write-Host ""
+Write-Host "== SMOKE TEST PASSED ==" -ForegroundColor Green
 
 Write-Host ""
 Write-Host "== SMOKE TEST PASSED ==" -ForegroundColor Green

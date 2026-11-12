@@ -1,0 +1,27 @@
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - pvc.yaml
+  - deployment.yaml
+  - service.yaml
+
+configMapGenerator:
+  - name: grafana-dashboards
+    files:
+      - dashboards/mexe-overview.json
+      - dashboards/mexe-security.json
+
+  - name: grafana-alerting
+    files:
+      - alert-rules.yaml=provisioning/alerting/alert-rules.yaml
+
+  - name: grafana-dashboard-provider
+    files:
+      - dashboards.yaml=provisioning/dashboards/dashboards.yaml
+
+  - name: grafana-datasources
+    files:
+      - datasources.yaml=provisioning/datasources/datasources.yaml
+
