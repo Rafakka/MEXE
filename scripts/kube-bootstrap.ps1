@@ -32,6 +32,11 @@ $SecurityExporterManifest = Join-Path `
     $KubernetesDir `
     "optional\security-exporter.yaml"
 
+$NetworkingScript = Join-Path `
+    $PSScriptRoot `
+    "kube-networking.ps1"
+
+
 $PortForwardPort = 18000
 $PortForwardPidFile = Join-Path $env:TEMP "mexe-port-forward.pid"
 $PortForwardStdout = Join-Path $env:TEMP "mexe-port-forward.stdout.log"
@@ -93,6 +98,14 @@ else {
     Write-Host ""
     Write-Host "Aviso: GITLAB_TOKEN não encontrado no ambiente." -ForegroundColor Yellow
     Write-Host "Dependency exporter será ignorado." -ForegroundColor Yellow
+}
+
+if (-not (Test-Path $NetworkingScript -PathType Leaf)) {
+    throw "Networking script not found: $NetworkingScript"
+}
+
+if (-not (Get-Command helm -ErrorAction SilentlyContinue)) {
+    throw "Helm is required to configure Kubernetes networking."
 }
 
 function Update-SecurityResults {
@@ -644,6 +657,20 @@ else {
 # ============================================================
 
 Write-Host "`n[4/4] Aplicando infraestrutura do MEXE..."
+
+# ============================================================
+# Kubernetes Networking
+# ============================================================
+
+Write-Host "`nPreparando Kubernetes Networking..." -ForegroundColor Cyan
+
+& $NetworkingScript
+
+if ($LASTEXITCODE -ne 0) {
+    throw "Kubernetes Networking failed."
+}
+
+Write-Host "Kubernetes Networking configurado." -ForegroundColor Green
 
 if (-not (Test-Path $KubernetesDir)) {
     throw "Diretório Kubernetes não encontrado: $KubernetesDir"
