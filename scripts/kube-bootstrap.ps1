@@ -39,6 +39,14 @@ $PortForwardStderr = Join-Path $env:TEMP "mexe-port-forward.stderr.log"
 
 $SecretName = "mexe-dependency-exporter"
 
+$GrafanaSecretName = "grafana-secrets"
+
+$GrafanaSecretKey = "gitlab-token"
+
+$FrontendImage = "mexe-frontend:latest"
+
+$FrontendRegistryImage = "ghcr.io/rafakka/mexe-frontend:latest"
+
 $ClusterName = "mexe"
 
 $KubeconfigPath = Join-Path `
@@ -258,7 +266,8 @@ if ($ShouldCreateCluster) {
         --config $KindConfig `
         --name $ClusterName `
         --kubeconfig $KubeconfigPath `
-        --wait 5m
+        --wait 5m `
+        --retain
 
     if ($LASTEXITCODE -ne 0) {
         throw "Falha ao criar o cluster '$ClusterName'."
@@ -378,6 +387,7 @@ Write-Host "`nGarantindo imagens locais no Kind..."
 
 $KindImages = @(
     $BackendImage
+    $FrontendImage
 )
 
 if ($SecurityExporterEnabled) {
@@ -386,6 +396,39 @@ if ($SecurityExporterEnabled) {
 
 if ($DependencyExporterEnabled) {
     $KindImages += "mexe-dependency-exporter:latest"
+}
+
+# Frontend: priorizar imagem local e utilizar GHCR como fallback
+
+Write-Host "`nVerificando imagem do frontend..."
+
+docker image inspect $FrontendImage *> $null
+
+if ($LASTEXITCODE -eq 0) {
+
+    Write-Host "Imagem local '$FrontendImage' encontrada." -ForegroundColor Green
+
+}
+else {
+
+    Write-Host "Imagem local não encontrada." -ForegroundColor Yellow
+    Write-Host "Baixando imagem do GHCR: $FrontendRegistryImage"
+
+    docker pull $FrontendRegistryImage
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "Falha ao baixar a imagem '$FrontendRegistryImage'."
+    }
+
+    Write-Host "Aplicando tag local ao frontend..."
+
+    docker tag $FrontendRegistryImage $FrontendImage
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "Falha ao aplicar a tag '$FrontendImage'."
+    }
+
+    Write-Host "Imagem remota preparada para o Kind." -ForegroundColor Green
 }
 
 
@@ -562,6 +605,41 @@ if ($DependencyExporterEnabled) {
 }
 
 # ============================================================
+# Grafana Secret
+# ============================================================
+
+if ([string]::IsNullOrWhiteSpace($env:GITLAB_TOKEN)) {
+
+    Write-Host ""
+    Write-Host "Aviso: GITLAB_TOKEN não encontrado." -ForegroundColor Yellow
+    Write-Host "Secret do Grafana não será atualizado." -ForegroundColor Yellow
+
+}
+else {
+
+    Write-Host ""
+    Write-Host "Criando/atualizando Secret '$GrafanaSecretName'..."
+
+    $GrafanaSecretManifest = kubectl create secret generic $GrafanaSecretName `
+        --namespace default `
+        --from-literal="$($GrafanaSecretKey)=$($env:GITLAB_TOKEN)" `
+        --dry-run=client `
+        -o yaml
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "Não foi possível gerar o manifesto do Secret do Grafana."
+    }
+
+    $GrafanaSecretManifest | kubectl apply -f -
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "Não foi possível aplicar o Secret '$GrafanaSecretName'."
+    }
+
+    Write-Host "Secret do Grafana atualizado." -ForegroundColor Green
+}
+
+# ============================================================
 # 4. Aplicar infraestrutura
 # ============================================================
 
@@ -611,7 +689,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - ../base
+  - ../overlays/local
 
 patches:
   - path: backend-runtime-patch.yaml
@@ -646,29 +724,6 @@ finally {
             -Force
     }
 }
-
-# ============================================================
-# Aplicar demais manifests obrigatórios
-# ============================================================
-
-$RequiredManifests = @(
-    (Join-Path $KubernetesDir "prometheus.yaml")
-    (Join-Path $KubernetesDir "loki.yaml")
-    (Join-Path $KubernetesDir "alloy.yaml")
-)
-
-foreach ($Manifest in $RequiredManifests) {
-
-    Write-Host "`nAplicando: $Manifest"
-
-    kubectl apply -f $Manifest
-
-    if ($LASTEXITCODE -ne 0) {
-        throw "Falha ao aplicar o manifest: $Manifest"
-    }
-}
-
-
 
 
 # Security exporter
@@ -714,6 +769,8 @@ else {
     Write-Host ""
     Write-Host "dependency-exporter não será aplicado." -ForegroundColor Yellow
 }
+
+
 
 
 function Test-BackendLocalEndpoint {
