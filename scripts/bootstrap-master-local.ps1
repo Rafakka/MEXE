@@ -12,20 +12,20 @@ $ErrorActionPreference = "Stop"
 
 $MexeRoot = Split-Path -Parent $PSScriptRoot
 
-function Start-MexeCompose {
+function Build-MexeImages {
 
     Write-Host ""
     Write-Host "======================================" -ForegroundColor Cyan
-    Write-Host "Subindo MEXE Docker Compose" -ForegroundColor Cyan
+    Write-Host "Construindo imagens MEXE" -ForegroundColor Cyan
     Write-Host "======================================"
 
     Push-Location $MexeRoot
 
     try {
-        docker compose up -d --build
+        docker compose build
 
         if ($LASTEXITCODE -ne 0) {
-            throw "Falha ao subir o Docker Compose."
+            throw "Falha ao construir imagens Docker."
         }
     }
     finally {
@@ -33,7 +33,7 @@ function Start-MexeCompose {
     }
 
     Write-Host ""
-    Write-Host "MEXE Docker Compose OK." -ForegroundColor Green
+    Write-Host "Build das imagens MEXE concluído." -ForegroundColor Green
 }
 
 Write-Host "======================================" -ForegroundColor Cyan
@@ -166,7 +166,7 @@ try {
 
     switch ($Mode) {
     "smoke" {
-        Start-MexeCompose
+        Build-MexeImages
         Invoke-MexeScript -ScriptName "smoke-test.ps1"
        }
 
@@ -179,7 +179,7 @@ try {
         }
 
     "all" {
-        Start-MexeCompose
+        Build-MexeImages
         Invoke-MexeScript -ScriptName "kube-bootstrap.ps1"
         Invoke-MexeScript -ScriptName "smoke-test.ps1"
         Invoke-MexeScript -ScriptName "func-bootstrap.ps1"

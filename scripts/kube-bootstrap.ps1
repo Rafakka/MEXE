@@ -52,6 +52,8 @@ $FrontendImage = "mexe-frontend:latest"
 
 $FrontendRegistryImage = "ghcr.io/rafakka/mexe-frontend:latest"
 
+$GrafanaImage = "grafana/grafana:latest"
+
 $ClusterName = "mexe"
 
 $KubeconfigPath = Join-Path `
@@ -185,112 +187,111 @@ Update-SecurityResults
 # 2. Cluster
 # ============================================================
 
-Write-Host "`n[2/4] Verificando cluster..."
+Write-Host "`n[2/4] Preparando cluster Kind..." -ForegroundColor Cyan
 
 if (-not (Test-Path $ClusterConfig)) {
     throw "Configuração do Kind não encontrada: $ClusterConfig"
 }
 
+# ------------------------------------------------------------
+# Remove cluster Kind existente
+# ------------------------------------------------------------
+
 $KindClusters = @(cmd /c "kind get clusters 2>&1")
 $KindExitCode = $LASTEXITCODE
 
-if ($KindExitCode -ne 0) {
+if ($KindExitCode -eq 0) {
+
+    if ($KindClusters -contains $ClusterName) {
+
+        Write-Host "Removendo cluster '$ClusterName' existente..." `
+            -ForegroundColor Yellow
+
+        kind delete cluster --name $ClusterName
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "Falha ao remover o cluster '$ClusterName'."
+        }
+    }
+}
+else {
 
     $NoClustersFound = $KindClusters -match "No kind clusters found"
 
     if (-not $NoClustersFound) {
         throw "Falha ao consultar os clusters Kind: $KindClusters"
     }
-
-    $KindClusters = @()
 }
 
-$ClusterExists = $KindClusters -contains $ClusterName
+# ------------------------------------------------------------
+# Remove container órfão, caso exista
+# ------------------------------------------------------------
 
-$ControlPlaneInspect = @(cmd /c "docker container inspect $ClusterName-control-plane 2>&1")
-$ControlPlaneExitCode = $LASTEXITCODE
+$ControlPlaneName = "$ClusterName-control-plane"
 
-if ($ControlPlaneExitCode -eq 0) {
-    $ControlPlaneExists = $true
-}
-else {
-    $ControlPlaneExists = $false
-}
+$ExistingContainer = docker ps -a `
+    --filter "name=^/$ControlPlaneName$" `
+    --format "{{.Names}}"
 
-$ShouldCreateCluster = $false
+if ($ExistingContainer -contains $ControlPlaneName) {
 
-if ($ClusterExists) {
+    Write-Host "Removendo container órfão '$ControlPlaneName'..." `
+        -ForegroundColor Yellow
 
-    Write-Host "Cluster '$ClusterName' já existe. Reutilizando..." -ForegroundColor Green
+    docker rm -f $ControlPlaneName
 
-}
-
-
-elseif ($ControlPlaneExists) {
-
-    throw @"
-Foi encontrado o container '$ClusterName-control-plane',
-mas o Kind não reconhece o cluster '$ClusterName'.
-
-O bootstrap não removerá o container automaticamente.
-
-Investigue o estado do Docker e do Kind antes de continuar.
-"@
-
+    if ($LASTEXITCODE -ne 0) {
+        throw "Falha ao remover container '$ControlPlaneName'."
+    }
 }
 
-else {
+# ------------------------------------------------------------
+# Gera configuração temporária do Kind
+# ------------------------------------------------------------
 
-    Write-Host "Cluster '$ClusterName' não existe. Criando..."
-    $ShouldCreateCluster = $true
-}
+$KindConfig = Join-Path $env:TEMP "mexe-kind.yaml"
 
-if ($ShouldCreateCluster) {
+$ClusterYaml = Get-Content $ClusterConfig -Raw
 
-    # Gera configuração temporária do Kind
-    $KindConfig = Join-Path $env:TEMP "mexe-kind.yaml"
+if ($SecurityExporterEnabled) {
 
-    $ClusterYaml = Get-Content $ClusterConfig -Raw
-
-    if ($SecurityExporterEnabled) {
-
-        $SecurityMount = @"
+    $SecurityMount = @"
     extraMounts:
       - hostPath: $SecurityResultsDir
         containerPath: /mnt/mexe-security-results
         readOnly: true
 "@
 
-        $ClusterYaml = $ClusterYaml -replace `
-            '(?m)^(\s+image:\s+kindest/node:[^\r\n]+)', `
-            "`$1`n$SecurityMount"
-    }
-
-    Set-Content `
-        -Path $KindConfig `
-        -Value $ClusterYaml `
-        -Encoding UTF8
-
-    Write-Host "Configuração temporária do Kind criada."
-    Write-Host "Conteúdo:"
-    Get-Content $KindConfig
-
-    kind create cluster `
-        --config $KindConfig `
-        --name $ClusterName `
-        --kubeconfig $KubeconfigPath `
-        --wait 5m `
-        --retain
-
-    if ($LASTEXITCODE -ne 0) {
-        throw "Falha ao criar o cluster '$ClusterName'."
-    }
-
-    Remove-Item `
-        -Path $KindConfig `
-        -Force `
-        -ErrorAction SilentlyContinue
+    $ClusterYaml = $ClusterYaml -replace `
+        '(?m)^(\s+image:\s+kindest/node:[^\r\n]+)', `
+        "`$1`n$SecurityMount"
 }
+
+Set-Content `
+    -Path $KindConfig `
+    -Value $ClusterYaml `
+    -Encoding UTF8
+
+Write-Host "Configuração temporária do Kind criada."
+Write-Host "Conteúdo:"
+Get-Content $KindConfig
+
+kind create cluster `
+    --config $KindConfig `
+    --name $ClusterName `
+    --kubeconfig $KubeconfigPath `
+    --wait 5m `
+    --retain
+
+if ($LASTEXITCODE -ne 0) {
+    throw "Falha ao criar o cluster '$ClusterName'."
+}
+
+Remove-Item `
+    -Path $KindConfig `
+    -Force `
+    -ErrorAction SilentlyContinue
+
 
 function Ensure-KindImage {
     param (
@@ -401,7 +402,22 @@ Write-Host "`nGarantindo imagens locais no Kind..."
 $KindImages = @(
     $BackendImage
     $FrontendImage
+    $GrafanaImage
 )
+
+# ============================================================
+# Grafana: preparar imagem
+# ============================================================
+
+Write-Host "`nPreparando imagem do Grafana..." -ForegroundColor Cyan
+
+docker pull $GrafanaImage
+
+if ($LASTEXITCODE -ne 0) {
+    throw "Falha ao baixar a imagem '$GrafanaImage'."
+}
+
+Write-Host "Imagem do Grafana preparada." -ForegroundColor Green
 
 if ($SecurityExporterEnabled) {
     $KindImages += "mexe-security-exporter:latest"
