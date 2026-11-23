@@ -7,9 +7,9 @@ $ErrorActionPreference = "Stop"
 
 $MexeRoot = Split-Path $PSScriptRoot -Parent
 
-$EnvFile = Join-Path $MexeRoot ".env"
+$env:GITLAB_TOKEN = $null
 
-if (Test-Path $EnvFile) {
+if (Test-Path $EnvFile -PathType Leaf) {
     $GitlabTokenLine = Get-Content $EnvFile |
         Where-Object { $_ -match '^GITLAB_TOKEN=' } |
         Select-Object -First 1
@@ -89,7 +89,11 @@ else {
 }
 
 # Dependency exporter
-$DependencyExporterEnabled = -not [string]::IsNullOrWhiteSpace($env:GITLAB_TOKEN)
+$DependencyExporterEnabled = $false
+
+if (-not [string]::IsNullOrWhiteSpace($env:GITLAB_TOKEN)) {
+    $DependencyExporterEnabled = $true
+}
 
 if ($DependencyExporterEnabled) {
     Write-Host ""

@@ -5,11 +5,20 @@
     enabled: false
   kubernetesIngress:
     enabled: false
+
 gateway:
   enabled: false
+
+gatewayClass:
+  enabled: false
+
+ingressClass:
+  enabled: false
+
 ports:
   web:
     nodePort: 32717
+
 service:
   spec:
     type: NodePort

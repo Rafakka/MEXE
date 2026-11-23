@@ -30,6 +30,7 @@ spec:
                 secretKeyRef:
                   name: grafana-secrets
                   key: gitlab-token
+                  optional: true
           volumeMounts:
             - name: grafana-data
               mountPath: /var/lib/grafana
