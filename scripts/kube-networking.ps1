@@ -123,6 +123,10 @@ if ($LASTEXITCODE -ne 0) {
 
 Write-Host "`n=== Installing Traefik ===" -ForegroundColor Cyan
 
+docker pull traefik:v3.7.19
+
+kind load docker-image traefik:v3.7.19 --name mexe
+
 helm upgrade --install $TraefikReleaseName traefik/traefik `
     --namespace $TraefikNamespace `
     --create-namespace `
@@ -279,6 +283,18 @@ foreach ($route in $HttpRoutes) {
 
     if (-not $Accepted) {
         throw "HTTPRoute was not accepted: $route"
+    }
+
+    kind export kubeconfig --name mexe
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to export Kind kubeconfig."
+    }
+
+    kubectl config use-context kind-mexe
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to select Kind context."
     }
 
     if (-not $Resolved) {

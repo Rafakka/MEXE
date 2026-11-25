@@ -1,22 +1,31 @@
 
 param(
-    [string]$BackendImage = "ghcr.io/rafakka/mexe-backend:latest"
+    [string]$BackendImage = "ghcr.io/rafakka/mexe-backend:latest",
+
+    [switch]$RefreshImages
 )
 
 $ErrorActionPreference = "Stop"
 
 $MexeRoot = Split-Path $PSScriptRoot -Parent
+$EnvFile = Join-Path $MexeRoot ".env"
 
 $env:GITLAB_TOKEN = $null
 
-if (Test-Path $EnvFile -PathType Leaf) {
-    $GitlabTokenLine = Get-Content $EnvFile |
+if (Test-Path -LiteralPath $EnvFile -PathType Leaf) {
+
+    $GitlabTokenLine = Get-Content -LiteralPath $EnvFile |
         Where-Object { $_ -match '^GITLAB_TOKEN=' } |
         Select-Object -First 1
 
     if ($GitlabTokenLine) {
-        $env:GITLAB_TOKEN = $GitlabTokenLine -replace '^GITLAB_TOKEN=', ''
+        $env:GITLAB_TOKEN = (
+            $GitlabTokenLine -replace '^GITLAB_TOKEN=', ''
+        ).Trim()
     }
+}
+else {
+    Write-Warning "Arquivo .env não encontrado: $EnvFile"
 }
 
 $ClusterConfig = Join-Path $MexeRoot "cluster.yaml"
@@ -61,6 +70,364 @@ $KubeconfigPath = Join-Path `
     "mexe-kind-mexe.kubeconfig"
 
 $env:KIND_EXPERIMENTAL_PROVIDER = "docker"
+
+# ===================================================
+# Functions
+# ===================================================
+
+function Update-SecurityResults {
+    Write-Host "`nSincronizando security/results com o Git..."
+
+    if (-not (Test-Path (Join-Path $MexeRoot ".git"))) {
+        Write-Warning "Repositório Git não encontrado. Atualização de security/results ignorada."
+        return
+    }
+
+    Push-Location $MexeRoot
+
+    try {
+
+        $GitStatus = @(git status --porcelain 2>&1)
+
+        if ($LASTEXITCODE -ne 0) {
+            Write-Warning "Não foi possível verificar o estado do Git."
+            return
+        }
+
+        if ($GitStatus.Count -gt 0) {
+            Write-Warning "Working tree possui alterações locais."
+            Write-Warning "git pull não será executado para evitar interferir no trabalho local."
+            return
+        }
+
+        git pull --ff-only
+
+        if ($LASTEXITCODE -ne 0) {
+            Write-Warning "Não foi possível atualizar o repositório com git pull --ff-only."
+            Write-Warning "Observe o mecanismo de atualização de security/results."
+            return
+        }
+
+        Write-Host "security/results sincronizado com o Git." -ForegroundColor Green
+    }    finally {
+        Pop-Location
+    }
+}
+
+function Test-KindSecurityResults {
+    Write-Host "`nVerificando security/results dentro do Kind..."
+
+    if (-not $SecurityExporterEnabled) {
+        Write-Host "Security exporter desabilitado. Verificação ignorada." -ForegroundColor Yellow
+        return
+    }
+
+    $CurrentDir = Join-Path $SecurityResultsDir "current"
+
+    if (-not (Test-Path $CurrentDir -PathType Container)) {
+        Write-Warning "Diretório security/results/current não encontrado no host."
+        Write-Warning "Observe o mecanismo de atualização."
+        return
+    }
+
+    $NodeContainer = "$ClusterName-control-plane"
+
+    docker exec $NodeContainer sh -c `
+        "test -d /mnt/mexe-security-results/current"
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warning "Kind não está vendo security/results/current."
+        Write-Warning "Observe o mecanismo de atualização."
+        return
+    }
+
+    Write-Host "Kind atualizado: security/results está visível no mount." -ForegroundColor Green
+}
+
+
+function Test-DockerImageExists {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Image
+    )
+
+    # docker image ls retorna uma lista vazia quando não encontra
+    # a imagem, sem gerar o erro esperado de docker image inspect.
+    $ImageIds = @(docker image ls --quiet --no-trunc $Image)
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "Falha ao consultar o cache local do Docker."
+    }
+
+    return ($ImageIds.Count -gt 0)
+}
+
+
+function Ensure-LocalBuildImage {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Image,
+
+        [Parameter(Mandatory = $true)]
+        [string]$BuildContext
+    )
+
+    $ImageExists = Test-DockerImageExists -Image $Image
+
+    if (-not $ImageExists -or $RefreshImages) {
+
+        if ($RefreshImages) {
+            Write-Host "Reconstruindo imagem local: $Image"
+        }
+        else {
+            Write-Host "Imagem local ausente. Construindo: $Image"
+        }
+
+        docker build `
+            --tag $Image `
+            --file (Join-Path $BuildContext "Dockerfile") `
+            $BuildContext
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "Falha ao construir a imagem '$Image'."
+        }
+    }
+    else {
+        Write-Host "Imagem local '$Image' encontrada. Reutilizando cache." -ForegroundColor Green
+    }
+}
+
+
+function Ensure-KindImage {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$Image
+    )
+
+    Write-Host ""
+    Write-Host "Verificando imagem: $Image"
+
+    $IsRemoteImage = (
+        $Image -like "ghcr.io/*" -or
+        $Image -eq $GrafanaImage
+    )
+
+    $ImageExists = Test-DockerImageExists -Image $Image
+
+    # Imagens remotas: baixar se estiverem ausentes ou se
+    # o usuário solicitar uma atualização explícita.
+    if ($IsRemoteImage -and (-not $ImageExists -or $RefreshImages)) {
+
+        if ($RefreshImages) {
+            Write-Host "Atualização remota solicitada: $Image"
+        }
+        else {
+            Write-Host "Imagem ausente localmente. Baixando: $Image"
+        }
+
+        docker pull $Image
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "Falha ao baixar a imagem '$Image'."
+        }
+
+        $ImageExists = $true
+    }
+
+    # Imagens locais, como exporters, não possuem fallback remoto.
+    if (-not $ImageExists) {
+        throw "Imagem local '$Image' não encontrada."
+    }
+
+    # Conferir plataforma.
+    $Platform = docker image inspect $Image --format '{{.Os}}/{{.Architecture}}'
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "Não foi possível verificar a plataforma da imagem '$Image'."
+    }
+
+    if ($Platform.Trim() -ne "linux/amd64") {
+        throw "Plataforma incompatível: $Image ($Platform). Esperado: linux/amd64."
+    }
+
+    Write-Host "Imagem disponível: $Image ($Platform)" -ForegroundColor Green
+
+    Write-Host "Carregando imagem no Kind (linux/amd64)..."
+
+    $ArchivePath = Join-Path `
+        $env:TEMP `
+        ("mexe-kind-" + [guid]::NewGuid().ToString("N") + ".tar")
+
+    try {
+
+        Write-Host "Exportando somente a plataforma linux/amd64..."
+
+        docker image save `
+            --platform linux/amd64 `
+            --output $ArchivePath `
+            $Image
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "Falha ao exportar a imagem '$Image'."
+        }
+
+        Write-Host "Importando arquivo no Kind..."
+
+        kind load image-archive $ArchivePath --name $ClusterName
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "Falha ao importar a imagem '$Image' no Kind."
+        }
+
+        Write-Host "Imagem '$Image' carregada no Kind." -ForegroundColor Green
+    }
+    finally {
+
+        if (Test-Path -LiteralPath $ArchivePath) {
+            Remove-Item -LiteralPath $ArchivePath -Force
+        }
+    }
+}
+
+function Get-ImageFingerprint {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Image
+    )
+
+    if ($Image -like "ghcr.io/*") {
+        $InspectOutput = docker image inspect $Image --format '{{json .RepoDigests}}'
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "Não foi possível inspecionar a imagem '$Image'."
+        }
+
+        $RepoDigests = @($InspectOutput | ConvertFrom-Json)
+        $Repository = $Image -replace ':[^/:]+$', ''
+
+        $RepoDigest = $RepoDigests |
+            Where-Object { $_ -like "$Repository@sha256:*" } |
+            Select-Object -First 1
+
+        if (-not $RepoDigest) {
+            throw "Não foi possível obter o digest do registry para '$Image'."
+        }
+
+        return $RepoDigest.Substring($RepoDigest.IndexOf("@") + 1)
+    }
+
+    $ImageId = docker image inspect $Image --format '{{.Id}}'
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "Não foi possível obter o ID da imagem local '$Image'."
+    }
+
+    return $ImageId.Trim()
+}
+
+
+function Test-BackendLocalEndpoint {
+
+    try {
+        $Response = Invoke-WebRequest `
+            -Uri "http://127.0.0.1:$PortForwardPort/ready" `
+            -Method Get `
+            -TimeoutSec 5 `
+            -UseBasicParsing `
+            -ErrorAction Stop
+
+        return ($Response.StatusCode -eq 200)
+    }
+    catch {
+        return $false
+    }
+}
+
+
+function Ensure-BackendPortForward {
+
+    Write-Host "`nVerificando port-forward do backend..."
+
+    # Se a porta já estiver ocupada, verificar se é nossa ponte.
+    $Listener = Get-NetTCPConnection `
+        -LocalPort $PortForwardPort `
+        -State Listen `
+        -ErrorAction SilentlyContinue |
+        Select-Object -First 1
+
+    if ($Listener) {
+
+        if (Test-BackendLocalEndpoint) {
+            Write-Host "Port-forward já está funcionando." -ForegroundColor Green
+            return
+        }
+
+        throw "A porta $PortForwardPort está ocupada, mas o backend não respondeu. Verifique o processo que utiliza essa porta."
+    }
+
+    $Kubectl = Get-Command kubectl.exe -ErrorAction Stop
+
+    Write-Host "Iniciando port-forward em segundo plano..."
+
+    $ForwardProcess = Start-Process `
+        -FilePath $Kubectl.Source `
+        -ArgumentList @(
+            "port-forward",
+            "--address",
+            "0.0.0.0",
+            "service/mexe-backend",
+            "${PortForwardPort}:8000"
+        ) `
+        -WindowStyle Hidden `
+        -PassThru `
+        -RedirectStandardOutput $PortForwardStdout `
+        -RedirectStandardError $PortForwardStderr
+
+    Set-Content `
+        -Path $PortForwardPidFile `
+        -Value $ForwardProcess.Id
+
+    $Deadline = (Get-Date).AddSeconds(30)
+
+    do {
+
+        Start-Sleep -Seconds 1
+
+        $RunningProcess = Get-Process `
+            -Id $ForwardProcess.Id `
+            -ErrorAction SilentlyContinue
+
+        if (-not $RunningProcess) {
+
+            $ErrorLog = ""
+
+            if (Test-Path $PortForwardStderr) {
+                $ErrorLog = Get-Content $PortForwardStderr -Raw
+            }
+
+            Remove-Item $PortForwardPidFile -Force -ErrorAction SilentlyContinue
+
+            throw "O port-forward encerrou inesperadamente. Detalhes: $ErrorLog"
+        }
+
+        if (Test-BackendLocalEndpoint) {
+
+            Write-Host "Port-forward iniciado e backend respondendo." `
+                -ForegroundColor Green
+
+            return
+        }
+
+        Write-Host "Backend ainda não respondeu. Tentando novamente..."
+
+    } while ((Get-Date) -lt $Deadline)
+
+    Stop-Process -Id $ForwardProcess.Id -Force -ErrorAction SilentlyContinue
+
+    Remove-Item $PortForwardPidFile -Force -ErrorAction SilentlyContinue
+
+    throw "Backend não respondeu pela porta local $PortForwardPort dentro de 30 segundos."
+}
 
 
 Write-Host "=== MEXE Kubernetes Bootstrap ===" -ForegroundColor Cyan
@@ -113,77 +480,6 @@ if (-not (Test-Path $NetworkingScript -PathType Leaf)) {
 if (-not (Get-Command helm -ErrorAction SilentlyContinue)) {
     throw "Helm is required to configure Kubernetes networking."
 }
-
-function Update-SecurityResults {
-    Write-Host "`nSincronizando security/results com o Git..."
-
-    if (-not (Test-Path (Join-Path $MexeRoot ".git"))) {
-        Write-Warning "Repositório Git não encontrado. Atualização de security/results ignorada."
-        return
-    }
-
-    Push-Location $MexeRoot
-
-    try {
-
-        $GitStatus = @(git status --porcelain 2>&1)
-
-        if ($LASTEXITCODE -ne 0) {
-            Write-Warning "Não foi possível verificar o estado do Git."
-            return
-        }
-
-        if ($GitStatus.Count -gt 0) {
-            Write-Warning "Working tree possui alterações locais."
-            Write-Warning "git pull não será executado para evitar interferir no trabalho local."
-            return
-        }
-
-        git pull --ff-only
-
-        if ($LASTEXITCODE -ne 0) {
-            Write-Warning "Não foi possível atualizar o repositório com git pull --ff-only."
-            Write-Warning "Observe o mecanismo de atualização de security/results."
-            return
-        }
-
-        Write-Host "security/results sincronizado com o Git." -ForegroundColor Green
-    }
-    finally {
-        Pop-Location
-    }
-}
-
-function Test-KindSecurityResults {
-    Write-Host "`nVerificando security/results dentro do Kind..."
-
-    if (-not $SecurityExporterEnabled) {
-        Write-Host "Security exporter desabilitado. Verificação ignorada." -ForegroundColor Yellow
-        return
-    }
-
-    $CurrentDir = Join-Path $SecurityResultsDir "current"
-
-    if (-not (Test-Path $CurrentDir -PathType Container)) {
-        Write-Warning "Diretório security/results/current não encontrado no host."
-        Write-Warning "Observe o mecanismo de atualização."
-        return
-    }
-
-    $NodeContainer = "$ClusterName-control-plane"
-
-    docker exec $NodeContainer sh -c `
-        "test -d /mnt/mexe-security-results/current"
-
-    if ($LASTEXITCODE -ne 0) {
-        Write-Warning "Kind não está vendo security/results/current."
-        Write-Warning "Observe o mecanismo de atualização."
-        return
-    }
-
-    Write-Host "Kind atualizado: security/results está visível no mount." -ForegroundColor Green
-}
-
 
 Update-SecurityResults
 
@@ -297,106 +593,6 @@ Remove-Item `
     -ErrorAction SilentlyContinue
 
 
-function Ensure-KindImage {
-    param (
-        [Parameter(Mandatory = $true)]
-        [string]$Image
-    )
-
-    Write-Host ""
-    Write-Host "Verificando imagem: $Image"
-
-    if ($Image -like "ghcr.io/*") {
-        Write-Host "Atualizando imagem remota: $Image"
-
-        docker pull $Image
-
-        if ($LASTEXITCODE -ne 0) {
-            throw "Falha ao baixar a imagem '$Image' do registry."
-        }
-    }
-    else {
-        docker image inspect $Image *> $null
-
-        if ($LASTEXITCODE -ne 0) {
-            throw "Imagem local '$Image' não existe no Docker."
-        }
-    }
-
-    Write-Host "Imagem '$Image' disponível." -ForegroundColor Green
-    Write-Host "Carregando '$Image' no Kind..."
-
-    $ImageArchive = Join-Path `
-        $env:TEMP `
-        ("kind-image-" + [guid]::NewGuid().ToString("N") + ".tar")
-
-    try {
-        Write-Host "Exportando imagem para linux/amd64..."
-
-        docker image save `
-            --platform linux/amd64 `
-            --output $ImageArchive `
-            $Image
-
-        if ($LASTEXITCODE -ne 0) {
-            throw "Falha ao exportar a imagem '$Image'."
-        }
-
-        Write-Host "Carregando arquivo de imagem no Kind..."
-
-        kind load image-archive $ImageArchive --name $ClusterName
-
-        if ($LASTEXITCODE -ne 0) {
-            throw "Falha ao carregar a imagem '$Image' no Kind."
-        }
-
-        Write-Host "Imagem '$Image' carregada no Kind." `
-            -ForegroundColor Green
-    }
-    finally {
-        if (Test-Path $ImageArchive) {
-            Remove-Item $ImageArchive -Force
-        }
-    }
-}
-
-
-function Get-ImageFingerprint {
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$Image
-    )
-
-    if ($Image -like "ghcr.io/*") {
-        $InspectOutput = docker image inspect $Image --format '{{json .RepoDigests}}'
-
-        if ($LASTEXITCODE -ne 0) {
-            throw "Não foi possível inspecionar a imagem '$Image'."
-        }
-
-        $RepoDigests = @($InspectOutput | ConvertFrom-Json)
-        $Repository = $Image -replace ':[^/:]+$', ''
-
-        $RepoDigest = $RepoDigests |
-            Where-Object { $_ -like "$Repository@sha256:*" } |
-            Select-Object -First 1
-
-        if (-not $RepoDigest) {
-            throw "Não foi possível obter o digest do registry para '$Image'."
-        }
-
-        return $RepoDigest.Substring($RepoDigest.IndexOf("@") + 1)
-    }
-
-    $ImageId = docker image inspect $Image --format '{{.Id}}'
-
-    if ($LASTEXITCODE -ne 0) {
-        throw "Não foi possível obter o ID da imagem local '$Image'."
-    }
-
-    return $ImageId.Trim()
-}
-
 # ============================================================
 # Garantir imagens locais no Kind
 # ============================================================
@@ -410,18 +606,33 @@ $KindImages = @(
 )
 
 # ============================================================
+# Preparar imagens dos exporters locais
+# ============================================================
+
+
+if ($SecurityExporterEnabled) {
+
+    $SecurityExporterContext = Join-Path $MexeRoot "security\exporter"
+
+Ensure-LocalBuildImage `
+        -Image "mexe-security-exporter:latest" `
+        -BuildContext $SecurityExporterContext
+}
+
+if ($DependencyExporterEnabled) {
+
+    $DependencyExporterContext = Join-Path $MexeRoot "dependency-exporter"
+
+Ensure-LocalBuildImage `
+        -Image "mexe-dependency-exporter:latest" `
+        -BuildContext $DependencyExporterContext
+}
+
+# ============================================================
 # Grafana: preparar imagem
 # ============================================================
 
 Write-Host "`nPreparando imagem do Grafana..." -ForegroundColor Cyan
-
-docker pull $GrafanaImage
-
-if ($LASTEXITCODE -ne 0) {
-    throw "Falha ao baixar a imagem '$GrafanaImage'."
-}
-
-Write-Host "Imagem do Grafana preparada." -ForegroundColor Green
 
 if ($SecurityExporterEnabled) {
     $KindImages += "mexe-security-exporter:latest"
@@ -431,29 +642,24 @@ if ($DependencyExporterEnabled) {
     $KindImages += "mexe-dependency-exporter:latest"
 }
 
-# Frontend: priorizar imagem local e utilizar GHCR como fallback
+Write-Host "`nVerificando imagem do frontend..." -ForegroundColor Cyan
 
-Write-Host "`nVerificando imagem do frontend..."
+$FrontendExists = Test-DockerImageExists -Image $FrontendImage
 
-docker image inspect $FrontendImage *> $null
+if ($RefreshImages -or -not $FrontendExists) {
 
-if ($LASTEXITCODE -eq 0) {
-
-    Write-Host "Imagem local '$FrontendImage' encontrada." -ForegroundColor Green
-
-}
-else {
-
-    Write-Host "Imagem local não encontrada." -ForegroundColor Yellow
-    Write-Host "Baixando imagem do GHCR: $FrontendRegistryImage"
+    if ($RefreshImages) {
+        Write-Host "Atualizando frontend pelo GHCR..."
+    }
+    else {
+        Write-Host "Frontend ausente localmente. Procurando no GHCR..."
+    }
 
     docker pull $FrontendRegistryImage
 
     if ($LASTEXITCODE -ne 0) {
-        throw "Falha ao baixar a imagem '$FrontendRegistryImage'."
+        throw "Falha ao baixar '$FrontendRegistryImage'."
     }
-
-    Write-Host "Aplicando tag local ao frontend..."
 
     docker tag $FrontendRegistryImage $FrontendImage
 
@@ -461,7 +667,10 @@ else {
         throw "Falha ao aplicar a tag '$FrontendImage'."
     }
 
-    Write-Host "Imagem remota preparada para o Kind." -ForegroundColor Green
+    Write-Host "Imagem do frontend preparada." -ForegroundColor Green
+}
+else {
+    Write-Host "Imagem local '$FrontendImage' encontrada. Reutilizando cache." -ForegroundColor Green
 }
 
 
@@ -679,25 +888,6 @@ else {
 Write-Host "`n[4/4] Aplicando infraestrutura do MEXE..."
 
 # ============================================================
-# Kubernetes Networking
-# ============================================================
-
-Write-Host "`nPreparando Kubernetes Networking..." -ForegroundColor Cyan
-
-& $NetworkingScript
-
-if ($LASTEXITCODE -ne 0) {
-    throw "Kubernetes Networking failed."
-}
-
-Write-Host "Kubernetes Networking configurado." -ForegroundColor Green
-
-if (-not (Test-Path $KubernetesDir)) {
-    throw "Diretório Kubernetes não encontrado: $KubernetesDir"
-}
-
-
-# ============================================================
 # Aplicar backend via Kustomize
 # ============================================================
 
@@ -818,98 +1008,6 @@ else {
 }
 
 
-
-
-function Test-BackendLocalEndpoint {
-    $null = & curl.exe -fsS --max-time 8 "http://127.0.0.1:$PortForwardPort/ready" 2>$null
-    return ($LASTEXITCODE -eq 0)
-}
-
-function Ensure-BackendPortForward {
-
-    Write-Host "`nVerificando port-forward do backend..."
-
-    # Se a porta já estiver ocupada, verificar se é nossa ponte.
-    $Listener = Get-NetTCPConnection `
-        -LocalPort $PortForwardPort `
-        -State Listen `
-        -ErrorAction SilentlyContinue |
-        Select-Object -First 1
-
-    if ($Listener) {
-
-        if (Test-BackendLocalEndpoint) {
-            Write-Host "Port-forward já está funcionando." -ForegroundColor Green
-            return
-        }
-
-        throw "A porta $PortForwardPort está ocupada, mas o backend não respondeu. Verifique o processo que utiliza essa porta."
-    }
-
-    $Kubectl = Get-Command kubectl.exe -ErrorAction Stop
-
-    Write-Host "Iniciando port-forward em segundo plano..."
-
-    $ForwardProcess = Start-Process `
-        -FilePath $Kubectl.Source `
-        -ArgumentList @(
-            "port-forward",
-            "--address",
-            "0.0.0.0",
-            "service/mexe-backend",
-            "${PortForwardPort}:8000"
-        ) `
-        -WindowStyle Hidden `
-        -PassThru `
-        -RedirectStandardOutput $PortForwardStdout `
-        -RedirectStandardError $PortForwardStderr
-
-    Set-Content `
-        -Path $PortForwardPidFile `
-        -Value $ForwardProcess.Id
-
-    $Deadline = (Get-Date).AddSeconds(30)
-
-    do {
-
-        Start-Sleep -Seconds 1
-
-        $RunningProcess = Get-Process `
-            -Id $ForwardProcess.Id `
-            -ErrorAction SilentlyContinue
-
-        if (-not $RunningProcess) {
-
-            $ErrorLog = ""
-
-            if (Test-Path $PortForwardStderr) {
-                $ErrorLog = Get-Content $PortForwardStderr -Raw
-            }
-
-            Remove-Item $PortForwardPidFile -Force -ErrorAction SilentlyContinue
-
-            throw "O port-forward encerrou inesperadamente. Detalhes: $ErrorLog"
-        }
-
-        if (Test-BackendLocalEndpoint) {
-
-            Write-Host "Port-forward iniciado e backend respondendo." `
-                -ForegroundColor Green
-
-            return
-        }
-
-    } while ((Get-Date) -lt $Deadline)
-
-    Stop-Process -Id $ForwardProcess.Id -Force -ErrorAction SilentlyContinue
-
-    Remove-Item $PortForwardPidFile -Force -ErrorAction SilentlyContinue
-
-    throw "Backend não respondeu pela porta local $PortForwardPort dentro de 30 segundos."
-}
-
-
-
 Write-Host "`nAguardando backend ficar disponível..."
 
 
@@ -921,6 +1019,19 @@ throw "Deployment mexe-backend não ficou disponível."
 
 Ensure-BackendPortForward
 
+# ============================================================
+# Kubernetes Networking
+# ============================================================
+
+Write-Host "`nPreparando Kubernetes Networking..." -ForegroundColor Cyan
+
+& $NetworkingScript
+
+if ($LASTEXITCODE -ne 0) {
+    throw "Kubernetes Networking failed."
+}
+
+Write-Host "Kubernetes Networking configurado." -ForegroundColor Green
 
 # ============================================================
 # Resultado
