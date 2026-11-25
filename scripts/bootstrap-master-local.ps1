@@ -66,7 +66,7 @@ function Assert-Docker {
     if ($LASTEXITCODE -ne 0) {
         Write-Host ""
         Write-Host "ERRO: Docker está instalado, mas não está disponível." -ForegroundColor Red
-        Write-Host "Inicie o Docker Desktop e execute o bootstrap novamente."
+        Write-Host "Verifique se o Docker Engine está em execução e execute o bootstrap novamente."
         throw "Docker não está disponível."
     }
 
@@ -149,7 +149,7 @@ function Invoke-MexeScript {
 
     & $ScriptPath
 
-    if ($LASTEXITCODE -ne 0) {
+    if (-not $?) {
         throw "O script '$ScriptName' falhou."
     }
 

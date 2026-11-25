@@ -19,12 +19,14 @@ function Wait-ForReady {
 
     do {
         try {
-            $response = curl.exe `
-                -fsS `
-                $Url `
-                2>$null
+            $response = Invoke-WebRequest `
+                -Uri $Url `
+                -Method Get `
+                -TimeoutSec 5 `
+                -UseBasicParsing `
+                -ErrorAction Stop
 
-            if ($LASTEXITCODE -eq 0) {
+            if ($response.StatusCode -eq 200) {
                 Write-Host "$Name OK." -ForegroundColor Green
                 return
             }

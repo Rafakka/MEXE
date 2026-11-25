@@ -8,6 +8,7 @@ param(
 $ErrorActionPreference = "Stop"
 
 $MexeRoot = Split-Path $PSScriptRoot -Parent
+$TempDirectory = [System.IO.Path]::GetTempPath()
 $EnvFile = Join-Path $MexeRoot ".env"
 
 $env:GITLAB_TOKEN = $null
@@ -31,15 +32,15 @@ else {
 $ClusterConfig = Join-Path $MexeRoot "cluster.yaml"
 $KubernetesDir = Join-Path $MexeRoot "k8s"
 
-$SecurityResultsDir = Join-Path $MexeRoot "security\results"
+$SecurityResultsDir = Join-Path (Join-Path $MexeRoot "security") "results"
 
 $DependencyExporterManifest = Join-Path `
-    $KubernetesDir `
-    "optional\dependency-exporter.yaml"
+    (Join-Path $KubernetesDir "optional") `
+    "dependency-exporter.yaml"
 
 $SecurityExporterManifest = Join-Path `
-    $KubernetesDir `
-    "optional\security-exporter.yaml"
+    (Join-Path $KubernetesDir "optional") `
+    "security-exporter.yaml"
 
 $NetworkingScript = Join-Path `
     $PSScriptRoot `
@@ -47,9 +48,9 @@ $NetworkingScript = Join-Path `
 
 
 $PortForwardPort = 18000
-$PortForwardPidFile = Join-Path $env:TEMP "mexe-port-forward.pid"
-$PortForwardStdout = Join-Path $env:TEMP "mexe-port-forward.stdout.log"
-$PortForwardStderr = Join-Path $env:TEMP "mexe-port-forward.stderr.log"
+$PortForwardPidFile = Join-Path $TempDirectory "mexe-port-forward.pid"
+$PortForwardStdout = Join-Path $TempDirectory "mexe-port-forward.stdout.log"
+$PortForwardStderr = Join-Path $TempDirectory "mexe-port-forward.stderr.log"
 
 $SecretName = "mexe-dependency-exporter"
 
@@ -65,9 +66,23 @@ $GrafanaImage = "grafana/grafana:latest"
 
 $ClusterName = "mexe"
 
-$KubeconfigPath = Join-Path `
-    $env:TEMP `
-    "mexe-kind-mexe.kubeconfig"
+$KubeconfigDirectory = Join-Path $HOME ".kube"
+$KubeconfigPath = Join-Path $KubeconfigDirectory "config"
+
+if ([string]::IsNullOrWhiteSpace($env:KUBECONFIG)) {
+
+    New-Item `
+        -ItemType Directory `
+        -Path $KubeconfigDirectory `
+        -Force | Out-Null
+
+    Write-Host "Usando kubeconfig padrão: $KubeconfigPath" `
+        -ForegroundColor Green
+}
+else {
+    Write-Host "KUBECONFIG personalizado detectado: $env:KUBECONFIG" `
+        -ForegroundColor Yellow
+}
 
 $env:KIND_EXPERIMENTAL_PROVIDER = "docker"
 
@@ -255,7 +270,7 @@ function Ensure-KindImage {
     Write-Host "Carregando imagem no Kind (linux/amd64)..."
 
     $ArchivePath = Join-Path `
-        $env:TEMP `
+        $TempDirectory `
         ("mexe-kind-" + [guid]::NewGuid().ToString("N") + ".tar")
 
     try {
@@ -344,16 +359,38 @@ function Test-BackendLocalEndpoint {
 }
 
 
+function Test-TcpPortListening {
+    param(
+        [Parameter(Mandatory = $true)]
+        [int]$Port
+    )
+
+    $Client = [System.Net.Sockets.TcpClient]::new()
+
+    try {
+        $ConnectTask = $Client.ConnectAsync("127.0.0.1", $Port)
+
+        if (-not $ConnectTask.Wait(500)) {
+            return $false
+        }
+
+        return $Client.Connected
+    }
+    catch {
+        return $false
+    }
+    finally {
+        $Client.Dispose()
+    }
+}
+
+
 function Ensure-BackendPortForward {
 
     Write-Host "`nVerificando port-forward do backend..."
 
     # Se a porta já estiver ocupada, verificar se é nossa ponte.
-    $Listener = Get-NetTCPConnection `
-        -LocalPort $PortForwardPort `
-        -State Listen `
-        -ErrorAction SilentlyContinue |
-        Select-Object -First 1
+    $Listener = Test-TcpPortListening -Port $PortForwardPort
 
     if ($Listener) {
 
@@ -365,7 +402,7 @@ function Ensure-BackendPortForward {
         throw "A porta $PortForwardPort está ocupada, mas o backend não respondeu. Verifique o processo que utiliza essa porta."
     }
 
-    $Kubectl = Get-Command kubectl.exe -ErrorAction Stop
+    $Kubectl = Get-Command kubectl -ErrorAction Stop
 
     Write-Host "Iniciando port-forward em segundo plano..."
 
@@ -378,7 +415,6 @@ function Ensure-BackendPortForward {
             "service/mexe-backend",
             "${PortForwardPort}:8000"
         ) `
-        -WindowStyle Hidden `
         -PassThru `
         -RedirectStandardOutput $PortForwardStdout `
         -RedirectStandardError $PortForwardStderr
@@ -497,7 +533,7 @@ if (-not (Test-Path $ClusterConfig)) {
 # Remove cluster Kind existente
 # ------------------------------------------------------------
 
-$KindClusters = @(cmd /c "kind get clusters 2>&1")
+$KindClusters = @(kind get clusters 2>&1)
 $KindExitCode = $LASTEXITCODE
 
 if ($KindExitCode -eq 0) {
@@ -549,7 +585,7 @@ if ($ExistingContainer -contains $ControlPlaneName) {
 # Gera configuração temporária do Kind
 # ------------------------------------------------------------
 
-$KindConfig = Join-Path $env:TEMP "mexe-kind.yaml"
+$KindConfig = Join-Path $TempDirectory "mexe-kind.yaml"
 
 $ClusterYaml = Get-Content $ClusterConfig -Raw
 
@@ -579,7 +615,6 @@ Get-Content $KindConfig
 kind create cluster `
     --config $KindConfig `
     --name $ClusterName `
-    --kubeconfig $KubeconfigPath `
     --wait 5m `
     --retain
 
@@ -612,7 +647,7 @@ $KindImages = @(
 
 if ($SecurityExporterEnabled) {
 
-    $SecurityExporterContext = Join-Path $MexeRoot "security\exporter"
+    $SecurityExporterContext = Join-Path (Join-Path $MexeRoot "security") "exporter"
 
 Ensure-LocalBuildImage `
         -Image "mexe-security-exporter:latest" `
@@ -706,8 +741,7 @@ Write-Host "Container do control-plane em execução." `
 Write-Host "`nConfigurando kubeconfig isolado do Kind..."
 
 kind export kubeconfig `
-    --name $ClusterName `
-    --kubeconfig $KubeconfigPath
+    --name $ClusterName
 
 if ($LASTEXITCODE -ne 0) {
     throw "Não foi possível exportar o kubeconfig do Kind."
