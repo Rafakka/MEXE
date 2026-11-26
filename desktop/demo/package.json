@@ -1,0 +1,26 @@
+{
+  "name": "mexe-demo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Portable standalone MEXE demonstration",
+  "main": "main.cjs",
+  "author": "MEXE",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "electron": "^41.0.0",
+    "electron-builder": "^26.0.0"
+  },
+  "build": {
+    "appId": "com.mexe.demo",
+    "productName": "MEXE Demo",
+    "asar": true,
+    "directories": { "output": "release" },
+    "files": ["main.cjs", "package.json"],
+    "extraResources": [
+      { "from": "renderer", "to": "renderer" },
+      { "from": "backend", "to": "backend" }
+    ],
+    "win": { "target": [{ "target": "portable", "arch": ["x64"] }] },
+    "portable": { "artifactName": "MEXE-Demo-${version}-portable.${ext}" }
+  }
+}
