@@ -288,18 +288,6 @@ foreach ($route in $HttpRoutes) {
         throw "HTTPRoute was not accepted: $route"
     }
 
-    kind export kubeconfig --name mexe
-
-    if ($LASTEXITCODE -ne 0) {
-        throw "Failed to export Kind kubeconfig."
-    }
-
-    kubectl config use-context kind-mexe
-
-    if ($LASTEXITCODE -ne 0) {
-        throw "Failed to select Kind context."
-    }
-
     if (-not $Resolved) {
         throw "HTTPRoute references were not resolved: $route"
     }

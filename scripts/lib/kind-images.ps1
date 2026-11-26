@@ -117,10 +117,28 @@ function Ensure-KindImage {
             throw "Resposta inválida ao consultar as imagens do node '$NodeName'."
         }
 
-        $ImageFound = $Images.images | Where-Object {
-            $_.repoTags | Where-Object {
-                $_ -eq $Image -or $_ -eq "docker.io/library/$Image"
+        $ExpectedImage = $Image
+
+        $FirstComponent = ($Image -split '/', 2)[0]
+
+        $HasRegistry = (
+            $Image -match '/' -and
+            ($FirstComponent -match '[.:]' -or $FirstComponent -eq 'localhost')
+        )
+
+        if (-not $HasRegistry) {
+
+            if ($Image -notmatch '/') {
+                $ExpectedImage = "docker.io/library/$Image"
             }
+            else {
+                $ExpectedImage = "docker.io/$Image"
+            }
+        }
+
+        $ImageFound = $Images.images | Where-Object {
+            @($_.repoTags) -contains $Image -or
+            @($_.repoTags) -contains $ExpectedImage
         }
 
         if (-not $ImageFound) {

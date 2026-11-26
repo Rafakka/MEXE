@@ -15,22 +15,31 @@ $MexeRoot = Split-Path $PSScriptRoot -Parent
 $TempDirectory = [System.IO.Path]::GetTempPath()
 $EnvFile = Join-Path $MexeRoot ".env"
 
-$env:GITLAB_TOKEN = $null
+# ------------------------------------------------------------
+# Carregar GITLAB_TOKEN
+# ------------------------------------------------------------
 
-if (Test-Path -LiteralPath $EnvFile -PathType Leaf) {
+if ([string]::IsNullOrWhiteSpace($env:GITLAB_TOKEN)) {
 
-    $GitlabTokenLine = Get-Content -LiteralPath $EnvFile |
-        Where-Object { $_ -match '^GITLAB_TOKEN=' } |
-        Select-Object -First 1
+    if (Test-Path -LiteralPath $EnvFile -PathType Leaf) {
 
-    if ($GitlabTokenLine) {
-        $env:GITLAB_TOKEN = (
-            $GitlabTokenLine -replace '^GITLAB_TOKEN=', ''
-        ).Trim()
+        $GitlabTokenLine = Get-Content -LiteralPath $EnvFile |
+            Where-Object { $_ -match '^GITLAB_TOKEN=' } |
+            Select-Object -First 1
+
+        if ($GitlabTokenLine) {
+            $env:GITLAB_TOKEN = (
+                $GitlabTokenLine -replace '^GITLAB_TOKEN=', ''
+            ).Trim()
+        }
+    }
+    else {
+        Write-Warning "Arquivo .env não encontrado: $EnvFile"
     }
 }
 else {
-    Write-Warning "Arquivo .env não encontrado: $EnvFile"
+    Write-Host "GITLAB_TOKEN já disponível no ambiente." `
+        -ForegroundColor Green
 }
 
 $ClusterConfig = Join-Path $MexeRoot "cluster.yaml"
@@ -70,23 +79,45 @@ $GrafanaImage = "grafana/grafana:latest"
 
 $ClusterName = "mexe"
 
-$KubeconfigDirectory = Join-Path $HOME ".kube"
-$KubeconfigPath = Join-Path $KubeconfigDirectory "config"
+# ------------------------------------------------------------
+# Configurar caminho do kubeconfig
+# ------------------------------------------------------------
 
 if ([string]::IsNullOrWhiteSpace($env:KUBECONFIG)) {
 
-    New-Item `
-        -ItemType Directory `
-        -Path $KubeconfigDirectory `
-        -Force | Out-Null
+    $KubeconfigPath = Join-Path $HOME ".kube/config"
 
     Write-Host "Usando kubeconfig padrão: $KubeconfigPath" `
         -ForegroundColor Green
 }
 else {
-    Write-Host "KUBECONFIG personalizado detectado: $env:KUBECONFIG" `
+
+    $KubeconfigEntries = @(
+        $env:KUBECONFIG -split [regex]::Escape(
+            [System.IO.Path]::PathSeparator
+        ) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+    )
+
+    if ($KubeconfigEntries.Count -ne 1) {
+        throw "Este bootstrap espera um único arquivo KUBECONFIG. Foram encontrados $($KubeconfigEntries.Count) caminhos."
+    }
+
+    $KubeconfigPath = [System.IO.Path]::GetFullPath(
+        $KubeconfigEntries[0]
+    )
+
+    Write-Host "KUBECONFIG personalizado detectado: $KubeconfigPath" `
         -ForegroundColor Yellow
 }
+
+$KubeconfigDirectory = Split-Path -Parent $KubeconfigPath
+
+New-Item `
+    -ItemType Directory `
+    -Path $KubeconfigDirectory `
+    -Force | Out-Null
+
+$env:KUBECONFIG = $KubeconfigPath
 
 $env:KIND_EXPERIMENTAL_PROVIDER = "docker"
 
@@ -547,10 +578,13 @@ Remove-Item `
 
 Write-Host "`nGarantindo imagens locais no Kind..."
 
-$KindImages = @(
+$RemoteKindImages = @(
     $BackendImage
-    $FrontendImage
     $GrafanaImage
+)
+
+$LocalKindImages = @(
+    $FrontendImage
 )
 
 # ============================================================
@@ -572,22 +606,22 @@ if ($DependencyExporterEnabled) {
     $DependencyExporterContext = Join-Path $MexeRoot "dependency-exporter"
 
 Ensure-LocalBuildImage `
-        -Image "mexe-dependency-exporter:latest" `
-        -BuildContext $DependencyExporterContext
+    -Image "mexe-dependency-exporter:latest" `
+    -BuildContext $DependencyExporterContext
 }
 
 # ============================================================
-# Grafana: preparar imagem
+# Registrar imagens dos exporters locais
 # ============================================================
 
-Write-Host "`nPreparando imagem do Grafana..." -ForegroundColor Cyan
+Write-Host "`nRegistrando imagens dos exporters locais..." -ForegroundColor Cyan
 
 if ($SecurityExporterEnabled) {
-    $KindImages += "mexe-security-exporter:latest"
+    $LocalKindImages += "mexe-security-exporter:latest"
 }
 
 if ($DependencyExporterEnabled) {
-    $KindImages += "mexe-dependency-exporter:latest"
+    $LocalKindImages += "mexe-dependency-exporter:latest"
 }
 
 Write-Host "`nVerificando imagem do frontend..." -ForegroundColor Cyan
@@ -654,7 +688,8 @@ Write-Host "Container do control-plane em execução." `
 Write-Host "`nConfigurando kubeconfig isolado do Kind..."
 
 kind export kubeconfig `
-    --name $ClusterName
+    --name $ClusterName `
+    --kubeconfig $KubeconfigPath
 
 if ($LASTEXITCODE -ne 0) {
     throw "Não foi possível exportar o kubeconfig do Kind."
@@ -722,13 +757,28 @@ Write-Host "`nGarantindo imagens locais no Kind..."
 
 docker exec "$ClusterName-control-plane" crictl images
 
-foreach ($Image in $KindImages) {
+# ------------------------------------------------------------
+# Carregar imagens remotas
+# ------------------------------------------------------------
+
+foreach ($Image in $RemoteKindImages) {
+
     Ensure-KindImage `
         -Image $Image `
         -ClusterName $ClusterName `
         -RefreshImages:$RefreshImages `
         -PullIfMissing
+}
 
+# ------------------------------------------------------------
+# Carregar imagens locais
+# ------------------------------------------------------------
+
+foreach ($Image in $LocalKindImages) {
+
+    Ensure-KindImage `
+        -Image $Image `
+        -ClusterName $ClusterName
 }
 
 $BackendFingerprint = Get-ImageFingerprint -Image $BackendImage
