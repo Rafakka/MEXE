@@ -1,6 +1,8 @@
 
 $ErrorActionPreference = "Stop"
 
+. (Join-Path $PSScriptRoot "lib/kind-images.ps1")
+
 $GatewayApiVersion = "1.6.3"
 $TraefikChartVersion = "42.4.1"
 
@@ -123,9 +125,10 @@ if ($LASTEXITCODE -ne 0) {
 
 Write-Host "`n=== Installing Traefik ===" -ForegroundColor Cyan
 
-docker pull traefik:v3.7.19
-
-kind load docker-image traefik:v3.7.19 --name mexe
+Ensure-KindImage `
+    -Image "traefik:v3.7.19" `
+    -ClusterName "mexe" `
+    -PullIfMissing
 
 helm upgrade --install $TraefikReleaseName traefik/traefik `
     --namespace $TraefikNamespace `

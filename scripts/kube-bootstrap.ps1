@@ -3,7 +3,11 @@ param(
     [string]$BackendImage = "ghcr.io/rafakka/mexe-backend:latest",
 
     [switch]$RefreshImages
+
+
 )
+
+. (Join-Path $PSScriptRoot "lib/kind-images.ps1")
 
 $ErrorActionPreference = "Stop"
 
@@ -212,97 +216,6 @@ function Ensure-LocalBuildImage {
     }
 }
 
-
-function Ensure-KindImage {
-    param (
-        [Parameter(Mandatory = $true)]
-        [string]$Image
-    )
-
-    Write-Host ""
-    Write-Host "Verificando imagem: $Image"
-
-    $IsRemoteImage = (
-        $Image -like "ghcr.io/*" -or
-        $Image -eq $GrafanaImage
-    )
-
-    $ImageExists = Test-DockerImageExists -Image $Image
-
-    # Imagens remotas: baixar se estiverem ausentes ou se
-    # o usuário solicitar uma atualização explícita.
-    if ($IsRemoteImage -and (-not $ImageExists -or $RefreshImages)) {
-
-        if ($RefreshImages) {
-            Write-Host "Atualização remota solicitada: $Image"
-        }
-        else {
-            Write-Host "Imagem ausente localmente. Baixando: $Image"
-        }
-
-        docker pull $Image
-
-        if ($LASTEXITCODE -ne 0) {
-            throw "Falha ao baixar a imagem '$Image'."
-        }
-
-        $ImageExists = $true
-    }
-
-    # Imagens locais, como exporters, não possuem fallback remoto.
-    if (-not $ImageExists) {
-        throw "Imagem local '$Image' não encontrada."
-    }
-
-    # Conferir plataforma.
-    $Platform = docker image inspect $Image --format '{{.Os}}/{{.Architecture}}'
-
-    if ($LASTEXITCODE -ne 0) {
-        throw "Não foi possível verificar a plataforma da imagem '$Image'."
-    }
-
-    if ($Platform.Trim() -ne "linux/amd64") {
-        throw "Plataforma incompatível: $Image ($Platform). Esperado: linux/amd64."
-    }
-
-    Write-Host "Imagem disponível: $Image ($Platform)" -ForegroundColor Green
-
-    Write-Host "Carregando imagem no Kind (linux/amd64)..."
-
-    $ArchivePath = Join-Path `
-        $TempDirectory `
-        ("mexe-kind-" + [guid]::NewGuid().ToString("N") + ".tar")
-
-    try {
-
-        Write-Host "Exportando somente a plataforma linux/amd64..."
-
-        docker image save `
-            --platform linux/amd64 `
-            --output $ArchivePath `
-            $Image
-
-        if ($LASTEXITCODE -ne 0) {
-            throw "Falha ao exportar a imagem '$Image'."
-        }
-
-        Write-Host "Importando arquivo no Kind..."
-
-        kind load image-archive $ArchivePath --name $ClusterName
-
-        if ($LASTEXITCODE -ne 0) {
-            throw "Falha ao importar a imagem '$Image' no Kind."
-        }
-
-        Write-Host "Imagem '$Image' carregada no Kind." -ForegroundColor Green
-    }
-    finally {
-
-        if (Test-Path -LiteralPath $ArchivePath) {
-            Remove-Item -LiteralPath $ArchivePath -Force
-        }
-    }
-}
 
 function Get-ImageFingerprint {
     param(
@@ -807,8 +720,15 @@ Write-Host "Kubernetes OK." -ForegroundColor Green
 
 Write-Host "`nGarantindo imagens locais no Kind..."
 
+docker exec "$ClusterName-control-plane" crictl images
+
 foreach ($Image in $KindImages) {
-    Ensure-KindImage -Image $Image
+    Ensure-KindImage `
+        -Image $Image `
+        -ClusterName $ClusterName `
+        -RefreshImages:$RefreshImages `
+        -PullIfMissing
+
 }
 
 $BackendFingerprint = Get-ImageFingerprint -Image $BackendImage

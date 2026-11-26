@@ -12,3 +12,12 @@ kubernetes-backup.yaml
 pvc-backup.yaml
 services-backup.yaml
 k8s-current-state.yaml
+
+# Build artifacts and dependencies
+**/node_modules/
+desktop/demo/release/
+dist/demo/
+
+# PyInstaller artifacts
+desktop/demo/.pyinstaller-work/
+desktop/demo/backend/*.exe
